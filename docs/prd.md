@@ -34,63 +34,22 @@ O objetivo é fornecer uma plataforma web moderna, com autenticação segura, co
 
 ## 📝 4. Escopo Funcional (User Stories)
 
-### 🔹 EPIC 1 — Arquitetura e Setup
+## 📝 4. Escopo Funcional (User Stories)
 
-| ID   | Ator      | Descrição                                            | Prioridade |
-| ---- | --------- | ---------------------------------------------------- | ---------- |
-| US01 | Dev       | Estruturar monorepo com frontend e backend no GitHub | 🔥 Crítica |
-| US02 | Arquiteto | Criar PRD + SDD com diagramas Mermaid                | 🔥 Crítica |
-| US03 | Dev       | Configurar GitFlow com PRs obrigatórios              | 🔥 Alta    |
-
-### 🔹 EPIC 2 — Autenticação e Usuários
-
-| ID   | Ator    | Descrição                                 | Prioridade |
-| ---- | ------- | ----------------------------------------- | ---------- |
-| US04 | Usuário | Cadastro com validação via DTO            | 🔥 Alta    |
-| US05 | Usuário | Login com JWT                             | 🔥 Crítica |
-| US06 | Admin   | Controle de acesso por roles (ADMIN/USER) | 🔥 Alta    |
-
-### 🔹 EPIC 3 — Condomínios
-
-| ID   | Ator    | Descrição                          | Prioridade |
-| ---- | ------- | ---------------------------------- | ---------- |
-| US07 | Admin   | CRUD de condomínios com Prisma ORM | 🔥 Alta    |
-| US08 | Usuário | Listar condomínios vinculados      | ⚡ Média    |
-
-### 🔹 EPIC 4 — Áreas Comuns
-
-| ID   | Ator  | Descrição            | Prioridade |
-| ---- | ----- | -------------------- | ---------- |
-| US09 | Admin | CRUD de áreas comuns | 🔥 Alta    |
-
-### 🔹 EPIC 5 — Reservas
-
-| ID   | Ator    | Descrição                               | Prioridade |
-| ---- | ------- | --------------------------------------- | ---------- |
-| US10 | Usuário | Criar reserva com validação de conflito | 🔥 Crítica |
-| US11 | Usuário | Cancelar reserva própria                | ⚡ Média    |
-| US12 | Usuário | Listar reservas com filtros             | ⚡ Média    |
-
-### 🔹 EPIC 6 — Padronização Backend
-
-| ID   | Ator | Descrição                             | Prioridade |
-| ---- | ---- | ------------------------------------- | ---------- |
-| US13 | Dev  | Implementar interceptors globais      | ⚡ Média    |
-| US14 | Dev  | Implementar exception filters globais | ⚡ Média    |
-
-### 🔹 EPIC 7 — Qualidade e Testes
-
-| ID   | Ator | Descrição                                 | Prioridade |
-| ---- | ---- | ----------------------------------------- | ---------- |
-| US15 | Dev  | Criar testes automatizados com Jest (TDD) | 🔥 Crítica |
-
-### 🔹 EPIC 8 — Gestão Ágil
-
-| ID   | Ator | Descrição                         | Prioridade |
-| ---- | ---- | --------------------------------- | ---------- |
-| US16 | Dev  | Mapear backlog no GitHub Projects | 🔥 Alta    |
-
----
+| ID | Ator | Descrição | Prioridade |
+| :--- | :--- | :--- | :--- |
+| **US01** | Usuário | Realizar cadastro e acesso ao sistema para utilizar as funcionalidades disponíveis. | 🔥 Crítica |
+| **US02** | Administrador | Cadastrar e gerenciar condomínios no sistema. | 🔥 Alta |
+| **US03** | Administrador | Vincular usuários aos respectivos condomínios. | 🔥 Alta |
+| **US04** | Administrador | Cadastrar e gerenciar áreas comuns disponíveis para reserva. | 🔥 Crítica |
+| **US05** | Usuário | Visualizar as áreas comuns disponíveis no condomínio. | 🔥 Alta |
+| **US06** | Usuário | Consultar a disponibilidade de uma área comum em data e horário desejados. | 🔥 Crítica |
+| **US07** | Usuário | Realizar uma reserva de área comum em um período disponível. | 🔥 Crítica |
+| **US08** | Usuário | Cancelar uma reserva realizada anteriormente. | ⚡ Média |
+| **US09** | Usuário | Consultar o histórico das próprias reservas. | ⚡ Média |
+| **US10** | Administrador | Visualizar todas as reservas realizadas no condomínio. | 🔥 Alta |
+| **US11** | Administrador | Acompanhar conflitos, cancelamentos e uso das áreas comuns. | ⚡ Média |
+| **US12** | Sistema | Impedir reservas em horários conflitantes para a mesma área comum. | 🔥 Crítica |
 
 ## 🛡️ 5. Regras de Negócio
 
@@ -121,7 +80,7 @@ O objetivo é fornecer uma plataforma web moderna, com autenticação segura, co
 ## 🛠️ 8. Tech Stack Principal (Diretrizes)
 
 * **Backend:** NestJS + Prisma ORM + PostgreSQL
-* **Frontend:** VueJS ou React
+* **Frontend:** React
 * **Monorepo:** Turborepo / Nx
 * **CI/CD:**  GitHub Actions (Pipelines de Teste) + Deploy na Nuvem (Render/Vercel).
 
