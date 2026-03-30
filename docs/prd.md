@@ -1,7 +1,7 @@
 # 📄 Product Requirements Document (PRD) - Reserva Aí!
 
 **Projeto:** Reserva Aí! (Gestão de Condomínios e Áreas Comuns)
-**Versão:** 2.0.0
+**Versão:** 1.0.0
 **Status:** 🟢 Definido (MVP Acadêmico)
 
 ---
@@ -31,8 +31,6 @@ O objetivo é fornecer uma plataforma web moderna, com autenticação segura, co
 * **Sistema:** Valida regras de negócio, autenticação e conflitos de horários.
 
 ---
-
-## 📝 4. Escopo Funcional (User Stories)
 
 ## 📝 4. Escopo Funcional (User Stories)
 

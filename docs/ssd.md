@@ -3,7 +3,7 @@
 **Projeto:** Reserva Aí! (Gestão de Condomínios e Áreas Comuns)
 **Versão:** 2.0.0
 **Status:** 🟢 Pronto para Implementação
-**Stack Principal:** NestJS, React, Prisma ORM, PostgreSQL.
+**Stack Principal:** NestJS, VueJS, Prisma ORM, PostgreSQL.
 
 ---
 
@@ -12,7 +12,7 @@
 O projeto utiliza uma arquitetura de Monorepo.
 
 * **`apps/api`**: Backend (NestJS) → `Module` → `Controller` → `Service` → `Prisma`
-* **`apps/web`**: Frontend (React)
+* **`apps/web`**: Frontend (VueJS)
 * **`apps/extension`**: (Opcional futuro)
 
 ---
