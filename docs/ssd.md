@@ -69,6 +69,7 @@ Representa o condomínio onde o sistema será utilizado. Um condomínio agrupa b
 | `id` | UUID | Sim | Identificador único do condomínio. |
 | `name` | VARCHAR(150) | Sim | Nome do condomínio. |
 | `address` | VARCHAR(255) | Sim | Endereço principal do condomínio. |
+| `timezone` | VARCHAR(50) | Sim | Fuso horário do condomínio (ex: America/Sao_Paulo). |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
 
@@ -129,6 +130,9 @@ Representa uma área comum disponível para uso no condomínio, como salão de f
 | `name` | VARCHAR(120) | Sim | Nome da área comum. |
 | `description` | TEXT | Não | Descrição complementar da área. |
 | `capacity` | INT | Não | Capacidade máxima de pessoas permitidas. |
+| `openTime` | VARCHAR(5) | Sim | Horário de abertura (HH:MM). |
+| `closeTime` | VARCHAR(5) | Sim | Horário de fechamento (HH:MM). |
+| `operatingDays` | JSON | Não | Dias da semana operacionais (ex: [1,2,3,4,5,6,0]). |
 | `requiresApproval` | BOOLEAN | Sim | Indica se a reserva exige aprovação administrativa. |
 | `condominiumId` | UUID | Sim | Referência ao condomínio ao qual a área pertence. |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
@@ -149,8 +153,8 @@ Representa uma solicitação ou agendamento de uso de uma área comum por um mor
 | `endTime` | DATETIME | Sim | Data e hora de término da reserva. |
 | `status` | ENUM | Sim | Status da reserva (`PENDING`, `APPROVED`, `REJECTED`, `CANCELED`). |
 | `notes` | TEXT | Não | Observações adicionais da reserva. |
-| `cancelledBy` | UUID | Não | Referência ao usuário (Admin ou Morador) que cancelou a reserva. |
-| `cancelledAt` | DATETIME | Não | Data e hora em que a reserva foi cancelada. |
+| `canceledById` | UUID | Não | Referência ao usuário (Admin ou Morador) que cancelou a reserva. |
+| `canceledAt` | DATETIME | Não | Data e hora em que a reserva foi cancelada. |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
 
@@ -176,7 +180,7 @@ Representa o histórico de aprovação ou rejeição de reservas que exigem vali
 ```mermaid
 erDiagram
 
-    CONDOMINIUM ||--o{ USER : possui
+    CONDOMINIUM |o--o{ USER : possui
     CONDOMINIUM ||--o{ BLOCK : possui
     CONDOMINIUM ||--o{ COMMON_AREA : possui
 
@@ -184,11 +188,12 @@ erDiagram
 
     UNIT ||--o{ RESIDENT : abriga
 
-    USER ||--|| RESIDENT : representa
-    USER ||--o{ RESERVATION_APPROVAL : realiza
+    USER ||--|o RESIDENT : representa
+    USER ||--o{ RESERVATION_APPROVAL : avalia
+    USER ||--o{ RESERVATION : registra_cancelamento
     RESIDENT ||--o{ RESERVATION : realiza
 
-    COMMON_AREA ||--o{ RESERVATION : é_reservada
+    COMMON_AREA ||--o{ RESERVATION : e_reservada
     RESERVATION ||--o{ RESERVATION_APPROVAL : possui
 
     USER {
@@ -208,13 +213,14 @@ erDiagram
         string id PK
         string name
         string address
+        string timezone
         datetime createdAt
         datetime updatedAt
     }
 
     BLOCK {
         string id PK
-        string name
+        string name UK
         string condominiumId FK
         datetime createdAt
         datetime updatedAt
@@ -222,7 +228,7 @@ erDiagram
 
     UNIT {
         string id PK
-        string number
+        string number UK
         string blockId FK
         datetime createdAt
         datetime updatedAt
@@ -230,7 +236,7 @@ erDiagram
 
     RESIDENT {
         string id PK
-        string userId FK
+        string userId FK "UK"
         string unitId FK
         string document
         string phone
@@ -244,6 +250,9 @@ erDiagram
         string name
         string description
         int capacity
+        string openTime
+        string closeTime
+        string operatingDays
         boolean requiresApproval
         string condominiumId FK
         datetime createdAt
@@ -258,8 +267,8 @@ erDiagram
         datetime endTime
         string status
         string notes
-        string cancelledBy FK
-        datetime cancelledAt
+        string canceledById FK
+        datetime canceledAt
         datetime createdAt
         datetime updatedAt
     }
@@ -529,6 +538,7 @@ A API será organizada nos seguintes grupos funcionais:
 - `POST /common-areas`
 - `GET /common-areas`
 - `GET /common-areas/:id`
+- `GET /common-areas/:id/availability` (Filtra horários de funcionamento contra reservas existentes para descobrir slots livres num `?date=YYYY-MM-DD`)
 - `PATCH /common-areas/:id`
 
 #### **Reservations**
