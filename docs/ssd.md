@@ -52,8 +52,9 @@ Representa a conta de acesso ao sistema. É a entidade responsável pela autenti
 | `email` | VARCHAR(150) | Sim | E-mail único utilizado para login no sistema. |
 | `passwordHash` | VARCHAR(255) | Não | Senha criptografada do usuário (caso o login seja local). |
 | `provider` | ENUM | Sim | Provedor de autenticação (`LOCAL`, `GOOGLE`). |
-| `role` | ENUM | Sim | Perfil de acesso do usuário (`ADMIN`, `RESIDENT`). |
-| `isActive` | BOOLEAN | Sim | Indica se a conta está ativa. |
+| `role` | ENUM | Sim | Perfil de acesso do usuário (`SUPER_ADMIN`, `ADMIN`, `RESIDENT`). |
+| `condominiumId` | UUID | Não | Referência ao condomínio. (Pode ser nulo caso o usuário seja um `SUPER_ADMIN`). |
+| `isActive` | BOOLEAN | Sim | Indica se a conta está ativa (usado para inativação/pausa pelo Super Admin). |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
 
@@ -148,6 +149,8 @@ Representa uma solicitação ou agendamento de uso de uma área comum por um mor
 | `endTime` | DATETIME | Sim | Data e hora de término da reserva. |
 | `status` | ENUM | Sim | Status da reserva (`PENDING`, `APPROVED`, `REJECTED`, `CANCELED`). |
 | `notes` | TEXT | Não | Observações adicionais da reserva. |
+| `cancelledBy` | UUID | Não | Referência ao usuário (Admin ou Morador) que cancelou a reserva. |
+| `cancelledAt` | DATETIME | Não | Data e hora em que a reserva foi cancelada. |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
 
@@ -173,6 +176,7 @@ Representa o histórico de aprovação ou rejeição de reservas que exigem vali
 ```mermaid
 erDiagram
 
+    CONDOMINIUM ||--o{ USER : possui
     CONDOMINIUM ||--o{ BLOCK : possui
     CONDOMINIUM ||--o{ COMMON_AREA : possui
 
@@ -181,6 +185,7 @@ erDiagram
     UNIT ||--o{ RESIDENT : abriga
 
     USER ||--|| RESIDENT : representa
+    USER ||--o{ RESERVATION_APPROVAL : realiza
     RESIDENT ||--o{ RESERVATION : realiza
 
     COMMON_AREA ||--o{ RESERVATION : é_reservada
@@ -193,6 +198,7 @@ erDiagram
         string passwordHash
         string provider
         string role
+        string condominiumId FK
         boolean isActive
         datetime createdAt
         datetime updatedAt
@@ -252,6 +258,8 @@ erDiagram
         datetime endTime
         string status
         string notes
+        string cancelledBy FK
+        datetime cancelledAt
         datetime createdAt
         datetime updatedAt
     }
@@ -285,43 +293,33 @@ Utilizado no processo de autenticação de usuários.
 
 ---
 
-### 👤 CreateUserDTO
-Utilizado para criação de uma conta de acesso no sistema.
+### 🏢 RegisterTenantDTO (Self-Service Onboarding)
+Utilizado na rota pública `/auth/register` incial. Cria o Condomínio e o Administrador raiz simultaneamente em uma única transação no banco (ACID).
+
+```ts
+{
+  condominiumName: string;
+  condominiumAddress: string;
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
+}
+```
+
+---
+
+### 👤 CreateResidentUserDTO
+Utilizado pelo Administrador na rota restrita para "cadastrar" um morador em seu condomínio. O backend forçará o `condominiumId` do Admin logado nesta operação.
 
 ```ts
 {
   name: string;
   email: string;
-  password: string;
-  role: 'ADMIN' | 'RESIDENT';
-  provider?: 'LOCAL' | 'GOOGLE';
-}
-```
-
----
-
-### 👤 CreateResidentDTO
-Utilizado para cadastro do perfil de morador vinculado a uma unidade.
-
-```ts
-{
-  userId: string;
+  password?: string; // Opcional: pode ser gerada aleatoriamente
   unitId: string;
   document?: string;
   phone?: string;
   canBook: boolean;
-}
-```
-
----
-
-### 🏢 CreateCondominiumDTO
-Utilizado para cadastro de condomínios.
-
-```ts
-{
-  name: string;
-  address: string;
 }
 ```
 
@@ -498,7 +496,7 @@ A API será organizada nos seguintes grupos funcionais:
 
 #### **Auth**
 - `POST /auth/login`
-- `POST /auth/register`
+- `POST /auth/register` (Exclusiva para registrar Condomínio + Admin via `RegisterTenantDTO`)
 
 #### **Users**
 - `GET /users`
@@ -537,7 +535,7 @@ A API será organizada nos seguintes grupos funcionais:
 - `POST /reservations`
 - `GET /reservations`
 - `GET /reservations/:id`
-- `DELETE /reservations/:id`
+- `PATCH /reservations/:id/cancel`
 
 #### **Reservation Approvals**
 - `POST /reservation-approvals`
@@ -593,12 +591,15 @@ A API será organizada nos seguintes grupos funcionais:
 
 As regras de negócio abaixo representam comportamentos que deverão ser garantidos pela camada de serviço da aplicação.
 
-- Verificar conflito de horário antes da criação de qualquer reserva.
-- Impedir reservas para áreas comuns inativas ou indisponíveis.
-- Validar se o morador possui permissão ativa para reservar.
-- Permitir cancelamento apenas ao autor da reserva ou a administradores.
+- O isolamento de dados (Tenant) deve ser aplicado via `condominiumId` em TODAS as listagens e criações (injetado automaticamente pelo JWT da requisição).
+- **Cadastro Fechado para Moradores:** A rota pública `/auth/register` é exclusiva para Síndicos criarem novos condomínios de forma autônoma. Moradores são cadastrados por rotas autenticadas, exclusivamente sob intermédio de um Administrador.
+- O perfil `SUPER_ADMIN` (apesar de existir no banco) atua de forma "headless" neste MVP, sem telas exclusivas para não gerar fuga de escopo (útil apenas para intervenção via DB/terminal).
+- Verificar conflito de horário (exclusividade) antes da reserva da área comum.
+- Impedir reservas para áreas inativas.
+- Validar se o morador possui `canBook = true`.
+- Permitir Soft Cancel ao autor da reserva ou administradores, preenchendo as colunas de auditoria na tabela.
 - Criar reservas com status `PENDING` quando a área exigir aprovação.
 - Criar reservas com status `APPROVED` automaticamente quando a área não exigir aprovação.
-- Permitir aprovação ou rejeição apenas por usuários administradores.
-- Registrar histórico de aprovação para fins de rastreabilidade.
-- Garantir integridade entre usuário, morador, unidade e condomínio.
+- Permitir aprovação ou rejeição apenas por administradores do mesmo condomínio.
+- Registrar histórico de aprovação e cancelamentos para fins de rastreabilidade.
+- Garantir a integridade do escopo do condomínio entre usuário, morador, unidade e área comum.
