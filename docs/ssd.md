@@ -3,7 +3,7 @@
 **Projeto:** Reserva Aí! (Gestão de Condomínios e Áreas Comuns)
 **Versão:** 2.0.0
 **Status:** 🟢 Pronto para Implementação
-**Stack Principal:** NestJS, React, Prisma ORM, PostgreSQL.
+**Stack Principal:** NestJS, VueJS, Prisma ORM, PostgreSQL.
 
 ---
 
@@ -12,7 +12,7 @@
 O projeto utiliza uma arquitetura de Monorepo.
 
 * **`apps/api`**: Backend (NestJS) → `Module` → `Controller` → `Service` → `Prisma`
-* **`apps/web`**: Frontend (React)
+* **`apps/web`**: Frontend (VueJS)
 * **`apps/extension`**: (Opcional futuro)
 
 ---
@@ -52,8 +52,9 @@ Representa a conta de acesso ao sistema. É a entidade responsável pela autenti
 | `email` | VARCHAR(150) | Sim | E-mail único utilizado para login no sistema. |
 | `passwordHash` | VARCHAR(255) | Não | Senha criptografada do usuário (caso o login seja local). |
 | `provider` | ENUM | Sim | Provedor de autenticação (`LOCAL`, `GOOGLE`). |
-| `role` | ENUM | Sim | Perfil de acesso do usuário (`ADMIN`, `RESIDENT`). |
-| `isActive` | BOOLEAN | Sim | Indica se a conta está ativa. |
+| `role` | ENUM | Sim | Perfil de acesso do usuário (`SUPER_ADMIN`, `ADMIN`, `RESIDENT`). |
+| `condominiumId` | UUID | Não | Referência ao condomínio. (Pode ser nulo caso o usuário seja um `SUPER_ADMIN`). |
+| `isActive` | BOOLEAN | Sim | Indica se a conta está ativa (usado para inativação/pausa pelo Super Admin). |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
 
@@ -68,6 +69,7 @@ Representa o condomínio onde o sistema será utilizado. Um condomínio agrupa b
 | `id` | UUID | Sim | Identificador único do condomínio. |
 | `name` | VARCHAR(150) | Sim | Nome do condomínio. |
 | `address` | VARCHAR(255) | Sim | Endereço principal do condomínio. |
+| `timezone` | VARCHAR(50) | Sim | Fuso horário do condomínio (ex: America/Sao_Paulo). |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
 
@@ -128,6 +130,9 @@ Representa uma área comum disponível para uso no condomínio, como salão de f
 | `name` | VARCHAR(120) | Sim | Nome da área comum. |
 | `description` | TEXT | Não | Descrição complementar da área. |
 | `capacity` | INT | Não | Capacidade máxima de pessoas permitidas. |
+| `openTime` | VARCHAR(5) | Sim | Horário de abertura (HH:MM). |
+| `closeTime` | VARCHAR(5) | Sim | Horário de fechamento (HH:MM). |
+| `operatingDays` | JSON | Não | Dias da semana operacionais (ex: [1,2,3,4,5,6,0]). |
 | `requiresApproval` | BOOLEAN | Sim | Indica se a reserva exige aprovação administrativa. |
 | `condominiumId` | UUID | Sim | Referência ao condomínio ao qual a área pertence. |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
@@ -148,6 +153,8 @@ Representa uma solicitação ou agendamento de uso de uma área comum por um mor
 | `endTime` | DATETIME | Sim | Data e hora de término da reserva. |
 | `status` | ENUM | Sim | Status da reserva (`PENDING`, `APPROVED`, `REJECTED`, `CANCELED`). |
 | `notes` | TEXT | Não | Observações adicionais da reserva. |
+| `canceledById` | UUID | Não | Referência ao usuário (Admin ou Morador) que cancelou a reserva. |
+| `canceledAt` | DATETIME | Não | Data e hora em que a reserva foi cancelada. |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
 
@@ -173,6 +180,7 @@ Representa o histórico de aprovação ou rejeição de reservas que exigem vali
 ```mermaid
 erDiagram
 
+    CONDOMINIUM |o--o{ USER : possui
     CONDOMINIUM ||--o{ BLOCK : possui
     CONDOMINIUM ||--o{ COMMON_AREA : possui
 
@@ -180,10 +188,12 @@ erDiagram
 
     UNIT ||--o{ RESIDENT : abriga
 
-    USER ||--|| RESIDENT : representa
+    USER ||--|o RESIDENT : representa
+    USER ||--o{ RESERVATION_APPROVAL : avalia
+    USER ||--o{ RESERVATION : registra_cancelamento
     RESIDENT ||--o{ RESERVATION : realiza
 
-    COMMON_AREA ||--o{ RESERVATION : é_reservada
+    COMMON_AREA ||--o{ RESERVATION : e_reservada
     RESERVATION ||--o{ RESERVATION_APPROVAL : possui
 
     USER {
@@ -193,6 +203,7 @@ erDiagram
         string passwordHash
         string provider
         string role
+        string condominiumId FK
         boolean isActive
         datetime createdAt
         datetime updatedAt
@@ -202,13 +213,14 @@ erDiagram
         string id PK
         string name
         string address
+        string timezone
         datetime createdAt
         datetime updatedAt
     }
 
     BLOCK {
         string id PK
-        string name
+        string name UK
         string condominiumId FK
         datetime createdAt
         datetime updatedAt
@@ -216,7 +228,7 @@ erDiagram
 
     UNIT {
         string id PK
-        string number
+        string number UK
         string blockId FK
         datetime createdAt
         datetime updatedAt
@@ -224,7 +236,7 @@ erDiagram
 
     RESIDENT {
         string id PK
-        string userId FK
+        string userId FK "UK"
         string unitId FK
         string document
         string phone
@@ -238,6 +250,9 @@ erDiagram
         string name
         string description
         int capacity
+        string openTime
+        string closeTime
+        string operatingDays
         boolean requiresApproval
         string condominiumId FK
         datetime createdAt
@@ -252,6 +267,8 @@ erDiagram
         datetime endTime
         string status
         string notes
+        string canceledById FK
+        datetime canceledAt
         datetime createdAt
         datetime updatedAt
     }
@@ -285,43 +302,33 @@ Utilizado no processo de autenticação de usuários.
 
 ---
 
-### 👤 CreateUserDTO
-Utilizado para criação de uma conta de acesso no sistema.
+### 🏢 RegisterTenantDTO (Self-Service Onboarding)
+Utilizado na rota pública `/auth/register` incial. Cria o Condomínio e o Administrador raiz simultaneamente em uma única transação no banco (ACID).
+
+```ts
+{
+  condominiumName: string;
+  condominiumAddress: string;
+  adminName: string;
+  adminEmail: string;
+  adminPassword: string;
+}
+```
+
+---
+
+### 👤 CreateResidentUserDTO
+Utilizado pelo Administrador na rota restrita para "cadastrar" um morador em seu condomínio. O backend forçará o `condominiumId` do Admin logado nesta operação.
 
 ```ts
 {
   name: string;
   email: string;
-  password: string;
-  role: 'ADMIN' | 'RESIDENT';
-  provider?: 'LOCAL' | 'GOOGLE';
-}
-```
-
----
-
-### 👤 CreateResidentDTO
-Utilizado para cadastro do perfil de morador vinculado a uma unidade.
-
-```ts
-{
-  userId: string;
+  password?: string; // Opcional: pode ser gerada aleatoriamente
   unitId: string;
   document?: string;
   phone?: string;
   canBook: boolean;
-}
-```
-
----
-
-### 🏢 CreateCondominiumDTO
-Utilizado para cadastro de condomínios.
-
-```ts
-{
-  name: string;
-  address: string;
 }
 ```
 
@@ -498,7 +505,7 @@ A API será organizada nos seguintes grupos funcionais:
 
 #### **Auth**
 - `POST /auth/login`
-- `POST /auth/register`
+- `POST /auth/register` (Exclusiva para registrar Condomínio + Admin via `RegisterTenantDTO`)
 
 #### **Users**
 - `GET /users`
@@ -531,13 +538,14 @@ A API será organizada nos seguintes grupos funcionais:
 - `POST /common-areas`
 - `GET /common-areas`
 - `GET /common-areas/:id`
+- `GET /common-areas/:id/availability` (Filtra horários de funcionamento contra reservas existentes para descobrir slots livres num `?date=YYYY-MM-DD`)
 - `PATCH /common-areas/:id`
 
 #### **Reservations**
 - `POST /reservations`
 - `GET /reservations`
 - `GET /reservations/:id`
-- `DELETE /reservations/:id`
+- `PATCH /reservations/:id/cancel`
 
 #### **Reservation Approvals**
 - `POST /reservation-approvals`
@@ -593,12 +601,15 @@ A API será organizada nos seguintes grupos funcionais:
 
 As regras de negócio abaixo representam comportamentos que deverão ser garantidos pela camada de serviço da aplicação.
 
-- Verificar conflito de horário antes da criação de qualquer reserva.
-- Impedir reservas para áreas comuns inativas ou indisponíveis.
-- Validar se o morador possui permissão ativa para reservar.
-- Permitir cancelamento apenas ao autor da reserva ou a administradores.
+- O isolamento de dados (Tenant) deve ser aplicado via `condominiumId` em TODAS as listagens e criações (injetado automaticamente pelo JWT da requisição).
+- **Cadastro Fechado para Moradores:** A rota pública `/auth/register` é exclusiva para Síndicos criarem novos condomínios de forma autônoma. Moradores são cadastrados por rotas autenticadas, exclusivamente sob intermédio de um Administrador.
+- O perfil `SUPER_ADMIN` (apesar de existir no banco) atua de forma "headless" neste MVP, sem telas exclusivas para não gerar fuga de escopo (útil apenas para intervenção via DB/terminal).
+- Verificar conflito de horário (exclusividade) antes da reserva da área comum.
+- Impedir reservas para áreas inativas.
+- Validar se o morador possui `canBook = true`.
+- Permitir Soft Cancel ao autor da reserva ou administradores, preenchendo as colunas de auditoria na tabela.
 - Criar reservas com status `PENDING` quando a área exigir aprovação.
 - Criar reservas com status `APPROVED` automaticamente quando a área não exigir aprovação.
-- Permitir aprovação ou rejeição apenas por usuários administradores.
-- Registrar histórico de aprovação para fins de rastreabilidade.
-- Garantir integridade entre usuário, morador, unidade e condomínio.
+- Permitir aprovação ou rejeição apenas por administradores do mesmo condomínio.
+- Registrar histórico de aprovação e cancelamentos para fins de rastreabilidade.
+- Garantir a integridade do escopo do condomínio entre usuário, morador, unidade e área comum.
