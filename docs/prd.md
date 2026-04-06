@@ -82,8 +82,8 @@ O objetivo é fornecer uma plataforma web moderna, com autenticação segura, co
 
 ## 🛠️ 8. Tech Stack Principal (Diretrizes)
 
-* **Backend:** NestJS + Prisma ORM + PostgreSQL
-* **Frontend:** React
+* **Backend:** NestJS (v11.0.1) + Prisma ORM (v7.6.0) + PostgreSQL via Neon (v16)
+* **Frontend:** Vue.js (v3.5.30)
 * **Monorepo:** Turborepo / Nx
 * **CI/CD:**  GitHub Actions (Pipelines de Teste) + Deploy na Nuvem (Render/Vercel).
 

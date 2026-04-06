@@ -28,8 +28,10 @@ O projeto utiliza uma arquitetura de Monorepo.
 
 ## 📦 3. Stack Tecnológica
 
-* **Backend:** NestJS 10+
-* **ORM:** Prisma (PostgreSQL) - Interface oficial com o banco de dados.
+* **Backend:** NestJS (v11.0.1)
+* **Frontend:** Vue.js (v3.5.30)
+* **Banco de Dados (DBaaS):** Neon PostgreSQL (v16)
+* **ORM:** Prisma (v7.6.0)
 * **Auth:** Passport.js + JWT (JSON Web Tokens) para sessões seguras.
 * **Documentação:** `@nestjs/swagger` (OpenAPI 3.0 para ID12).
 * **Validação:** class-validator + class-transformer
