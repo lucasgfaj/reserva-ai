@@ -4,10 +4,171 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  RESIDENT
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+}
+
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELED
+}
+
+// CONDOMINIUM
+model Condominium {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @db.VarChar(150)
+  address   String   @db.VarChar(255)
+  timezone  String   @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users       User[]
+  blocks      Block[]
+  commonAreas CommonArea[]
+
+  @@map("condominiums")
+}
+
+// USER
+model User {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @db.VarChar(120)
+  email         String   @unique @db.VarChar(150)
+  passwordHash  String?  @db.VarChar(255)
+  provider      Provider
+  role          Role
+  condominiumId String?  @db.Uuid
+  isActive      Boolean
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  condominium Condominium? @relation(fields: [condominiumId], references: [id])
+  resident    Resident?
+
+  approvedReservations ReservationApproval[]
+  canceledReservations Reservation[]         @relation("CanceledReservations")
+
+  @@map("users")
+}
+
+// BLOCK
+model Block {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @unique @db.VarChar(50)
+  condominiumId String   @db.Uuid
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  condominium Condominium @relation(fields: [condominiumId], references: [id])
+  units       Unit[]
+
+  @@map("blocks")
+}
+
+// UNIT
+model Unit {
+  id        String   @id @default(uuid()) @db.Uuid
+  number    String   @unique @db.VarChar(20)
+  blockId   String   @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  block     Block      @relation(fields: [blockId], references: [id])
+  residents Resident[]
+
+  @@map("units")
+}
+
+// RESIDENT
+model Resident {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid // One-to-one with User
+  unitId    String   @db.Uuid
+  document  String?  @db.VarChar(20)
+  phone     String?  @db.VarChar(20)
+  canBook   Boolean
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+  unit Unit @relation(fields: [unitId], references: [id])
+
+  reservations Reservation[]
+
+  @@map("residents")
+}
+
+// COMMON_AREA
+model CommonArea {
+  id               String   @id @default(uuid()) @db.Uuid
+  name             String   @db.VarChar(120)
+  description      String?  @db.Text
+  capacity         Int?
+  openTime         String   @db.VarChar(5)
+  closeTime        String   @db.VarChar(5)
+  operatingDays    Json?
+  requiresApproval Boolean
+  condominiumId    String   @db.Uuid
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  condominium  Condominium   @relation(fields: [condominiumId], references: [id])
+  reservations Reservation[]
+
+  @@map("common_areas")
+}
+
+// RESERVATION
+model Reservation {
+  id           String            @id @default(uuid()) @db.Uuid
+  residentId   String            @db.Uuid
+  commonAreaId String            @db.Uuid
+  startTime    DateTime
+  endTime      DateTime
+  status       ReservationStatus
+  notes        String?           @db.Text
+  canceledById String?           @db.Uuid
+  canceledAt   DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  resident   Resident   @relation(fields: [residentId], references: [id])
+  commonArea CommonArea @relation(fields: [commonAreaId], references: [id])
+  canceledBy User?      @relation("CanceledReservations", fields: [canceledById], references: [id])
+
+  approvals ReservationApproval[]
+
+  @@map("reservations")
+}
+
+// RESERVATION_APPROVAL
+model ReservationApproval {
+  id            String            @id @default(uuid()) @db.Uuid
+  reservationId String            @db.Uuid
+  approvedBy    String            @db.Uuid
+  approvedAt    DateTime
+  status        ReservationStatus
+  comment       String?           @db.Text
+
+  reservation Reservation @relation(fields: [reservationId], references: [id])
+  approver    User        @relation(fields: [approvedBy], references: [id])
+
+  @@map("reservation_approvals")
 }
