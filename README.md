@@ -1,5 +1,13 @@
 # 🏢 Reserva Ai!
 
+## 🚀 Status do Sistema
+
+- **Develop (Laboratório)**  
+  [![CI](https://github.com/lucasgfaj/reserva-ai/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/lucasgfaj/reserva-ai/actions/workflows/ci.yml)
+
+- **Main (Produção)**  
+  [![CI](https://github.com/lucasgfaj/reserva-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lucasgfaj/reserva-ai/actions/workflows/ci.yml)
+
 🔗 **Link em Produção:** [Aguardando Deploy na Nuvem]
 👨‍💻 **Autores:** [Lucas Fajardo]
 
