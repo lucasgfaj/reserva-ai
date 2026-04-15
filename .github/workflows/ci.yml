@@ -4,7 +4,9 @@ name: CI - Validação do Monorepo
 on:
   pull_request:
     branches: [ "develop", "main" ]
-
+  push:
+    branches: [ "develop", "main" ] # <-- Captura o Merge final para validação!
+    
 # 2. O que ele deve fazer?
 jobs:
   testagem-automatica:
