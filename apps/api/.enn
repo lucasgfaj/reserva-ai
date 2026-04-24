@@ -1,5 +1,0 @@
-# Local Development Database (Docker)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/reserva_ai_db?schema=public"
-
-# Neon Database (Production/Staging)
-# DATABASE_URL="postgresql://user:password@endpoint.neon.tech/neondb?sslmode=require"
