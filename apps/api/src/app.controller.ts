@@ -6,7 +6,14 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  getHello() {
+    return {
+      project: 'Reserva Aí! API',
+      version: '1.0.0',
+      status: 'Online',
+      documentation: '/api/v1/docs',
+      message: 'Bem-vindo ao núcleo de gestão inteligente do Reserva Aí!',
+      timestamp: new Date().toISOString()
+    };
   }
 }
