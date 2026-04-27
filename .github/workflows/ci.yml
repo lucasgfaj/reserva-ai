@@ -50,9 +50,17 @@ jobs:
         run: |
           npm run prisma:generate -w apps/api
           npm run prisma:deploy -w apps/api
+          # Limpar banco de teste para garantir testes limpos
+          npx prisma db execute --stdin <<< 'TRUNCATE TABLE users CASCADE; TRUNCATE TABLE condominiums CASCADE;' -w apps/api || true
 
       # O comando de teste usa a flag -w para testar a API diretamente pela raiz
-      - name: 🔍 Rodar Testes (Backend)
+      - name: 🔍 Rodar Testes Unitários
         env:
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/reserva_ai_db_test?schema=public"
         run: npm run test -w apps/api
+
+      # E2E tests precisam de banco com migrations
+      - name: 🔍 Rodar Testes E2E
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/reserva_ai_db_test?schema=public"
+        run: npm run test:e2e -w apps/api

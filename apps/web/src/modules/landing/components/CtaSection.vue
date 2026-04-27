@@ -12,9 +12,9 @@
       </p>
       
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-        <button class="w-full sm:w-auto px-10 py-4 bg-sky-900 dark:bg-sky-700 text-white font-manrope font-bold text-lg rounded-2xl shadow-xl shadow-sky-900/20 active:scale-95 transition-transform">
+        <router-link to="/register" class="w-full sm:w-auto px-10 py-4 bg-sky-900 dark:bg-sky-700 text-white font-manrope font-bold text-lg rounded-2xl shadow-xl shadow-sky-900/20 active:scale-95 transition-transform flex justify-center items-center">
           Começar Teste Grátis
-        </button>
+        </router-link>
         <button class="w-full sm:w-auto px-10 py-4 bg-white dark:bg-slate-800 text-sky-900 dark:text-sky-300 font-manrope font-bold text-lg rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
           Falar com Consultor
         </button>
