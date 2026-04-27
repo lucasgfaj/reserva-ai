@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
-import * as request from 'supertest';
+import { PrismaService } from '../src/prisma/prisma.service';
+import request from 'supertest';
 
 describe('AuthController (e2e)', () => {
   let app: INestApplication;
+  let prisma: PrismaService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -21,6 +23,8 @@ describe('AuthController (e2e)', () => {
       }),
     );
     await app.init();
+
+    prisma = app.get<PrismaService>(PrismaService);
   });
 
   afterAll(async () => {
@@ -28,13 +32,47 @@ describe('AuthController (e2e)', () => {
   });
 
   describe('/api/v1/auth/register (POST)', () => {
+    const uniqueEmail = `admin${Date.now()}@reservaai.com.br`;
+    const uniqueCondo = `Residencial ${Date.now()}`;
+
     const validPayload = {
-      condominiumName: 'Residencial Horizonte',
+      condominiumName: uniqueCondo,
       condominiumAddress: 'Rua das Flores, 123',
       adminName: 'Lucas Admin',
-      adminEmail: `admin${Date.now()}@reservaai.com.br`,
-      adminPassword: 'SenhaSegura123',
+      adminEmail: uniqueEmail,
+      adminPassword: 'Senha123!',
     };
+
+    afterAll(async () => {
+      try {
+        await prisma.$transaction([
+          prisma.reservationApproval.deleteMany({
+            where: { approver: { email: uniqueEmail } },
+          }),
+          prisma.reservation.deleteMany({
+            where: { commonArea: { condominium: { name: uniqueCondo } } },
+          }),
+          prisma.commonArea.deleteMany({
+            where: { condominium: { name: uniqueCondo } },
+          }),
+          prisma.resident.deleteMany({
+            where: { user: { email: uniqueEmail } },
+          }),
+          prisma.unit.deleteMany({
+            where: { block: { condominium: { name: uniqueCondo } } },
+          }),
+          prisma.block.deleteMany({
+            where: { condominium: { name: uniqueCondo } },
+          }),
+          prisma.user.deleteMany({
+            where: { email: uniqueEmail },
+          }),
+          prisma.condominium.deleteMany({
+            where: { name: uniqueCondo },
+          }),
+        ]);
+      } catch (e) {}
+    });
 
     it('should return 201 when creating valid tenant and admin', () => {
       return request(app.getHttpServer())
@@ -66,6 +104,20 @@ describe('AuthController (e2e)', () => {
       return request(app.getHttpServer())
         .post('/api/v1/auth/register')
         .send({ ...validPayload, adminPassword: '123' })
+        .expect(400);
+    });
+
+    it('should return 400 when adminPassword missing special char', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({ ...validPayload, adminPassword: 'Senha123' })
+        .expect(400);
+    });
+
+    it('should return 400 when adminPassword missing number', () => {
+      return request(app.getHttpServer())
+        .post('/api/v1/auth/register')
+        .send({ ...validPayload, adminPassword: 'Senha!@#$' })
         .expect(400);
     });
   });

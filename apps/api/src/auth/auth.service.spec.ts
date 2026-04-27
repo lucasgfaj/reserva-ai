@@ -38,7 +38,7 @@ describe('AuthService', () => {
     condominiumAddress: 'Rua das Flores, 123',
     adminName: 'Lucas Admin',
     adminEmail: 'admin@reservaai.com.br',
-    adminPassword: 'SenhaSegura123',
+    adminPassword: 'Senha123!',
   };
 
   beforeEach(async () => {
