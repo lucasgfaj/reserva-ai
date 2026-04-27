@@ -80,7 +80,7 @@ describe('AuthController (e2e)', () => {
         .send(validPayload)
         .expect(201)
         .expect((res) => {
-          expect(res.body).toHaveProperty('access_token');
+          expect(res.body).toHaveProperty('accessToken');
           expect(res.body.user).toHaveProperty('email', validPayload.adminEmail);
           expect(res.body.condominium).toHaveProperty('name', validPayload.condominiumName);
         });

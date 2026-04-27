@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { RegisterTenantDto } from './dto/register-tenant.dto';
+import { RegisterTenantInput } from './interfaces/auth.interface';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let service: AuthService;
 
   const mockRegisterResult = {
-    access_token: 'mock-jwt-token',
+    accessToken: 'mock-jwt-token',
     user: {
       id: 'user-id',
       name: 'Lucas Admin',
@@ -21,7 +21,7 @@ describe('AuthController', () => {
     },
   };
 
-  const registerDto: RegisterTenantDto = {
+  const registerInput: RegisterTenantInput = {
     condominiumName: 'Residencial Horizonte',
     condominiumAddress: 'Rua das Flores, 123',
     adminName: 'Lucas Admin',
@@ -51,20 +51,20 @@ describe('AuthController', () => {
 
   describe('register', () => {
     it('should call AuthService.registerTenant with correct data', async () => {
-      const result = await controller.register(registerDto);
+      const result = await controller.register(registerInput);
 
-      expect(service.registerTenant).toHaveBeenCalledWith(registerDto);
+      expect(service.registerTenant).toHaveBeenCalledWith(registerInput);
       expect(result).toEqual(mockRegisterResult);
     });
 
-    it('should return access_token, user, and condominium', async () => {
-      const result = await controller.register(registerDto);
+    it('should return accessToken, user, and condominium', async () => {
+      const result = await controller.register(registerInput);
 
-      expect(result).toHaveProperty('access_token');
+      expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('condominium');
-      expect(result.user.email).toBe(registerDto.adminEmail);
-      expect(result.condominium.name).toBe(registerDto.condominiumName);
+      expect(result.user.email).toBe(registerInput.adminEmail);
+      expect(result.condominium.name).toBe(registerInput.condominiumName);
     });
   });
 });

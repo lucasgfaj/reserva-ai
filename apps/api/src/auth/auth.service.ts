@@ -1,40 +1,48 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterTenantDto } from './dto/register-tenant.dto';
+import { RegisterTenantInput, RegisterTenantOutput, AuthPayload } from './interfaces/auth.interface';
+import { RegisterTenantValidator, ValidationResult } from './validators/register-tenant.validator';
 import { Provider, Role } from '@prisma/client';
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly validator: RegisterTenantValidator,
   ) { }
 
-  async registerTenant(data: RegisterTenantDto) {
+  async registerTenant(input: RegisterTenantInput): Promise<RegisterTenantOutput> {
+    const validation = this.validator.validate(input);
+    if (!validation.isValid) {
+      throw new BadRequestException(validation.errors);
+    }
+
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: data.adminEmail },
+      where: { email: input.adminEmail },
     });
 
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(data.adminPassword, 10);
+    const hashedPassword = await bcrypt.hash(input.adminPassword, 10);
 
     const transactionResult = await this.prisma.$transaction(async (prisma) => {
       const condominium = await prisma.condominium.create({
         data: {
-          name: data.condominiumName,
-          address: data.condominiumAddress,
+          name: input.condominiumName,
+          address: input.condominiumAddress,
           timezone: 'America/Sao_Paulo',
         },
       });
 
       const admin = await prisma.user.create({
         data: {
-          name: data.adminName,
-          email: data.adminEmail,
+          name: input.adminName,
+          email: input.adminEmail,
           passwordHash: hashedPassword,
           provider: Provider.LOCAL,
           role: Role.ADMIN,
@@ -46,15 +54,15 @@ export class AuthService {
       return { condominium, admin };
     });
 
-    const payload = {
+    const payload: AuthPayload = {
       sub: transactionResult.admin.id,
       email: transactionResult.admin.email,
       role: transactionResult.admin.role,
-      condominiumId: transactionResult.admin.condominiumId
+      condominiumId: transactionResult.admin.condominiumId ?? ''
     };
 
     return {
-      access_token: await this.jwtService.signAsync(payload),
+      accessToken: await this.jwtService.signAsync(payload),
       user: {
         id: transactionResult.admin.id,
         name: transactionResult.admin.name,

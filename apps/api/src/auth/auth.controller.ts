@@ -1,5 +1,5 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { RegisterTenantDto } from './dto/register-tenant.dto';
+import type { RegisterTenantInput, RegisterTenantOutput } from './interfaces/auth.interface';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -31,7 +31,7 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'Condomínio e Admin criados com sucesso.' })
   @ApiResponse({ status: 400, description: 'Dados de entrada inválidos.' })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
-  async register(@Body() registerTenantDto: RegisterTenantDto) {
-    return this.authService.registerTenant(registerTenantDto);
+  async register(@Body() input: RegisterTenantInput): Promise<RegisterTenantOutput> {
+    return this.authService.registerTenant(input);
   }
 }
