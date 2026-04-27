@@ -108,7 +108,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import AuthInput from './AuthInput.vue'
-import type { RegisterTenantDTO } from '../../landing/landing.api'
+import type { RegisterTenantDTO } from '../services/dtos/register-tenant.dto'
 
 const props = defineProps<{
   currentStep: number
@@ -116,7 +116,7 @@ const props = defineProps<{
   errorMsg?: string
 }>()
 
-const emit = defineEmits(['submit', 'next-step', 'update:currentStep'])
+const emit = defineEmits(['submit', 'next-step', 'update:currentStep', 'submit-error'])
 
 const showPassword = ref(false)
 

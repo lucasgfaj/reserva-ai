@@ -25,6 +25,7 @@
         :is-loading="isLoading"
         :error-msg="errorMsg"
         @submit="handleRegister"
+        @submit-error="errorMsg = $event"
       />
     </div>
 
@@ -41,7 +42,8 @@ import AuthPageHeader from '../components/AuthPageHeader.vue'
 import RegisterProgress from '../components/RegisterProgress.vue'
 import AuthFooterBadges from '../components/AuthFooterBadges.vue'
 import RegisterForm from '../components/RegisterForm.vue'
-import type { RegisterTenantDTO } from '../../landing/landing.api'
+import { authService } from '../services/auth.service'
+import type { RegisterTenantDTO } from '../services/dtos/register-tenant.dto'
 
 const router = useRouter()
 const isLoading = ref(false)
@@ -66,17 +68,18 @@ const authFeatures = [
   }
 ]
 
-const handleRegister = (formData: RegisterTenantDTO) => {
+const handleRegister = async (formData: RegisterTenantDTO) => {
   isLoading.value = true
   errorMsg.value = ''
-  
-  console.log('Registering with:', formData)
-  
-  // Simular registro
-  setTimeout(() => {
+
+  try {
+    await authService.registerTenant(formData)
+    router.push('/dashboard')
+  } catch (error: any) {
+    errorMsg.value = error.response?.data?.message || 'Erro ao criar conta. Tente novamente.'
+  } finally {
     isLoading.value = false
-    router.push('/login')
-  }, 2000)
+  }
 }
 </script>
 

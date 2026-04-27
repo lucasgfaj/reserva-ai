@@ -14,6 +14,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  app.enableCors({
+    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('🚀 Reserva Aí! - API de Gestão Inteligente')

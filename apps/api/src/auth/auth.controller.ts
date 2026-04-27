@@ -9,7 +9,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Post('register')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Registra um novo condomínio e seu administrador raiz (US01)',
     description: `
       Cria de forma atômica o condomínio e o usuário administrador vinculado.

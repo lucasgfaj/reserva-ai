@@ -60,12 +60,11 @@ const authFeatures = [
   }
 ]
 
-const handleLogin = async () => {
+const handleLogin = async (credentials: { email: string; password: string }) => {
   isLoading.value = true
-  // Mock login for now
+  console.log('Login attempt:', credentials.email)
   setTimeout(() => {
     isLoading.value = false
-    console.log('Login attempt:', email.value)
   }, 1500)
 }
 </script>
