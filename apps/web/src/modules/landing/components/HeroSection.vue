@@ -12,9 +12,9 @@
           Elimine conflitos de agenda, automatize reservas e ofereça uma experiência de concierge digital para seus moradores com a plataforma mais intuitiva do mercado.
         </p>
         <div class="flex flex-wrap gap-4">
-          <a href="#register" class="px-8 py-4 bg-sky-900 dark:bg-sky-700 text-white font-manrope font-bold text-lg rounded-xl shadow-xl shadow-sky-900/20 active:scale-95 transition-transform flex items-center gap-2">
+          <router-link to="/register" class="px-8 py-4 bg-sky-900 dark:bg-sky-700 text-white font-manrope font-bold text-lg rounded-xl shadow-xl shadow-sky-900/20 active:scale-95 transition-transform flex items-center gap-2">
             Começar agora <span class="material-symbols-outlined">arrow_forward</span>
-          </a>
+          </router-link>
           <button class="px-8 py-4 bg-white dark:bg-slate-800 text-sky-900 dark:text-sky-300 font-manrope font-bold text-lg rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
             Ver demonstração
           </button>

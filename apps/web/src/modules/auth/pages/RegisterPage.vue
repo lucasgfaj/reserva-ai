@@ -2,29 +2,33 @@
   <AuthLayout>
     <template #sidebar>
       <AuthSidebar 
-        title="Gestão inteligente para uma vida tranquila."
+        title="Gestão inteligente para condomínios que valorizam o tempo."
         bgImage="https://lh3.googleusercontent.com/aida-public/AB6AXuD2oBoJEAucouoQfLF_ao7I9Jgkb5v_tmeFA51CEUMouhr_1OjdDWhoU59n2vg-tpHbKTaNHfZkqPVlYX2xHGmfxzop8BNpSksBOZsP6rPD_qGtbw7aODiiTlz6hbbNWFDqgd4f0Z5yGkT3I0TNa-y5_szNqvHSpzSfnnxEQT5MyZcx43D-p049f_QzU19fPQ0Dob4bXbIwv2D5Ln_LoydRIaAObHP9OxSBzEB2P1l0gTo6hVU7_RTAk50Jj3ESaRqekihux9MrUewe"
         :features="authFeatures"
       />
     </template>
 
+    <RegisterProgress 
+      :current="currentStep" 
+      :total="2" 
+      :progress="currentStep === 1 ? 50 : 100" 
+    />
+
     <AuthPageHeader 
-      title="Bem-vindo de volta"
-      description="Acesse o seu portal do condomínio"
+      :title="currentStep === 1 ? 'Crie sua conta' : 'Dados do prédio'"
+      :description="currentStep === 1 ? 'Dados do administrador do sistema' : 'Onde o Reserva Aí! será instalado'"
     />
 
     <div class="space-y-8">
-      <LoginForm 
-        :is-loading="isLoading" 
-        @submit="handleLogin" 
+      <RegisterForm 
+        v-model:currentStep="currentStep"
+        :is-loading="isLoading"
+        :error-msg="errorMsg"
+        @submit="handleRegister"
       />
-
-      <AuthDivider>Ou entre com seu e-mail</AuthDivider>
-
-      <AuthSocialButtons />
     </div>
 
-    <AuthSupportCards />
+    <AuthFooterBadges />
   </AuthLayout>
 </template>
 
@@ -34,13 +38,15 @@ import { useRouter } from 'vue-router'
 import AuthLayout from '../components/AuthLayout.vue'
 import AuthSidebar from '../components/AuthSidebar.vue'
 import AuthPageHeader from '../components/AuthPageHeader.vue'
-import AuthSocialButtons from '../components/AuthSocialButtons.vue'
-import AuthDivider from '../components/AuthDivider.vue'
-import AuthSupportCards from '../components/AuthSupportCards.vue'
-import LoginForm from '../components/LoginForm.vue'
+import RegisterProgress from '../components/RegisterProgress.vue'
+import AuthFooterBadges from '../components/AuthFooterBadges.vue'
+import RegisterForm from '../components/RegisterForm.vue'
+import type { RegisterTenantDTO } from '../../landing/landing.api'
 
 const router = useRouter()
 const isLoading = ref(false)
+const currentStep = ref(1)
+const errorMsg = ref('')
 
 const authFeatures = [
   {
@@ -60,13 +66,17 @@ const authFeatures = [
   }
 ]
 
-const handleLogin = async () => {
+const handleRegister = (formData: RegisterTenantDTO) => {
   isLoading.value = true
-  // Mock login for now
+  errorMsg.value = ''
+  
+  console.log('Registering with:', formData)
+  
+  // Simular registro
   setTimeout(() => {
     isLoading.value = false
-    console.log('Login attempt:', email.value)
-  }, 1500)
+    router.push('/login')
+  }, 2000)
 }
 </script>
 

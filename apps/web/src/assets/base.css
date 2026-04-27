@@ -1,21 +1,22 @@
 :root {
-  --color-primary: #10b981;
-  --color-primary-dark: #059669;
+  --color-primary: #004d75;
+  --color-primary-dark: #003652;
+  --color-primary-container: #006699;
   
-  --color-background: #0f172a;
-  --color-background-soft: #1e293b;
-  --color-background-mute: #334155;
+  --color-background: #f7f9fe;
+  --color-background-soft: #eceef3;
+  --color-background-mute: #d8dadf;
   
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-hover: rgba(255, 255, 255, 0.2);
+  --color-border: rgba(0, 77, 117, 0.1);
+  --color-border-hover: rgba(0, 77, 117, 0.2);
   
-  --color-heading: #f8fafc;
-  --color-text: #cbd5e1;
-  --color-text-muted: #94a3b8;
+  --color-heading: #191c1f;
+  --color-text: #40484f;
+  --color-text-muted: #707880;
   
-  --glass-bg: rgba(30, 41, 59, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 77, 117, 0.05);
+  --glass-shadow: 0 12px 40px rgba(0, 77, 117, 0.08);
 }
 
 *,
@@ -45,3 +46,32 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
 }
 
+
+.signature-gradient {
+  background: linear-gradient(135deg, #004d75 0%, #006699 100%);
+}
+
+.soft-input {
+  @apply w-full bg-surface-container-low border-0 border-b-2 border-outline-variant px-4 py-3 text-on-surface placeholder:text-outline focus:ring-0 focus:bg-surface-container-lowest focus:border-primary transition-all outline-none rounded-t-lg;
+}
+
+.shadow-premium {
+  box-shadow: 0 12px 40px rgba(0, 77, 117, 0.15);
+}
+
+.shadow-premium-hover {
+  box-shadow: 0 12px 40px rgba(0, 77, 117, 0.25);
+}
+
+.avatar {
+  @apply w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
