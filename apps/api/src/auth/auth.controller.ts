@@ -1,12 +1,17 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import type { RegisterTenantInput, RegisterTenantOutput } from './interfaces/auth.interface';
+import type {
+  RegisterTenantInput,
+  RegisterTenantOutput,
+  LoginOutput,
+} from './interfaces/auth.interface';
 import { AuthService } from './auth.service';
+import { LoginDto } from './dto/login.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Post('register')
   @ApiOperation({
@@ -26,12 +31,40 @@ export class AuthController {
           "condominiumAddress": "Rua das Flores, 123"
         }'
       \`\`\`
-    `
+    `,
   })
-  @ApiResponse({ status: 201, description: 'Condomínio e Admin criados com sucesso.' })
+  @ApiResponse({
+    status: 201,
+    description: 'Condomínio e Admin criados com sucesso.',
+  })
   @ApiResponse({ status: 400, description: 'Dados de entrada inválidos.' })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
-  async register(@Body() input: RegisterTenantInput): Promise<RegisterTenantOutput> {
+  async register(
+    @Body() input: RegisterTenantInput,
+  ): Promise<RegisterTenantOutput> {
     return this.authService.registerTenant(input);
+  }
+
+  @Post('login')
+  @ApiOperation({
+    summary: 'Realiza login do administrador do condomínio (US02)',
+    description: `
+      Autentica o usuário e retorna um JWT token.
+      
+      **Exemplo de cURL:**
+      \`\`\`bash
+      curl -X POST http://localhost:3000/api/v1/auth/login \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "email": "admin@reservaai.com.br",
+          "password": "SenhaSegura123"
+        }'
+      \`\`\`
+    `,
+  })
+  @ApiResponse({ status: 200, description: 'Login realizado com sucesso.' })
+  @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
+  async login(@Body() input: LoginDto): Promise<LoginOutput> {
+    return this.authService.login(input);
   }
 }

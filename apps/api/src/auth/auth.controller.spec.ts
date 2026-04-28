@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegisterTenantInput } from './interfaces/auth.interface';
+import { LoginDto } from './dto/login.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -9,6 +10,20 @@ describe('AuthController', () => {
 
   const mockRegisterResult = {
     accessToken: 'mock-jwt-token',
+    user: {
+      id: 'user-id',
+      name: 'Lucas Admin',
+      email: 'admin@reservaai.com.br',
+      role: 'ADMIN',
+    },
+    condominium: {
+      id: 'condominium-id',
+      name: 'Residencial Horizonte',
+    },
+  };
+
+  const mockLoginResult = {
+    accessToken: 'mock-jwt-token-login',
     user: {
       id: 'user-id',
       name: 'Lucas Admin',
@@ -29,16 +44,20 @@ describe('AuthController', () => {
     adminPassword: 'SenhaSegura123',
   };
 
+  const loginInput: LoginDto = {
+    email: 'admin@reservaai.com.br',
+    password: 'SenhaSegura123',
+  };
+
   beforeEach(async () => {
     const mockAuthService = {
       registerTenant: jest.fn().mockResolvedValue(mockRegisterResult),
+      login: jest.fn().mockResolvedValue(mockLoginResult),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [
-        { provide: AuthService, useValue: mockAuthService },
-      ],
+      providers: [{ provide: AuthService, useValue: mockAuthService }],
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
@@ -65,6 +84,24 @@ describe('AuthController', () => {
       expect(result).toHaveProperty('condominium');
       expect(result.user.email).toBe(registerInput.adminEmail);
       expect(result.condominium.name).toBe(registerInput.condominiumName);
+    });
+  });
+
+  describe('login', () => {
+    it('should call AuthService.login with correct data', async () => {
+      const result = await controller.login(loginInput);
+
+      expect(service.login).toHaveBeenCalledWith(loginInput);
+      expect(result).toEqual(mockLoginResult);
+    });
+
+    it('should return accessToken, user, and condominium on login', async () => {
+      const result = await controller.login(loginInput);
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('user');
+      expect(result).toHaveProperty('condominium');
+      expect(result.user.email).toBe(loginInput.email);
     });
   });
 });

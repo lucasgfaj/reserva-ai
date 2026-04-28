@@ -1,9 +1,21 @@
-import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-import { RegisterTenantInput, RegisterTenantOutput, AuthPayload } from './interfaces/auth.interface';
-import { RegisterTenantValidator, ValidationResult } from './validators/register-tenant.validator';
+import {
+  RegisterTenantInput,
+  RegisterTenantOutput,
+  AuthPayload,
+  LoginInput,
+  LoginOutput,
+} from './interfaces/auth.interface';
+import { RegisterTenantValidator } from './validators/register-tenant.validator';
+import { LoginValidator } from './validators/login.validator';
 import { Provider, Role } from '@prisma/client';
 
 @Injectable()
@@ -11,11 +23,14 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly validator: RegisterTenantValidator,
-  ) { }
+    private readonly registerValidator: RegisterTenantValidator,
+    private readonly loginValidator: LoginValidator,
+  ) {}
 
-  async registerTenant(input: RegisterTenantInput): Promise<RegisterTenantOutput> {
-    const validation = this.validator.validate(input);
+  async registerTenant(
+    input: RegisterTenantInput,
+  ): Promise<RegisterTenantOutput> {
+    const validation = this.registerValidator.validate(input);
     if (!validation.isValid) {
       throw new BadRequestException(validation.errors);
     }
@@ -58,7 +73,7 @@ export class AuthService {
       sub: transactionResult.admin.id,
       email: transactionResult.admin.email,
       role: transactionResult.admin.role,
-      condominiumId: transactionResult.admin.condominiumId ?? ''
+      condominiumId: transactionResult.admin.condominiumId ?? '',
     };
 
     return {
@@ -72,7 +87,53 @@ export class AuthService {
       condominium: {
         id: transactionResult.condominium.id,
         name: transactionResult.condominium.name,
-      }
+      },
+    };
+  }
+
+  async login(input: LoginInput): Promise<LoginOutput> {
+    const validation = this.loginValidator.validate(input);
+    if (!validation.isValid) {
+      throw new BadRequestException(validation.errors);
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: input.email },
+      include: { condominium: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid: boolean = await bcrypt.compare(
+      input.password,
+      user.passwordHash,
+    );
+
+    if (isPasswordValid === false) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const payload: AuthPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      condominiumId: user.condominiumId ?? '',
+    };
+
+    return {
+      accessToken: await this.jwtService.signAsync(payload),
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      condominium: {
+        id: user.condominium?.id ?? '',
+        name: user.condominium?.name ?? '',
+      },
     };
   }
 }

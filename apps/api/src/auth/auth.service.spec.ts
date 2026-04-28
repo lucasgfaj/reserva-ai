@@ -2,10 +2,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { ConflictException, BadRequestException } from '@nestjs/common';
-import { RegisterTenantInput } from './interfaces/auth.interface';
+import {
+  ConflictException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { RegisterTenantInput, LoginInput } from './interfaces/auth.interface';
 import { RegisterTenantValidator } from './validators/register-tenant.validator';
+import { LoginValidator } from './validators/login.validator';
 import { Role, Provider } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -44,14 +50,19 @@ describe('AuthService', () => {
 
   let mockPrisma: any;
   let mockJwt: any;
-  let validator: RegisterTenantValidator;
+  let registerValidator: RegisterTenantValidator;
+  let loginValidator: LoginValidator;
 
   beforeEach(async () => {
-    validator = new RegisterTenantValidator();
+    registerValidator = new RegisterTenantValidator();
+    loginValidator = new LoginValidator();
 
     mockPrisma = {
       user: {
         findUnique: jest.fn().mockResolvedValue(null),
+      },
+      condominium: {
+        findUnique: jest.fn().mockResolvedValue(mockCondominium),
       },
       $transaction: jest.fn().mockImplementation(async (callback: any) => {
         return callback({
@@ -71,6 +82,7 @@ describe('AuthService', () => {
         { provide: PrismaService, useValue: mockPrisma },
         { provide: JwtService, useValue: mockJwt },
         RegisterTenantValidator,
+        LoginValidator,
       ],
     }).compile();
 
@@ -129,6 +141,62 @@ describe('AuthService', () => {
       mockPrisma.user.findUnique = jest.fn().mockResolvedValue(null);
 
       await service.registerTenant(registerInput);
+
+      expect(mockJwt.signAsync).toHaveBeenCalledWith({
+        sub: mockAdmin.id,
+        email: mockAdmin.email,
+        role: mockAdmin.role,
+        condominiumId: mockAdmin.condominiumId,
+      });
+    });
+  });
+
+  describe('login', () => {
+    const loginInput: LoginInput = {
+      email: 'admin@reservaai.com.br',
+      password: 'Senha123!',
+    };
+
+    it('should throw UnauthorizedException when email not found', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue(null);
+
+      await expect(service.login(loginInput)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should throw UnauthorizedException when password is invalid', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue({
+        ...mockAdmin,
+        passwordHash: await bcrypt.hash('correctpassword', 10),
+      });
+
+      await expect(service.login(loginInput)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('should login successfully and return JWT token', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue({
+        ...mockAdmin,
+        passwordHash: await bcrypt.hash(loginInput.password, 10),
+      });
+
+      const result = await service.login(loginInput);
+
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('user');
+      expect(result.user.email).toBe(loginInput.email);
+      expect(result.user.role).toBe(Role.ADMIN);
+    });
+
+    it('should generate JWT token with correct payload on login', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue({
+        ...mockAdmin,
+        passwordHash: await bcrypt.hash(loginInput.password, 10),
+      });
+
+      await service.login(loginInput);
 
       expect(mockJwt.signAsync).toHaveBeenCalledWith({
         sub: mockAdmin.id,

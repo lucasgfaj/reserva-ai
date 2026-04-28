@@ -26,3 +26,22 @@ export interface AuthPayload {
   role: string;
   condominiumId: string;
 }
+
+export interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export interface LoginOutput {
+  accessToken: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+  condominium: {
+    id: string;
+    name: string;
+  };
+}
