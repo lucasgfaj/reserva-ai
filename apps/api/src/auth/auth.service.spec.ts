@@ -10,13 +10,18 @@ import {
 import { RegisterTenantInput, LoginInput } from './interfaces/auth.interface';
 import { RegisterTenantValidator } from './validators/register-tenant.validator';
 import { LoginValidator } from './validators/login.validator';
-import { Role, Provider } from '@prisma/client';
+import { Role, Provider, User, Condominium } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+
+interface MockPrismaTransaction {
+  condominium: { create: jest.Mock };
+  user: { create: jest.Mock };
+}
 
 describe('AuthService', () => {
   let service: AuthService;
 
-  const mockCondominium = {
+  const mockCondominium: Condominium = {
     id: 'condominium-id-uuid',
     name: 'Residencial Horizonte',
     address: 'Rua das Flores, 123',
@@ -25,7 +30,7 @@ describe('AuthService', () => {
     updatedAt: new Date(),
   };
 
-  const mockAdmin = {
+  const mockAdmin: User = {
     id: 'admin-id-uuid',
     name: 'Lucas Admin',
     email: 'admin@reservaai.com.br',
@@ -46,8 +51,14 @@ describe('AuthService', () => {
     adminPassword: 'Senha123!',
   };
 
-  let mockPrisma: any;
-  let mockJwt: any;
+  let mockPrisma: {
+    user: { findUnique: jest.Mock };
+    condominium: { findUnique: jest.Mock };
+    $transaction: (
+      callback: (tx: MockPrismaTransaction) => Promise<unknown>,
+    ) => Promise<unknown>;
+  };
+  let mockJwt: { signAsync: jest.Mock };
 
   beforeEach(async () => {
     mockPrisma = {
@@ -59,14 +70,16 @@ describe('AuthService', () => {
       },
       $transaction: jest
         .fn()
-        .mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
-          return callback({
-            condominium: {
-              create: jest.fn().mockResolvedValue(mockCondominium),
-            },
-            user: { create: jest.fn().mockResolvedValue(mockAdmin) },
-          });
-        }),
+        .mockImplementation(
+          async (callback: (tx: MockPrismaTransaction) => Promise<unknown>) => {
+            return callback({
+              condominium: {
+                create: jest.fn().mockResolvedValue(mockCondominium),
+              },
+              user: { create: jest.fn().mockResolvedValue(mockAdmin) },
+            });
+          },
+        ),
     };
 
     mockJwt = {
@@ -128,11 +141,9 @@ describe('AuthService', () => {
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('condominium');
-      expect((result as any).user.email).toBe(registerInput.adminEmail);
-      expect((result as any).user.role).toBe(Role.ADMIN);
-      expect((result as any).condominium.name).toBe(
-        registerInput.condominiumName,
-      );
+      expect(result.user.email).toBe(registerInput.adminEmail);
+      expect(result.user.role).toBe(Role.ADMIN);
+      expect(result.condominium.name).toBe(registerInput.condominiumName);
     });
 
     it('should generate JWT token with correct payload', async () => {
@@ -185,8 +196,8 @@ describe('AuthService', () => {
       expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
-      expect((result as any).user.email).toBe(loginInput.email);
-      expect((result as any).user.role).toBe(Role.ADMIN);
+      expect(result.user.email).toBe(loginInput.email);
+      expect(result.user.role).toBe(Role.ADMIN);
     });
 
     it('should generate JWT token with correct payload on login', async () => {

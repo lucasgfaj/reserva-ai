@@ -70,42 +70,44 @@ describe('AuthController', () => {
     expect(controller).toBeDefined();
   });
 
+  /* eslint-disable @typescript-eslint/unbound-method */
   describe('register', () => {
-    it('should call AuthService.registerTenant with correct data', async () => {
-      const result = await controller.register(registerInput);
-
-      expect(service.registerTenant).toHaveBeenCalledWith(registerInput);
-      expect(result).toEqual(mockRegisterResult);
+    it('should call AuthService.registerTenant with correct data', () => {
+      return controller.register(registerInput).then((result) => {
+        expect(service.registerTenant).toHaveBeenCalledWith(registerInput);
+        expect(result).toEqual(mockRegisterResult);
+      });
     });
 
-    it('should return accessToken, user, and condominium', async () => {
-      const result = await controller.register(registerInput);
-
-      expect(result).toHaveProperty('message');
-      expect(result).toHaveProperty('accessToken');
-      expect(result).toHaveProperty('user');
-      expect(result).toHaveProperty('condominium');
-      expect(result.user.email).toBe(registerInput.adminEmail);
-      expect(result.condominium.name).toBe(registerInput.condominiumName);
+    it('should return accessToken, user, and condominium', () => {
+      return controller.register(registerInput).then((result) => {
+        expect(result).toHaveProperty('message');
+        expect(result).toHaveProperty('accessToken');
+        expect(result).toHaveProperty('user');
+        expect(result).toHaveProperty('condominium');
+        expect(result.user.email).toBe(registerInput.adminEmail);
+        expect(result.condominium.name).toBe(registerInput.condominiumName);
+      });
     });
   });
 
   describe('login', () => {
-    it('should call AuthService.login with correct data', async () => {
-      const result = await controller.login(loginInput);
-
-      expect(service.login).toHaveBeenCalledWith(loginInput);
-      expect(result).toEqual(mockLoginResult);
+    it('should call AuthService.login with correct data', () => {
+      return controller.login(loginInput).then((result) => {
+        expect(service.login).toHaveBeenCalledWith(loginInput);
+        expect(result).toEqual(mockLoginResult);
+      });
     });
+    /* eslint-enable @typescript-eslint/unbound-method */
 
-    it('should return accessToken, user, and condominium on login', async () => {
-      const result = await controller.login(loginInput);
-
-      expect(result).toHaveProperty('message');
-      expect(result).toHaveProperty('accessToken');
-      expect(result).toHaveProperty('user');
-      expect(result).toHaveProperty('condominium');
-      expect(result.user.email).toBe(loginInput.email);
+    it('should return accessToken, user, and condominium on login', () => {
+      return controller.login(loginInput).then((result) => {
+        expect(result).toHaveProperty('message');
+        expect(result).toHaveProperty('accessToken');
+        expect(result).toHaveProperty('user');
+        expect(result).toHaveProperty('condominium');
+        expect(result.user.email).toBe(loginInput.email);
+      });
     });
   });
 });

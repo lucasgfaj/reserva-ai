@@ -81,18 +81,27 @@ describe('AuthController (e2e)', () => {
         .post('/api/v1/auth/register')
         .send(validPayload)
         .expect(201)
-        .expect((res: { body: any }) => {
-          expect(res.body).toHaveProperty('message');
-          expect(res.body).toHaveProperty('accessToken');
-          expect(res.body.user).toHaveProperty(
-            'email',
-            validPayload.adminEmail,
-          );
-          expect(res.body.condominium).toHaveProperty(
-            'name',
-            validPayload.condominiumName,
-          );
-        });
+        .expect(
+          (res: {
+            body: {
+              message: string;
+              accessToken: string;
+              user: { email: string };
+              condominium: { name: string };
+            };
+          }) => {
+            expect(res.body).toHaveProperty('message');
+            expect(res.body).toHaveProperty('accessToken');
+            expect(res.body.user).toHaveProperty(
+              'email',
+              validPayload.adminEmail,
+            );
+            expect(res.body.condominium).toHaveProperty(
+              'name',
+              validPayload.condominiumName,
+            );
+          },
+        );
     });
 
     it('should return 400 when missing required fields', () => {
@@ -193,12 +202,20 @@ describe('AuthController (e2e)', () => {
         .post('/api/v1/auth/login')
         .send(loginPayload)
         .expect(200)
-        .expect((res) => {
-          expect(res.body).toHaveProperty('accessToken');
-          expect(res.body.user).toHaveProperty('email', uniqueEmail);
-          expect(res.body.user).toHaveProperty('role', 'ADMIN');
-          expect(res.body.condominium).toHaveProperty('name', uniqueCondo);
-        });
+        .expect(
+          (res: {
+            body: {
+              accessToken: string;
+              user: { email: string; role: string };
+              condominium: { name: string };
+            };
+          }) => {
+            expect(res.body).toHaveProperty('accessToken');
+            expect(res.body.user).toHaveProperty('email', uniqueEmail);
+            expect(res.body.user).toHaveProperty('role', 'ADMIN');
+            expect(res.body.condominium).toHaveProperty('name', uniqueCondo);
+          },
+        );
     });
 
     it('should return 401 when email not found', () => {
