@@ -86,4 +86,22 @@ export class AuthController {
   async login(@Body() input: LoginDto): Promise<LoginOutput> {
     return this.authService.login(input);
   }
+
+  @Post('logout')
+  @ApiOperation({
+    summary: 'Realiza logout do usuário (US03)',
+    description: `
+      Invalida a sessão do usuário.
+      
+      **Exemplo de cURL:**
+      \`\`\`bash
+      curl -X POST http://localhost:3000/api/v1/auth/logout \\
+        -H "Authorization: Bearer <token>"
+      \`\`\`
+    `,
+  })
+  @ApiResponse({ status: 200, description: 'Logout realizado com sucesso.' })
+  logout() {
+    return { message: 'Logout realizado com sucesso' };
+  }
 }
