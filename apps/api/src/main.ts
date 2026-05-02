@@ -7,21 +7,13 @@ import * as path from 'path';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 import { AppModule } from './app.module';
-import { ValidationExceptionFilter } from './common/filters/validation-exception.filter';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }),
-  );
-  app.useGlobalFilters(new ValidationExceptionFilter());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.enableCors({
     origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
@@ -43,7 +35,6 @@ async function bootstrap() {
     )
     .setVersion('1.0')
     .addTag('auth', 'Fluxos de Autenticação, Registro de Tenants e Sessão')
-    .addTag('reservations', 'Gestão de Reservas de Áreas Comuns')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
