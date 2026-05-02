@@ -98,7 +98,6 @@ describe('AuthController', () => {
         expect(result).toEqual(mockLoginResult);
       });
     });
-    /* eslint-enable @typescript-eslint/unbound-method */
 
     it('should return accessToken, user, and condominium on login', () => {
       return controller.login(loginInput).then((result) => {
@@ -108,6 +107,13 @@ describe('AuthController', () => {
         expect(result).toHaveProperty('condominium');
         expect(result.user.email).toBe(loginInput.email);
       });
+    });
+  });
+
+  describe('logout', () => {
+    it('should return logout success message', () => {
+      const result = controller.logout();
+      expect(result).toHaveProperty('message', 'Logout realizado com sucesso');
     });
   });
 });
