@@ -39,6 +39,7 @@ import AuthDivider from '../components/AuthDivider.vue'
 import AuthSupportCards from '../components/AuthSupportCards.vue'
 import LoginForm from '../components/LoginForm.vue'
 import { loginRequest } from '../auth.api'
+import { authService } from '../services/auth.service'
 
 const router = useRouter()
 const isLoading = ref(false)
@@ -69,8 +70,8 @@ const handleLogin = async (credentials: { email: string; password: string }) => 
   try {
     const response = await loginRequest(credentials)
     localStorage.setItem('auth_token', JSON.stringify(response.accessToken))
-    localStorage.setItem('user', JSON.stringify(response.user))
-    localStorage.setItem('condominium', JSON.stringify(response.condominium))
+    localStorage.setItem('auth_user', JSON.stringify(response.user))
+    localStorage.setItem('auth_condo', JSON.stringify(response.condominium))
     alert(response.message)
     router.push('/dashboard')
   } catch (err: any) {
