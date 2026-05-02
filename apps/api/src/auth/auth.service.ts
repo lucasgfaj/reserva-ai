@@ -40,7 +40,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+      throw new ConflictException('Usuário com este email já existe');
     }
 
     const hashedPassword = await bcrypt.hash(input.adminPassword, 10);
@@ -77,6 +77,7 @@ export class AuthService {
     };
 
     return {
+      message: 'Registro realizado com sucesso',
       accessToken: await this.jwtService.signAsync(payload),
       user: {
         id: transactionResult.admin.id,
@@ -103,7 +104,7 @@ export class AuthService {
     });
 
     if (!user || !user.passwordHash) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Credenciais inválidas');
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -112,7 +113,7 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Credenciais inválidas');
     }
 
     const payload: AuthPayload = {
@@ -123,6 +124,7 @@ export class AuthService {
     };
 
     return {
+      message: 'Login realizado com sucesso',
       accessToken: await this.jwtService.signAsync(payload),
       user: {
         id: user.id,

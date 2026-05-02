@@ -34,7 +34,7 @@ describe('LoginValidator', () => {
       const result = validator.validate(input);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('email is required');
+      expect(result.errors).toContain('E-mail é obrigatório');
     });
 
     it('should return error when email is invalid', () => {
@@ -46,7 +46,7 @@ describe('LoginValidator', () => {
       const result = validator.validate(input);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('email must be a valid email address');
+      expect(result.errors).toContain('E-mail deve ser um endereço válido');
     });
 
     it('should return error when password is empty', () => {
@@ -58,7 +58,7 @@ describe('LoginValidator', () => {
       const result = validator.validate(input);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('password is required');
+      expect(result.errors).toContain('Senha é obrigatória');
     });
 
     it('should return error when password is too short', () => {
@@ -71,7 +71,7 @@ describe('LoginValidator', () => {
 
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain(
-        'password must be at least 8 characters',
+        'Senha deve ter pelo menos 8 caracteres',
       );
     });
 

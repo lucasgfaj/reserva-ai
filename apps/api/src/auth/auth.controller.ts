@@ -39,7 +39,7 @@ export class AuthController {
       properties: {
         adminName: { type: 'string', example: 'Lucas Admin' },
         adminEmail: { type: 'string', example: 'admin@reservaai.com.br' },
-        adminPassword: { type: 'string', example: 'SenhaSegura123' },
+        adminPassword: { type: 'string', example: 'SenhaSegura123!' },
         condominiumName: { type: 'string', example: 'Residencial Horizonte' },
         condominiumAddress: { type: 'string', example: 'Rua das Flores, 123' },
       },
@@ -70,7 +70,7 @@ export class AuthController {
         -H "Content-Type: application/json" \\
         -d '{
           "email": "admin@reservaai.com.br",
-          "password": "SenhaSegura123"
+          "password": "SenhaSegura123!"
         }'
       \`\`\`
     `,

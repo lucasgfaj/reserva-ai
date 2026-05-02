@@ -24,22 +24,22 @@ export class LoginValidator {
 
   private validateEmail(email: string, errors: string[]): void {
     if (!email || email.trim().length === 0) {
-      errors.push('email is required');
+      errors.push('E-mail é obrigatório');
       return;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      errors.push('email must be a valid email address');
+      errors.push('E-mail deve ser um endereço válido');
     }
   }
 
   private validatePassword(password: string, errors: string[]): void {
     if (!password || password.length === 0) {
-      errors.push('password is required');
+      errors.push('Senha é obrigatória');
       return;
     }
     if (password.length < this.MIN_PASSWORD_LENGTH) {
-      errors.push(`password must be at least ${this.MIN_PASSWORD_LENGTH} characters`);
+      errors.push(`Senha deve ter pelo menos ${this.MIN_PASSWORD_LENGTH} caracteres`);
     }
   }
 }

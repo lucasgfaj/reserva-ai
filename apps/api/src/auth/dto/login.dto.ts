@@ -6,8 +6,8 @@ export class LoginDto {
     example: 'admin@reservaai.com.br',
     description: 'E-mail do usuário cadastrado',
   })
-  @IsEmail()
-  @IsNotEmpty()
+  @IsEmail(undefined, { message: 'E-mail inválido.' })
+  @IsNotEmpty({ message: 'E-mail é obrigatório.' })
   email: string;
 
   @ApiProperty({
@@ -15,8 +15,8 @@ export class LoginDto {
     description: 'Senha do usuário',
     minLength: 8,
   })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
+  @IsString({ message: 'Senha inválida.' })
+  @IsNotEmpty({ message: 'Senha é obrigatória.' })
+  @MinLength(8, { message: 'Senha deve ter pelo menos 8 caracteres.' })
   password: string;
 }

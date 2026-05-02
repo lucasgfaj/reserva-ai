@@ -7,6 +7,7 @@ export interface RegisterTenantInput {
 }
 
 export interface RegisterTenantOutput {
+  message: string;
   accessToken: string;
   user: {
     id: string;
@@ -33,6 +34,7 @@ export interface LoginInput {
 }
 
 export interface LoginOutput {
+  message: string;
   accessToken: string;
   user: {
     id: string;
