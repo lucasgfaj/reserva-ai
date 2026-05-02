@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import type {
   RegisterTenantOutput,
   LoginOutput,
@@ -62,6 +62,7 @@ export class AuthController {
       \`\`\`
     `,
   })
+  @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, description: 'Login realizado com sucesso.' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
   async login(@Body() input: LoginDto): Promise<LoginOutput> {
