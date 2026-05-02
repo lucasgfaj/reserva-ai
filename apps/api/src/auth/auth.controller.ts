@@ -1,12 +1,12 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import type {
-  RegisterTenantInput,
   RegisterTenantOutput,
   LoginOutput,
 } from './interfaces/auth.interface';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { RegisterTenantDto } from './dto/register-tenant.dto';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -26,31 +26,12 @@ export class AuthController {
         -d '{
           "adminName": "Lucas Admin",
           "adminEmail": "admin@reservaai.com.br",
-          "adminPassword": "SenhaSegura123",
+          "adminPassword": "SenhaSegura123!",
           "condominiumName": "Residencial Horizonte",
           "condominiumAddress": "Rua das Flores, 123"
         }'
       \`\`\`
     `,
-  })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        adminName: { type: 'string', example: 'Lucas Admin' },
-        adminEmail: { type: 'string', example: 'admin@reservaai.com.br' },
-        adminPassword: { type: 'string', example: 'SenhaSegura123!' },
-        condominiumName: { type: 'string', example: 'Residencial Horizonte' },
-        condominiumAddress: { type: 'string', example: 'Rua das Flores, 123' },
-      },
-      required: [
-        'adminName',
-        'adminEmail',
-        'adminPassword',
-        'condominiumName',
-        'condominiumAddress',
-      ],
-    },
   })
   @ApiResponse({
     status: 201,
@@ -59,7 +40,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Dados de entrada inválidos.' })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
   async register(
-    @Body() input: RegisterTenantInput,
+    @Body() input: RegisterTenantDto,
   ): Promise<RegisterTenantOutput> {
     return this.authService.registerTenant(input);
   }

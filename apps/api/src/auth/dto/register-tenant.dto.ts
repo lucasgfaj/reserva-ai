@@ -15,13 +15,9 @@ export class RegisterTenantDto {
       'Nome do condomínio (Mapeado para Condominium.name - VARCHAR 150)',
   })
   @IsString({ message: 'Nome do condomínio inválido.' })
-  @IsNotEmpty({ message: 'Nome do condomínio é obrigatório.' })
-  @MinLength(3, {
-    message: 'Nome do condomínio deve ter no mínimo 3 caracteres.',
-  })
-  @MaxLength(150, {
-    message: 'Nome do condomínio deve ter no máximo 150 caracteres.',
-  })
+  @IsNotEmpty({ message: 'O nome do condomínio é obrigatório.' })
+  @MinLength(3, { message: 'O nome do condomínio deve ter no mínimo 3 caracteres.' })
+  @MaxLength(150)
   condominiumName: string;
 
   @ApiProperty({
@@ -30,8 +26,8 @@ export class RegisterTenantDto {
       'Endereço completo (Mapeado para Condominium.address - VARCHAR 255)',
   })
   @IsString({ message: 'Endereço inválido.' })
-  @IsNotEmpty({ message: 'Endereço é obrigatório.' })
-  @MaxLength(255, { message: 'Endereço deve ter no máximo 255 caracteres.' })
+  @IsNotEmpty({ message: 'O endereço é obrigatório.' })
+  @MaxLength(255)
   condominiumAddress: string;
 
   @ApiProperty({
@@ -40,8 +36,8 @@ export class RegisterTenantDto {
       'Nome completo do administrador (Mapeado para User.name - VARCHAR 120)',
   })
   @IsString({ message: 'Nome inválido.' })
-  @IsNotEmpty({ message: 'Nome do administrador é obrigatório.' })
-  @MaxLength(120, { message: 'Nome deve ter no máximo 120 caracteres.' })
+  @IsNotEmpty({ message: 'O nome do administrador é obrigatório.' })
+  @MaxLength(120)
   adminName: string;
 
   @ApiProperty({
@@ -50,7 +46,7 @@ export class RegisterTenantDto {
       'E-mail para login (Mapeado para User.email - VARCHAR 150 - Único)',
   })
   @IsEmail(undefined, { message: 'E-mail inválido.' })
-  @IsNotEmpty({ message: 'E-mail é obrigatório.' })
+  @IsNotEmpty({ message: 'O e-mail é obrigatório.' })
   adminEmail: string;
 
   @ApiProperty({
@@ -60,12 +56,11 @@ export class RegisterTenantDto {
     minLength: 8,
   })
   @IsString({ message: 'Senha inválida.' })
-  @IsNotEmpty({ message: 'Senha é obrigatória.' })
-  @MinLength(8, { message: 'Senha deve ter pelo menos 8 caracteres.' })
-  @MaxLength(40, { message: 'Senha deve ter no máximo 40 caracteres.' })
+  @IsNotEmpty({ message: 'A senha é obrigatória.' })
+  @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres.' })
+  @MaxLength(40)
   @Matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]+$/, {
-    message:
-      'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+    message: 'A senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)'
   })
   adminPassword: string;
 }
