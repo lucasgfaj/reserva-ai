@@ -6,7 +6,7 @@ import type {
 } from './interfaces/auth.interface';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -32,6 +32,19 @@ export class AuthController {
         }'
       \`\`\`
     `,
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        adminName: { type: 'string', example: 'Lucas Admin' },
+        adminEmail: { type: 'string', example: 'admin@reservaai.com.br' },
+        adminPassword: { type: 'string', example: 'SenhaSegura123' },
+        condominiumName: { type: 'string', example: 'Residencial Horizonte' },
+        condominiumAddress: { type: 'string', example: 'Rua das Flores, 123' },
+      },
+      required: ['adminName', 'adminEmail', 'adminPassword', 'condominiumName', 'condominiumAddress']
+    },
   })
   @ApiResponse({
     status: 201,

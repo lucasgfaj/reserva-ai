@@ -102,16 +102,16 @@ export class AuthService {
       include: { condominium: true },
     });
 
-    if (!user) {
+    if (!user || !user.passwordHash) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isPasswordValid: boolean = await bcrypt.compare(
+    const isPasswordValid = await bcrypt.compare(
       input.password,
       user.passwordHash,
     );
 
-    if (isPasswordValid === false) {
+    if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
