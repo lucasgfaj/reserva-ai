@@ -23,5 +23,8 @@
         "monorepo"
     ],
     "author": "Special Topics in Software Engineering",
-    "license": "UNLICENSED"
+    "license": "UNLICENSED",
+    "devDependencies": {
+        "isexe": "^4.0.0"
+    }
 }

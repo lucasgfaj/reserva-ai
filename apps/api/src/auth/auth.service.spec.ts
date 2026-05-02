@@ -15,8 +15,6 @@ import * as bcrypt from 'bcrypt';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let prisma: PrismaService;
-  let jwtService: JwtService;
 
   const mockCondominium = {
     id: 'condominium-id-uuid',
@@ -50,13 +48,8 @@ describe('AuthService', () => {
 
   let mockPrisma: any;
   let mockJwt: any;
-  let registerValidator: RegisterTenantValidator;
-  let loginValidator: LoginValidator;
 
   beforeEach(async () => {
-    registerValidator = new RegisterTenantValidator();
-    loginValidator = new LoginValidator();
-
     mockPrisma = {
       user: {
         findUnique: jest.fn().mockResolvedValue(null),
@@ -64,12 +57,16 @@ describe('AuthService', () => {
       condominium: {
         findUnique: jest.fn().mockResolvedValue(mockCondominium),
       },
-      $transaction: jest.fn().mockImplementation(async (callback: any) => {
-        return callback({
-          condominium: { create: jest.fn().mockResolvedValue(mockCondominium) },
-          user: { create: jest.fn().mockResolvedValue(mockAdmin) },
-        });
-      }),
+      $transaction: jest
+        .fn()
+        .mockImplementation(async (callback: (tx: any) => Promise<unknown>) => {
+          return callback({
+            condominium: {
+              create: jest.fn().mockResolvedValue(mockCondominium),
+            },
+            user: { create: jest.fn().mockResolvedValue(mockAdmin) },
+          });
+        }),
     };
 
     mockJwt = {
@@ -87,8 +84,6 @@ describe('AuthService', () => {
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    prisma = module.get<PrismaService>(PrismaService);
-    jwtService = module.get<JwtService>(JwtService);
   });
 
   it('should be defined', () => {
@@ -129,12 +124,15 @@ describe('AuthService', () => {
       expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
         where: { email: registerInput.adminEmail },
       });
+      expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('condominium');
-      expect(result.user.email).toBe(registerInput.adminEmail);
-      expect(result.user.role).toBe(Role.ADMIN);
-      expect(result.condominium.name).toBe(registerInput.condominiumName);
+      expect((result as any).user.email).toBe(registerInput.adminEmail);
+      expect((result as any).user.role).toBe(Role.ADMIN);
+      expect((result as any).condominium.name).toBe(
+        registerInput.condominiumName,
+      );
     });
 
     it('should generate JWT token with correct payload', async () => {
@@ -184,10 +182,11 @@ describe('AuthService', () => {
 
       const result = await service.login(loginInput);
 
+      expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
-      expect(result.user.email).toBe(loginInput.email);
-      expect(result.user.role).toBe(Role.ADMIN);
+      expect((result as any).user.email).toBe(loginInput.email);
+      expect((result as any).user.role).toBe(Role.ADMIN);
     });
 
     it('should generate JWT token with correct payload on login', async () => {

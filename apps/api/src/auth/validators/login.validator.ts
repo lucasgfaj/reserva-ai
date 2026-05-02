@@ -39,7 +39,9 @@ export class LoginValidator {
       return;
     }
     if (password.length < this.MIN_PASSWORD_LENGTH) {
-      errors.push(`Senha deve ter pelo menos ${this.MIN_PASSWORD_LENGTH} caracteres`);
+      errors.push(
+        `Senha deve ter pelo menos ${this.MIN_PASSWORD_LENGTH} caracteres`,
+      );
     }
   }
 }

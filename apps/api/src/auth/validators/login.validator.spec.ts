@@ -70,9 +70,7 @@ describe('LoginValidator', () => {
       const result = validator.validate(input);
 
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain(
-        'Senha deve ter pelo menos 8 caracteres',
-      );
+      expect(result.errors).toContain('Senha deve ter pelo menos 8 caracteres');
     });
 
     it('should return multiple errors when both fields are invalid', () => {

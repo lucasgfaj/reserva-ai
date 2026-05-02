@@ -14,7 +14,8 @@ export class RegisterTenantValidator {
   private readonly MAX_CONDOMINIUM_NAME_LENGTH = 150;
   private readonly MAX_ADDRESS_LENGTH = 255;
   private readonly MAX_NAME_LENGTH = 120;
-  private readonly PASSWORD_REGEX = /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/;
+  private readonly PASSWORD_REGEX =
+    /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/;
 
   validate(input: RegisterTenantInput): ValidationResult {
     const errors: string[] = [];
@@ -37,10 +38,14 @@ export class RegisterTenantValidator {
       return;
     }
     if (name.trim().length < this.MIN_CONDOMINIUM_NAME_LENGTH) {
-      errors.push(`Nome do condomínio deve ter pelo menos ${this.MIN_CONDOMINIUM_NAME_LENGTH} caracteres`);
+      errors.push(
+        `Nome do condomínio deve ter pelo menos ${this.MIN_CONDOMINIUM_NAME_LENGTH} caracteres`,
+      );
     }
     if (name.trim().length > this.MAX_CONDOMINIUM_NAME_LENGTH) {
-      errors.push(`Nome do condomínio não pode exceder ${this.MAX_CONDOMINIUM_NAME_LENGTH} caracteres`);
+      errors.push(
+        `Nome do condomínio não pode exceder ${this.MAX_CONDOMINIUM_NAME_LENGTH} caracteres`,
+      );
     }
   }
 
@@ -50,7 +55,9 @@ export class RegisterTenantValidator {
       return;
     }
     if (address.trim().length > this.MAX_ADDRESS_LENGTH) {
-      errors.push(`Endereço não pode exceder ${this.MAX_ADDRESS_LENGTH} caracteres`);
+      errors.push(
+        `Endereço não pode exceder ${this.MAX_ADDRESS_LENGTH} caracteres`,
+      );
     }
   }
 
@@ -81,13 +88,19 @@ export class RegisterTenantValidator {
       return;
     }
     if (password.length < this.MIN_PASSWORD_LENGTH) {
-      errors.push(`Senha deve ter pelo menos ${this.MIN_PASSWORD_LENGTH} caracteres`);
+      errors.push(
+        `Senha deve ter pelo menos ${this.MIN_PASSWORD_LENGTH} caracteres`,
+      );
     }
     if (password.length > this.MAX_PASSWORD_LENGTH) {
-      errors.push(`Senha não pode exceder ${this.MAX_PASSWORD_LENGTH} caracteres`);
+      errors.push(
+        `Senha não pode exceder ${this.MAX_PASSWORD_LENGTH} caracteres`,
+      );
     }
     if (!this.PASSWORD_REGEX.test(password)) {
-      errors.push('Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)');
+      errors.push(
+        'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+      );
     }
   }
 }

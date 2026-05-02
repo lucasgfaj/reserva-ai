@@ -71,7 +71,9 @@ describe('AuthController (e2e)', () => {
             where: { name: uniqueCondo },
           }),
         ]);
-      } catch (e) {}
+      } catch {
+        // Cleanup error ignored - best effort cleanup
+      }
     });
 
     it('should return 201 when creating valid tenant and admin', () => {
@@ -79,7 +81,8 @@ describe('AuthController (e2e)', () => {
         .post('/api/v1/auth/register')
         .send(validPayload)
         .expect(201)
-        .expect((res) => {
+        .expect((res: { body: any }) => {
+          expect(res.body).toHaveProperty('message');
           expect(res.body).toHaveProperty('accessToken');
           expect(res.body.user).toHaveProperty(
             'email',

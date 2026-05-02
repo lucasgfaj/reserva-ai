@@ -12,9 +12,7 @@ describe('AppController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [
-        { provide: AppService, useValue: mockAppService },
-      ],
+      providers: [{ provide: AppService, useValue: mockAppService }],
     }).compile();
 
     controller = module.get<AppController>(AppController);

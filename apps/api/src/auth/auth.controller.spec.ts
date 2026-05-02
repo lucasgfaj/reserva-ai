@@ -9,6 +9,7 @@ describe('AuthController', () => {
   let service: AuthService;
 
   const mockRegisterResult = {
+    message: 'Registro realizado com sucesso',
     accessToken: 'mock-jwt-token',
     user: {
       id: 'user-id',
@@ -23,6 +24,7 @@ describe('AuthController', () => {
   };
 
   const mockLoginResult = {
+    message: 'Login realizado com sucesso',
     accessToken: 'mock-jwt-token-login',
     user: {
       id: 'user-id',
@@ -79,6 +81,7 @@ describe('AuthController', () => {
     it('should return accessToken, user, and condominium', async () => {
       const result = await controller.register(registerInput);
 
+      expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('condominium');
@@ -98,6 +101,7 @@ describe('AuthController', () => {
     it('should return accessToken, user, and condominium on login', async () => {
       const result = await controller.login(loginInput);
 
+      expect(result).toHaveProperty('message');
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
       expect(result).toHaveProperty('condominium');

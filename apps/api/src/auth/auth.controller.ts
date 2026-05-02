@@ -43,7 +43,13 @@ export class AuthController {
         condominiumName: { type: 'string', example: 'Residencial Horizonte' },
         condominiumAddress: { type: 'string', example: 'Rua das Flores, 123' },
       },
-      required: ['adminName', 'adminEmail', 'adminPassword', 'condominiumName', 'condominiumAddress']
+      required: [
+        'adminName',
+        'adminEmail',
+        'adminPassword',
+        'condominiumName',
+        'condominiumAddress',
+      ],
     },
   })
   @ApiResponse({
