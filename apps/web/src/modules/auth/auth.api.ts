@@ -6,11 +6,17 @@ export interface LoginDTO {
 }
 
 export interface LoginResponse {
-  access_token: string
+  message: string
+  accessToken: string
   user: {
-    id: number
+    id: string
     name: string
     email: string
+    role: string
+  }
+  condominium: {
+    id: string
+    name: string
   }
 }
 
