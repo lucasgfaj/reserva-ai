@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegisterTenantValidator } from './validators/register-tenant.validator';
+import { LoginValidator } from './validators/login.validator';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { RegisterTenantValidator } from './validators/register-tenant.validator'
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, RegisterTenantValidator],
+  providers: [AuthService, RegisterTenantValidator, LoginValidator],
   exports: [AuthService],
 })
-export class AuthModule { }
+export class AuthModule {}

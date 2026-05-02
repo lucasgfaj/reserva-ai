@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
@@ -24,7 +25,7 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .get('/api/v1')
       .expect(200)
-      .expect((res) => {
+      .expect((res: { body: { project: string; status: string } }) => {
         expect(res.body).toHaveProperty('project', 'Reserva Aí! API');
         expect(res.body).toHaveProperty('status', 'Online');
       });

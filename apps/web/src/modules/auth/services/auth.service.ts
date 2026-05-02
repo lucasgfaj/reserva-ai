@@ -14,6 +14,7 @@ export interface AuthTokens {
 }
 
 export interface RegisterResponse extends AuthTokens {
+  message: string
   user: AuthUser
   condominium: {
     id: string
@@ -22,6 +23,7 @@ export interface RegisterResponse extends AuthTokens {
 }
 
 export interface LoginResponse extends AuthTokens {
+  message: string
   user: AuthUser
   condominium: {
     id: string

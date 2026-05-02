@@ -28,21 +28,25 @@ describe('RegisterTenantValidator', () => {
         const input = { ...validInput, condominiumName: '' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('condominiumName is required');
+        expect(result.errors).toContain('Nome do condomínio é obrigatório');
       });
 
       it('should reject name shorter than 3 characters', () => {
         const input = { ...validInput, condominiumName: 'AB' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('condominiumName must be at least 3 characters');
+        expect(result.errors).toContain(
+          'Nome do condomínio deve ter pelo menos 3 caracteres',
+        );
       });
 
       it('should reject name longer than 150 characters', () => {
         const input = { ...validInput, condominiumName: 'A'.repeat(151) };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('condominiumName must not exceed 150 characters');
+        expect(result.errors).toContain(
+          'Nome do condomínio não pode exceder 150 caracteres',
+        );
       });
     });
 
@@ -51,14 +55,16 @@ describe('RegisterTenantValidator', () => {
         const input = { ...validInput, condominiumAddress: '' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('condominiumAddress is required');
+        expect(result.errors).toContain('Endereço do condomínio é obrigatório');
       });
 
       it('should reject address longer than 255 characters', () => {
         const input = { ...validInput, condominiumAddress: 'A'.repeat(256) };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('condominiumAddress must not exceed 255 characters');
+        expect(result.errors).toContain(
+          'Endereço não pode exceder 255 caracteres',
+        );
       });
     });
 
@@ -67,14 +73,18 @@ describe('RegisterTenantValidator', () => {
         const input = { ...validInput, adminEmail: '' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminEmail is required');
+        expect(result.errors).toContain(
+          'E-mail do administrador é obrigatório',
+        );
       });
 
       it('should reject invalid email format', () => {
         const input = { ...validInput, adminEmail: 'not-an-email' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminEmail must be a valid email address');
+        expect(result.errors).toContain(
+          'E-mail do administrador deve ser válido',
+        );
       });
     });
 
@@ -83,42 +93,50 @@ describe('RegisterTenantValidator', () => {
         const input = { ...validInput, adminPassword: '' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminPassword is required');
+        expect(result.errors).toContain('Senha do administrador é obrigatória');
       });
 
       it('should reject password shorter than 8 characters', () => {
         const input = { ...validInput, adminPassword: 'Ab1!' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminPassword must be at least 8 characters');
+        expect(result.errors).toContain(
+          'Senha deve ter pelo menos 8 caracteres',
+        );
       });
 
       it('should reject password longer than 40 characters', () => {
         const input = { ...validInput, adminPassword: 'A'.repeat(41) + '1!' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminPassword must not exceed 40 characters');
+        expect(result.errors).toContain('Senha não pode exceder 40 caracteres');
       });
 
       it('should reject password without letter', () => {
         const input = { ...validInput, adminPassword: '12345678!' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminPassword must contain at least one letter, one number, and one special character (!@#$%^&*)');
+        expect(result.errors).toContain(
+          'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+        );
       });
 
       it('should reject password without number', () => {
         const input = { ...validInput, adminPassword: 'Abcdefgh!' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminPassword must contain at least one letter, one number, and one special character (!@#$%^&*)');
+        expect(result.errors).toContain(
+          'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+        );
       });
 
       it('should reject password without special character', () => {
         const input = { ...validInput, adminPassword: 'Abcdefgh1' };
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
-        expect(result.errors).toContain('adminPassword must contain at least one letter, one number, and one special character (!@#$%^&*)');
+        expect(result.errors).toContain(
+          'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+        );
       });
     });
   });

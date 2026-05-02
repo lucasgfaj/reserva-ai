@@ -38,9 +38,12 @@ import AuthSocialButtons from '../components/AuthSocialButtons.vue'
 import AuthDivider from '../components/AuthDivider.vue'
 import AuthSupportCards from '../components/AuthSupportCards.vue'
 import LoginForm from '../components/LoginForm.vue'
+import { loginRequest } from '../auth.api'
+import { authService } from '../services/auth.service'
 
 const router = useRouter()
 const isLoading = ref(false)
+const error = ref('')
 
 const authFeatures = [
   {
@@ -62,10 +65,22 @@ const authFeatures = [
 
 const handleLogin = async (credentials: { email: string; password: string }) => {
   isLoading.value = true
-  console.log('Login attempt:', credentials.email)
-  setTimeout(() => {
+  error.value = ''
+  
+  try {
+    const response = await loginRequest(credentials)
+    localStorage.setItem('auth_token', JSON.stringify(response.accessToken))
+    localStorage.setItem('auth_user', JSON.stringify(response.user))
+    localStorage.setItem('auth_condo', JSON.stringify(response.condominium))
+    alert(response.message)
+    router.push('/dashboard')
+  } catch (err: any) {
+    const errorMsg = err.response?.data?.message || 'Erro ao fazer login'
+    error.value = errorMsg
+    alert(errorMsg)
+  } finally {
     isLoading.value = false
-  }, 1500)
+  }
 }
 </script>
 

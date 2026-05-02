@@ -13,7 +13,7 @@ export class AppController {
       status: 'Online',
       documentation: '/api/v1/docs',
       message: 'Bem-vindo ao núcleo de gestão inteligente do Reserva Aí!',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }
