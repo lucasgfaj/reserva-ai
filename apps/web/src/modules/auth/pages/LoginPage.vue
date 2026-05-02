@@ -71,9 +71,12 @@ const handleLogin = async (credentials: { email: string; password: string }) => 
     localStorage.setItem('auth_token', JSON.stringify(response.accessToken))
     localStorage.setItem('user', JSON.stringify(response.user))
     localStorage.setItem('condominium', JSON.stringify(response.condominium))
+    alert(response.message)
     router.push('/dashboard')
   } catch (err: any) {
-    error.value = err.response?.data?.message || 'Erro ao fazer login'
+    const errorMsg = err.response?.data?.message || 'Erro ao fazer login'
+    error.value = errorMsg
+    alert(errorMsg)
   } finally {
     isLoading.value = false
   }

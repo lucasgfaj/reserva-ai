@@ -9,3 +9,13 @@ export const router = createRouter({
     ...authRoutes,
   ],
 })
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('auth_token')
+  const publicRoutes = ['/', '/login', '/register']
+  
+  if (token && publicRoutes.includes(to.path)) {
+    return next('/dashboard')
+  }
+  next()
+})

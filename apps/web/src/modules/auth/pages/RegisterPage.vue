@@ -73,10 +73,12 @@ const handleRegister = async (formData: RegisterTenantDTO) => {
   errorMsg.value = ''
 
   try {
-    await authService.registerTenant(formData)
+    const response = await authService.registerTenant(formData)
+    alert(response.message)
     router.push('/dashboard')
   } catch (error: any) {
     errorMsg.value = error.response?.data?.message || 'Erro ao criar conta. Tente novamente.'
+    alert(errorMsg.value)
   } finally {
     isLoading.value = false
   }
