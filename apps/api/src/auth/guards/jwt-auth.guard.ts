@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Injectable,
   CanActivate,
@@ -6,6 +7,19 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+
+interface AuthUser {
+  sub: string;
+  email: string;
+  role: string;
+  condominiumId: string;
+}
+
+declare module 'express' {
+  interface Request {
+    user?: AuthUser;
+  }
+}
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -21,7 +35,7 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token);
-      request['user'] = payload;
+      request.user = payload as AuthUser;
     } catch {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
@@ -34,3 +48,4 @@ export class JwtAuthGuard implements CanActivate {
     return type === 'Bearer' ? token : undefined;
   }
 }
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
