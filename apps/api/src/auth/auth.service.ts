@@ -4,6 +4,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -16,6 +17,10 @@ import {
   LoginOutput,
   CreateResidentInput,
   CreateResidentOutput,
+  ResidentListOutput,
+  ResidentListItem,
+  ResidentDetailOutput,
+  UpdateResidentPermissionsOutput,
 } from './interfaces/auth.interface';
 import { RegisterTenantValidator } from './validators/register-tenant.validator';
 import { LoginValidator } from './validators/login.validator';
@@ -192,17 +197,15 @@ export class AuthService {
         },
       });
 
-      if (input.unitId) {
-        await prisma.resident.create({
-          data: {
-            userId: user.id,
-            unitId: input.unitId,
-            document: input.document,
-            phone: input.phone,
-            canBook,
-          },
-        });
-      }
+      await prisma.resident.create({
+        data: {
+          userId: user.id,
+          unitId: input.unitId || null,
+          document: input.document,
+          phone: input.phone,
+          canBook,
+        },
+      });
 
       return user;
     });
@@ -217,12 +220,145 @@ export class AuthService {
     return {
       message: 'Morador cadastrado com sucesso',
       accessToken: await this.jwtService.signAsync(payload),
+      temporaryPassword: password,
       user: {
         id: transactionResult.id,
         name: transactionResult.name,
         email: transactionResult.email,
         role: transactionResult.role,
       },
+    };
+  }
+
+  async listResidents(context: {
+    role: string;
+    condominiumId: string;
+  }): Promise<ResidentListOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        'Apenas administradores podem listar moradores',
+      );
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        condominiumId: context.condominiumId,
+        role: Role.RESIDENT,
+      },
+      include: {
+        resident: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    const residents: ResidentListItem[] = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      canBook: user.resident?.canBook ?? true,
+      document: user.resident?.document ?? undefined,
+      phone: user.resident?.phone ?? undefined,
+      unitId: user.resident?.unitId ?? undefined,
+      createdAt: user.createdAt,
+    }));
+
+    return {
+      residents,
+      total: residents.length,
+    };
+  }
+
+  async getResidentById(
+    residentId: string,
+    context: { role: string; condominiumId: string },
+  ): Promise<ResidentDetailOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        'Apenas administradores podem buscar moradores',
+      );
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: residentId,
+        condominiumId: context.condominiumId,
+        role: Role.RESIDENT,
+      },
+      include: {
+        resident: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Morador não encontrado');
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      isActive: user.isActive,
+      canBook: user.resident?.canBook ?? true,
+      document: user.resident?.document ?? undefined,
+      phone: user.resident?.phone ?? undefined,
+      unitId: user.resident?.unitId ?? undefined,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
+  }
+
+  async updateResidentPermissions(
+    residentId: string,
+    canBook: boolean,
+    context: { role: string; condominiumId: string },
+  ): Promise<UpdateResidentPermissionsOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        'Apenas administradores podem alterar permissões',
+      );
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: residentId,
+        condominiumId: context.condominiumId,
+        role: Role.RESIDENT,
+      },
+      include: {
+        resident: true,
+      },
+    });
+
+    if (!user || !user.id || user.id === '') {
+      throw new NotFoundException('Morador não encontrado');
+    }
+
+    const hasResident =
+      user.resident && user.resident.id && user.resident.id !== '';
+
+    if (!hasResident) {
+      await this.prisma.resident.create({
+        data: {
+          userId: user.id,
+          unitId: null,
+          canBook,
+        },
+      });
+    } else if (user.resident) {
+      await this.prisma.resident.update({
+        where: { id: user.resident.id },
+        data: { canBook },
+      });
+    }
+
+    return {
+      message: `Permissão de reserva ${canBook ? 'ativada' : 'desativada'} com sucesso`,
+      canBook,
     };
   }
 }

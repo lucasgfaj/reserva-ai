@@ -61,10 +61,52 @@ export interface CreateResidentInput {
 export interface CreateResidentOutput {
   message: string;
   accessToken: string;
+  temporaryPassword?: string;
   user: {
     id: string;
     name: string;
     email: string;
     role: string;
   };
+}
+
+export interface ResidentListItem {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  canBook: boolean;
+  document?: string;
+  phone?: string;
+  unitId?: string;
+  createdAt: Date;
+}
+
+export interface ResidentListOutput {
+  residents: ResidentListItem[];
+  total: number;
+}
+
+export interface ResidentDetailOutput {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  isActive: boolean;
+  canBook: boolean;
+  document?: string;
+  phone?: string;
+  unitId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UpdateResidentPermissionsInput {
+  canBook: boolean;
+}
+
+export interface UpdateResidentPermissionsOutput {
+  message: string;
+  canBook: boolean;
 }

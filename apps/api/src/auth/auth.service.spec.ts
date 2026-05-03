@@ -7,6 +7,7 @@ import {
   BadRequestException,
   UnauthorizedException,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   RegisterTenantInput,
@@ -72,8 +73,13 @@ describe('AuthService', () => {
   };
 
   let mockPrisma: {
-    user: { findUnique: jest.Mock };
+    user: {
+      findUnique: jest.Mock;
+      findFirst: jest.Mock;
+      findMany: jest.Mock;
+    };
     condominium: { findUnique: jest.Mock };
+    resident: { create: jest.Mock; update: jest.Mock };
     $transaction: (
       callback: (tx: MockPrismaTransaction) => Promise<unknown>,
     ) => Promise<unknown>;
@@ -84,9 +90,15 @@ describe('AuthService', () => {
     mockPrisma = {
       user: {
         findUnique: jest.fn().mockResolvedValue(null),
+        findFirst: jest.fn().mockResolvedValue(null),
+        findMany: jest.fn().mockResolvedValue([mockResidentUser]),
       },
       condominium: {
         findUnique: jest.fn().mockResolvedValue(mockCondominium),
+      },
+      resident: {
+        create: jest.fn().mockResolvedValue({}),
+        update: jest.fn().mockResolvedValue({}),
       },
       $transaction: jest
         .fn()
@@ -339,6 +351,133 @@ describe('AuthService', () => {
       );
 
       expect(result).toHaveProperty('accessToken');
+    });
+  });
+
+  describe('listResidents', () => {
+    const adminContext = {
+      userId: mockAdmin.id,
+      email: mockAdmin.email,
+      role: mockAdmin.role,
+      condominiumId: mockAdmin.condominiumId!,
+    };
+
+    it('should return list of residents for admin', async () => {
+      mockPrisma.user.findMany = jest
+        .fn()
+        .mockResolvedValue([mockResidentUser]);
+
+      const result = await service.listResidents(adminContext);
+
+      expect(result).toHaveProperty('residents');
+      expect(Array.isArray(result.residents)).toBe(true);
+    });
+
+    it('should throw ForbiddenException for non-admin', async () => {
+      const nonAdminContext = {
+        userId: mockResidentUser.id,
+        email: mockResidentUser.email,
+        role: mockResidentUser.role,
+        condominiumId: mockResidentUser.condominiumId!,
+      };
+
+      await expect(service.listResidents(nonAdminContext)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+  });
+
+  describe('getResidentById', () => {
+    const adminContext = {
+      userId: mockAdmin.id,
+      email: mockAdmin.email,
+      role: mockAdmin.role,
+      condominiumId: mockAdmin.condominiumId!,
+    };
+
+    it('should return resident details for valid id', async () => {
+      mockPrisma.user.findFirst = jest.fn().mockResolvedValue({
+        ...mockResidentUser,
+        resident: { id: 'resident-id-uuid', canBook: true },
+      });
+
+      const result = await service.getResidentById(
+        mockResidentUser.id,
+        adminContext,
+      );
+
+      expect(result).toHaveProperty('id');
+      expect(result.email).toBe(mockResidentUser.email);
+    });
+
+    it('should throw NotFoundException for invalid id', async () => {
+      mockPrisma.user.findFirst = jest.fn().mockResolvedValue(null);
+
+      await expect(
+        service.getResidentById('invalid-id', adminContext),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('updateResidentPermissions', () => {
+    const adminContext = {
+      userId: mockAdmin.id,
+      email: mockAdmin.email,
+      role: mockAdmin.role,
+      condominiumId: mockAdmin.condominiumId!,
+    };
+
+    it('should update canBook permission when resident exists', async () => {
+      mockPrisma.user.findFirst = jest.fn().mockResolvedValue({
+        ...mockResidentUser,
+        resident: { id: 'resident-id-uuid', canBook: true },
+      });
+
+      const result = await service.updateResidentPermissions(
+        mockResidentUser.id,
+        { canBook: false },
+        adminContext,
+      );
+
+      expect(result).toHaveProperty('canBook');
+    });
+
+    it('should create resident record when resident does not exist', async () => {
+      mockPrisma.user.findFirst = jest.fn().mockResolvedValue({
+        ...mockResidentUser,
+        resident: null,
+      });
+      mockPrisma.resident.create = jest.fn().mockResolvedValue({
+        id: 'new-resident-id',
+        userId: mockResidentUser.id,
+        canBook: true,
+      });
+
+      const result = await service.updateResidentPermissions(
+        mockResidentUser.id,
+        { canBook: true },
+        adminContext,
+      );
+
+      expect(mockPrisma.resident.create).toHaveBeenCalled();
+      expect(result).toHaveProperty('canBook');
+    });
+
+    it('should throw ForbiddenException for non-admin', async () => {
+      const nonAdminContext = {
+        userId: mockResidentUser.id,
+        email: mockResidentUser.email,
+        role: mockResidentUser.role,
+        condominiumId: mockResidentUser.condominiumId!,
+      };
+
+      await expect(
+        service.updateResidentPermissions(
+          mockResidentUser.id,
+          { canBook: false },
+          nonAdminContext,
+        ),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });
