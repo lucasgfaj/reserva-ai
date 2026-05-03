@@ -3,6 +3,7 @@ import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -13,9 +14,12 @@ import {
   AuthPayload,
   LoginInput,
   LoginOutput,
+  CreateResidentInput,
+  CreateResidentOutput,
 } from './interfaces/auth.interface';
 import { RegisterTenantValidator } from './validators/register-tenant.validator';
 import { LoginValidator } from './validators/login.validator';
+import { CreateResidentValidator } from './validators/create-resident.validator';
 import { Provider, Role } from '@prisma/client';
 
 @Injectable()
@@ -25,6 +29,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly registerValidator: RegisterTenantValidator,
     private readonly loginValidator: LoginValidator,
+    private readonly createResidentValidator: CreateResidentValidator,
   ) {}
 
   async registerTenant(
@@ -135,6 +140,88 @@ export class AuthService {
       condominium: {
         id: user.condominium?.id ?? '',
         name: user.condominium?.name ?? '',
+      },
+    };
+  }
+
+  async createResident(
+    input: CreateResidentInput,
+    context: {
+      userId: string;
+      email: string;
+      role: string;
+      condominiumId: string;
+    },
+  ): Promise<CreateResidentOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        'Apenas administradores podem cadastrar moradores',
+      );
+    }
+
+    const validation = this.createResidentValidator.validate(input);
+    if (!validation.isValid) {
+      throw new BadRequestException(validation.errors);
+    }
+
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: input.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('Usuário com este email já existe');
+    }
+
+    const password =
+      input.password ||
+      this.createResidentValidator.generateTemporaryPassword();
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const canBook = input.canBook !== undefined ? input.canBook : true;
+
+    const transactionResult = await this.prisma.$transaction(async (prisma) => {
+      const user = await prisma.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          passwordHash: hashedPassword,
+          provider: Provider.LOCAL,
+          role: Role.RESIDENT,
+          condominiumId: context.condominiumId,
+          isActive: true,
+        },
+      });
+
+      if (input.unitId) {
+        await prisma.resident.create({
+          data: {
+            userId: user.id,
+            unitId: input.unitId,
+            document: input.document,
+            phone: input.phone,
+            canBook,
+          },
+        });
+      }
+
+      return user;
+    });
+
+    const payload: AuthPayload = {
+      sub: transactionResult.id,
+      email: transactionResult.email,
+      role: transactionResult.role,
+      condominiumId: context.condominiumId,
+    };
+
+    return {
+      message: 'Morador cadastrado com sucesso',
+      accessToken: await this.jwtService.signAsync(payload),
+      user: {
+        id: transactionResult.id,
+        name: transactionResult.name,
+        email: transactionResult.email,
+        role: transactionResult.role,
       },
     };
   }

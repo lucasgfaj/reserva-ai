@@ -6,16 +6,23 @@ import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
-import { RegisterTenantInput, LoginInput } from './interfaces/auth.interface';
+import {
+  RegisterTenantInput,
+  LoginInput,
+  CreateResidentInput,
+} from './interfaces/auth.interface';
 import { RegisterTenantValidator } from './validators/register-tenant.validator';
 import { LoginValidator } from './validators/login.validator';
+import { CreateResidentValidator } from './validators/create-resident.validator';
 import { Role, Provider, User, Condominium } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 interface MockPrismaTransaction {
   condominium: { create: jest.Mock };
   user: { create: jest.Mock };
+  resident: { create: jest.Mock };
 }
 
 describe('AuthService', () => {
@@ -37,6 +44,19 @@ describe('AuthService', () => {
     passwordHash: 'hashed_password',
     provider: Provider.LOCAL,
     role: Role.ADMIN,
+    condominiumId: mockCondominium.id,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  const mockResidentUser: User = {
+    id: 'resident-user-id-uuid',
+    name: 'João Morador',
+    email: 'joao@reservaai.com.br',
+    passwordHash: 'hashed_resident_password',
+    provider: Provider.LOCAL,
+    role: Role.RESIDENT,
     condominiumId: mockCondominium.id,
     isActive: true,
     createdAt: new Date(),
@@ -72,11 +92,24 @@ describe('AuthService', () => {
         .fn()
         .mockImplementation(
           async (callback: (tx: MockPrismaTransaction) => Promise<unknown>) => {
+            const isResidentCall = callback
+              .toString()
+              .includes('Role.RESIDENT');
             return callback({
               condominium: {
                 create: jest.fn().mockResolvedValue(mockCondominium),
               },
-              user: { create: jest.fn().mockResolvedValue(mockAdmin) },
+              user: {
+                create: jest.fn().mockImplementation(() => {
+                  if (isResidentCall) {
+                    return Promise.resolve(mockResidentUser);
+                  }
+                  return Promise.resolve(mockAdmin);
+                }),
+              },
+              resident: {
+                create: jest.fn().mockResolvedValue({}),
+              },
             });
           },
         ),
@@ -93,6 +126,7 @@ describe('AuthService', () => {
         { provide: JwtService, useValue: mockJwt },
         RegisterTenantValidator,
         LoginValidator,
+        CreateResidentValidator,
       ],
     }).compile();
 
@@ -214,6 +248,97 @@ describe('AuthService', () => {
         role: mockAdmin.role,
         condominiumId: mockAdmin.condominiumId,
       });
+    });
+  });
+
+  describe('createResident', () => {
+    const createResidentInput: CreateResidentInput = {
+      name: 'João Morador',
+      email: 'joao@reservaai.com.br',
+      canBook: true,
+    };
+
+    const adminContext = {
+      userId: mockAdmin.id,
+      email: mockAdmin.email,
+      role: mockAdmin.role,
+      condominiumId: mockAdmin.condominiumId!,
+    };
+
+    it('should throw BadRequestException for invalid input', async () => {
+      const invalidInput: CreateResidentInput = {
+        name: '',
+        email: 'invalid-email',
+      };
+
+      await expect(
+        service.createResident(invalidInput, adminContext),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw ConflictException when email already exists', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue({
+        id: 'existing-user-id',
+        email: 'joao@reservaai.com.br',
+      });
+
+      await expect(
+        service.createResident(createResidentInput, adminContext),
+      ).rejects.toThrow(ConflictException);
+    });
+
+    it('should throw ForbiddenException when caller is not admin', async () => {
+      const nonAdminContext = {
+        userId: mockResidentUser.id,
+        email: mockResidentUser.email,
+        role: Role.RESIDENT,
+        condominiumId: mockAdmin.condominiumId!,
+      };
+
+      await expect(
+        service.createResident(createResidentInput, nonAdminContext),
+      ).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should create resident user successfully', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue(null);
+
+      const result = await service.createResident(
+        createResidentInput,
+        adminContext,
+      );
+
+      expect(result).toHaveProperty('message');
+      expect(result).toHaveProperty('accessToken');
+      expect(result).toHaveProperty('user');
+      expect(result.user.email).toBe(createResidentInput.email);
+      expect(result.user.role).toBe(Role.RESIDENT);
+    });
+
+    it('should generate temporary password when not provided', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue(null);
+
+      const result = await service.createResident(
+        createResidentInput,
+        adminContext,
+      );
+
+      expect(result).toHaveProperty('accessToken');
+    });
+
+    it('should use provided password when given', async () => {
+      mockPrisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      const inputWithPassword = {
+        ...createResidentInput,
+        password: 'Test1234',
+      };
+
+      const result = await service.createResident(
+        inputWithPassword,
+        adminContext,
+      );
+
+      expect(result).toHaveProperty('accessToken');
     });
   });
 });

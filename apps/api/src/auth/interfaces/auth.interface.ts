@@ -47,3 +47,24 @@ export interface LoginOutput {
     name: string;
   };
 }
+
+export interface CreateResidentInput {
+  name: string;
+  email: string;
+  password?: string;
+  unitId?: string;
+  document?: string;
+  phone?: string;
+  canBook?: boolean;
+}
+
+export interface CreateResidentOutput {
+  message: string;
+  accessToken: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
