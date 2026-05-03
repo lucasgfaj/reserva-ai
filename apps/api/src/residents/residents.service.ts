@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 import {
   ResidentListOutput,
@@ -161,7 +162,6 @@ export class ResidentsService {
         },
       });
 
-      const bcrypt = await import('bcrypt');
       const hashedPassword = await bcrypt.hash(password, 10);
       await prisma.user.update({
         where: { id: user.id },
