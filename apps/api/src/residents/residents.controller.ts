@@ -42,7 +42,7 @@ interface AuthRequest {
 @ApiTags('residents')
 @ApiBearerAuth()
 @Controller('residents')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class ResidentsController {
   constructor(private readonly residentsService: ResidentsService) {}
 

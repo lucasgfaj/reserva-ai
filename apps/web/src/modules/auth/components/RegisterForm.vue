@@ -9,6 +9,8 @@
         v-model="form.adminName"
         placeholder="Ex: João da Silva"
         required
+        :error="validation.getError('adminName')"
+        @blur="validateField('adminName')"
       />
       <AuthInput 
         id="email"
@@ -18,6 +20,8 @@
         v-model="form.adminEmail"
         placeholder="exemplo@email.com"
         required
+        :error="validation.getError('adminEmail')"
+        @blur="validateField('adminEmail')"
       />
       <AuthInput 
         id="password"
@@ -27,6 +31,8 @@
         v-model="form.adminPassword"
         placeholder="Mínimo 8 caracteres"
         required
+        :error="validation.getError('adminPassword')"
+        @blur="validateField('adminPassword')"
       >
         <template #right-icon>
           <button 
@@ -49,6 +55,8 @@
         v-model="form.condominiumName"
         placeholder="Ex: Residencial Vista Bella"
         required
+        :error="validation.getError('condominiumName')"
+        @blur="validateField('condominiumName')"
       />
       <AuthInput 
         id="address"
@@ -57,6 +65,8 @@
         v-model="form.condominiumAddress"
         placeholder="Rua, Número, Bairro, Cidade"
         required
+        :error="validation.getError('condominiumAddress')"
+        @blur="validateField('condominiumAddress')"
       />
     </div>
 
@@ -100,14 +110,18 @@
         </p>
       </div>
 
-      <p v-if="errorMsg" class="text-center text-error text-xs font-bold bg-error/10 py-3 rounded-lg border border-error/20">{{ errorMsg }}</p>
+      <p v-if="errorMsg" class="text-center text-error text-xs font-bold bg-error/10 py-3 rounded-lg border border-error/20">
+        {{ errorMsg }}
+      </p>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, toRaw } from 'vue'
 import AuthInput from './AuthInput.vue'
+import { useValidation, type ValidationRules } from '@/modules/shared/composables/useValidation'
+import { useToast } from '@/modules/shared/composables/useToast'
 import type { RegisterTenantDTO } from '../services/dtos/register-tenant.dto'
 
 const props = defineProps<{
@@ -116,7 +130,10 @@ const props = defineProps<{
   errorMsg?: string
 }>()
 
-const emit = defineEmits(['submit', 'next-step', 'update:currentStep', 'submit-error'])
+const emit = defineEmits(['submit', 'next-step', 'update:currentStep'])
+
+const { success: showSuccess, error: showError } = useToast()
+const validation = useValidation()
 
 const showPassword = ref(false)
 
@@ -128,18 +145,51 @@ const form = reactive<RegisterTenantDTO>({
   adminPassword: '',
 })
 
+const step1Rules: ValidationRules = {
+  adminName: { required: true, minLength: 3 },
+  adminEmail: { required: true, email: true },
+  adminPassword: { required: true, minLength: 8, password: true },
+}
+
+const step2Rules: ValidationRules = {
+  condominiumName: { required: true, minLength: 3 },
+  condominiumAddress: { required: true, minLength: 5 },
+}
+
+const validateField = (field: keyof typeof form) => {
+  const rules = props.currentStep === 1 ? step1Rules : step2Rules
+  if (rules[field]) {
+    const data = toRaw(form)
+    const fieldValue: Record<string, string> = { [field]: data[field] }
+    validation.validate(fieldValue, { [field]: rules[field] })
+  }
+}
+
 const handleNext = () => {
-  if (form.adminName && form.adminEmail && form.adminPassword) {
+  const data = { adminName: form.adminName, adminEmail: form.adminEmail, adminPassword: form.adminPassword }
+  const isValid = validation.validate(data, step1Rules)
+  
+  if (isValid) {
+    validation.clearErrors()
     emit('update:currentStep', 2)
     emit('next-step')
   } else {
-    // This could also be handled by an event or internal errorMsg
-    emit('submit-error', 'Por favor, preencha todos os campos pessoais.')
+    const firstError = Object.values(validation.errors.value)[0]
+    if (firstError) showError(firstError)
   }
 }
 
 const handleSubmit = () => {
-  emit('submit', form)
+  const data = { condominiumName: form.condominiumName, condominiumAddress: form.condominiumAddress }
+  const isValid = validation.validate(data, step2Rules)
+  
+  if (isValid) {
+    validation.clearErrors()
+    emit('submit', toRaw(form))
+  } else {
+    const firstError = Object.values(validation.errors.value)[0]
+    if (firstError) showError(firstError)
+  }
 }
 </script>
 

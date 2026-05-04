@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { authRoutes } from '@/modules/auth/auth.routes'
 import { landingRoutes } from '@/modules/landing/landing.routes'
 import { dashboardRoutes } from '@/modules/dashboard/dashboard.routes'
+import { residentsRoutes } from '@/modules/residents/residents.routes'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -9,6 +10,7 @@ export const router = createRouter({
     ...landingRoutes,
     ...authRoutes,
     ...dashboardRoutes,
+    ...residentsRoutes,
   ],
 })
 
