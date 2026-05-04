@@ -15,7 +15,7 @@ export class RegisterTenantValidator {
   private readonly MAX_ADDRESS_LENGTH = 255;
   private readonly MAX_NAME_LENGTH = 120;
   private readonly PASSWORD_REGEX =
-    /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/;
+    /^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])/;
 
   validate(input: RegisterTenantInput): ValidationResult {
     const errors: string[] = [];
@@ -99,7 +99,7 @@ export class RegisterTenantValidator {
     }
     if (!this.PASSWORD_REGEX.test(password)) {
       errors.push(
-        'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+        'Senha deve conter pelo menos uma letra, um número e um caractere especial',
       );
     }
   }

@@ -68,18 +68,18 @@ describe('AuthService', () => {
       condominium: {
         findUnique: jest.fn().mockResolvedValue(mockCondominium),
       },
-      $transaction: jest
-        .fn()
-        .mockImplementation(
-          async (callback: (tx: MockPrismaTransaction) => Promise<unknown>) => {
-            return callback({
-              condominium: {
-                create: jest.fn().mockResolvedValue(mockCondominium),
-              },
-              user: { create: jest.fn().mockResolvedValue(mockAdmin) },
-            });
+      /* eslint-disable @typescript-eslint/no-unsafe-return */
+      /* eslint-disable @typescript-eslint/no-unsafe-call */
+      $transaction: jest.fn().mockImplementation((callback) => {
+        return callback({
+          condominium: {
+            create: jest.fn().mockResolvedValue(mockCondominium),
           },
-        ),
+          user: {
+            create: jest.fn().mockResolvedValue(mockAdmin),
+          },
+        });
+      }),
     };
 
     mockJwt = {

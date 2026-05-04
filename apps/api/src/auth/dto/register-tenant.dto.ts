@@ -16,7 +16,9 @@ export class RegisterTenantDto {
   })
   @IsString({ message: 'Nome do condomínio inválido.' })
   @IsNotEmpty({ message: 'O nome do condomínio é obrigatório.' })
-  @MinLength(3, { message: 'O nome do condomínio deve ter no mínimo 3 caracteres.' })
+  @MinLength(3, {
+    message: 'O nome do condomínio deve ter no mínimo 3 caracteres.',
+  })
   @MaxLength(150)
   condominiumName: string;
 
@@ -50,17 +52,18 @@ export class RegisterTenantDto {
   adminEmail: string;
 
   @ApiProperty({
-    example: 'SenhaSegura123!',
+    example: 'SenhaSegura123!@',
     description:
-      'Senha que será hasheada via Bcrypt (mín 8 chars, letra, número e especial)',
+      'Senha que será hasheada via Bcrypt (mín 8 chars, letra, número e qualquer especial)',
     minLength: 8,
   })
   @IsString({ message: 'Senha inválida.' })
   @IsNotEmpty({ message: 'A senha é obrigatória.' })
   @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres.' })
   @MaxLength(40)
-  @Matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]+$/, {
-    message: 'A senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)'
+  @Matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])/, {
+    message:
+      'A senha deve conter pelo menos uma letra, um número e um caractere especial',
   })
   adminPassword: string;
 }

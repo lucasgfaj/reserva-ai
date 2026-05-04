@@ -4,6 +4,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegisterTenantValidator } from './validators/register-tenant.validator';
 import { LoginValidator } from './validators/login.validator';
+import { CreateResidentValidator } from './validators/create-resident.validator';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -14,7 +16,13 @@ import { LoginValidator } from './validators/login.validator';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, RegisterTenantValidator, LoginValidator],
+  providers: [
+    AuthService,
+    RegisterTenantValidator,
+    LoginValidator,
+    CreateResidentValidator,
+    JwtAuthGuard,
+  ],
   exports: [AuthService],
 })
 export class AuthModule {}

@@ -100,7 +100,7 @@ model Unit {
 model Resident {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @unique @db.Uuid // One-to-one with User
-  unitId    String   @db.Uuid
+  unitId    String?  @db.Uuid // Optional - pode ser vinculado depois
   document  String?  @db.VarChar(20)
   phone     String?  @db.VarChar(20)
   canBook   Boolean
@@ -108,7 +108,7 @@ model Resident {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
-  unit Unit @relation(fields: [unitId], references: [id])
+  unit Unit? @relation(fields: [unitId], references: [id])
 
   reservations Reservation[]
 

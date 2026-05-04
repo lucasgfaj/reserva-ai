@@ -8,6 +8,8 @@
       v-model="email"
       placeholder="exemplo@email.com"
       required
+      :error="validation.getError('email')"
+      @blur="validateField"
     />
 
     <div class="space-y-2">
@@ -19,6 +21,8 @@
         v-model="password"
         placeholder="••••••••"
         required
+        :error="validation.getError('password')"
+        @blur="validateField"
       >
         <template #right-icon>
           <button 
@@ -52,19 +56,45 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AuthInput from './AuthInput.vue'
+import { useValidation, type ValidationRules } from '@/modules/shared/composables/useValidation'
+import { useToast } from '@/modules/shared/composables/useToast'
 
 defineProps<{
   isLoading: boolean
 }>()
 
-const emit = defineEmits(['submit'])
+const emit = defineEmits<{
+  submit: [data: { email: string; password: string }]
+}>()
+
+const { error: showError } = useToast()
+const validation = useValidation()
 
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
 
+const loginRules: ValidationRules = {
+  email: { required: true, email: true },
+  password: { required: true },
+}
+
+const validateField = () => {
+  const data = { email: email.value, password: password.value }
+  validation.validate(data, loginRules)
+}
+
 const handleSubmit = () => {
-  emit('submit', { email: email.value, password: password.value })
+  const data = { email: email.value, password: password.value }
+  const isValid = validation.validate(data, loginRules)
+  
+  if (isValid) {
+    validation.clearErrors()
+    emit('submit', data)
+  } else {
+    const firstError = Object.values(validation.errors.value)[0]
+    if (firstError) showError(firstError)
+  }
 }
 </script>
 

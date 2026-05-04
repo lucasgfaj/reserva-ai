@@ -117,7 +117,7 @@ describe('RegisterTenantValidator', () => {
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
         expect(result.errors).toContain(
-          'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+          'Senha deve conter pelo menos uma letra, um número e um caractere especial',
         );
       });
 
@@ -126,7 +126,7 @@ describe('RegisterTenantValidator', () => {
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
         expect(result.errors).toContain(
-          'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+          'Senha deve conter pelo menos uma letra, um número e um caractere especial',
         );
       });
 
@@ -135,7 +135,7 @@ describe('RegisterTenantValidator', () => {
         const result = validator.validate(input);
         expect(result.isValid).toBe(false);
         expect(result.errors).toContain(
-          'Senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
+          'Senha deve conter pelo menos uma letra, um número e um caractere especial',
         );
       });
     });
