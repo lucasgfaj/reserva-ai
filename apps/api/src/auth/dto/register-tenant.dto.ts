@@ -16,7 +16,9 @@ export class RegisterTenantDto {
   })
   @IsString({ message: 'Nome do condomínio inválido.' })
   @IsNotEmpty({ message: 'O nome do condomínio é obrigatório.' })
-  @MinLength(3, { message: 'O nome do condomínio deve ter no mínimo 3 caracteres.' })
+  @MinLength(3, {
+    message: 'O nome do condomínio deve ter no mínimo 3 caracteres.',
+  })
   @MaxLength(150)
   condominiumName: string;
 
@@ -60,7 +62,8 @@ export class RegisterTenantDto {
   @MinLength(8, { message: 'A senha deve ter pelo menos 8 caracteres.' })
   @MaxLength(40)
   @Matches(/^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]+$/, {
-    message: 'A senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)'
+    message:
+      'A senha deve conter pelo menos uma letra, um número e um caractere especial (!@#$%^&*)',
   })
   adminPassword: string;
 }
