@@ -14,12 +14,21 @@ export const router = createRouter({
   ],
 })
 
+const publicRoutes = ['/', '/login', '/register']
+
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('auth_token')
-  const publicRoutes = ['/', '/login', '/register']
-  
+
+  // Se não tem token e tenta acessar rota privada
+  if (!token && !publicRoutes.includes(to.path)) {
+    localStorage.removeItem('auth_token')
+    return next('/login')
+  }
+
+  // Se tem token e tenta acessar rota pública
   if (token && publicRoutes.includes(to.path)) {
     return next('/dashboard')
   }
+
   next()
 })
