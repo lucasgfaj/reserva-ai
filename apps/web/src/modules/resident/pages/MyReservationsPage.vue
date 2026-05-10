@@ -1,0 +1,59 @@
+<template>
+  <div class="flex min-h-screen bg-surface text-on-surface">
+    <!-- SideNavBar -->
+    <SideNavBar 
+      role="RESIDENT" 
+      :userName="userName"
+      @logout="handleLogout"
+      :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" 
+    />
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-h-screen w-full">
+      <TopAppBar 
+        :userName="userName" 
+        userRole="RESIDENT"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen" 
+      />
+
+      <div class="flex-1 p-4 md:p-6 lg:p-8">
+        <h1 class="text-2xl font-bold text-cyan-900 mb-4">Minhas Reservas</h1>
+        <p class="text-gray-600">Em breve - Suas reservas (US09).</p>
+      </div>
+    </main>
+
+    <!-- Mobile Overlay -->
+    <div 
+      v-if="sidebarOpen" 
+      class="fixed inset-0 bg-black/50 z-40 md:hidden"
+      @click="sidebarOpen = false"
+    ></div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
+import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
+import { authService } from '@/modules/auth/services/auth.service'
+import { http } from '@/api/http'
+
+const router = useRouter()
+const sidebarOpen = ref(false)
+
+const user = authService.getUser()
+const userName = ref(user?.name || '')
+
+const handleLogout = async () => {
+  try {
+    await http.post('/auth/logout')
+  } catch { /* ignora */ }
+  authService.logout()
+  router.push('/')
+}
+
+router.afterEach(() => {
+  sidebarOpen.value = false
+})
+</script>

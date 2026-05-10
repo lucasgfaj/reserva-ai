@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
+  UseInterceptors,
   Request,
   HttpCode,
   HttpStatus,
@@ -20,6 +21,7 @@ import {
 import { Role } from '@prisma/client';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { TransformInterceptor } from '../common/interceptors/transform.interceptor';
 import { ResidentsService } from './residents.service';
 import { CreateResidentDto } from './dto/create-resident.dto';
 import { UpdatePermissionsDto } from './dto/update-permissions.dto';
@@ -43,6 +45,7 @@ interface AuthRequest {
 @ApiBearerAuth()
 @Controller('residents')
 @UseGuards(JwtAuthGuard)
+@UseInterceptors(TransformInterceptor)
 export class ResidentsController {
   constructor(private readonly residentsService: ResidentsService) {}
 

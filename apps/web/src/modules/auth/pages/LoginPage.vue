@@ -69,7 +69,7 @@ const handleLogin = async (credentials: { email: string; password: string }) => 
   
   try {
     const response = await loginRequest(credentials)
-    localStorage.setItem('auth_token', JSON.stringify(response.accessToken))
+    localStorage.setItem('auth_token', response.accessToken)
     localStorage.setItem('auth_user', JSON.stringify(response.user))
     localStorage.setItem('auth_condo', JSON.stringify(response.condominium))
     alert(response.message)
