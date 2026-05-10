@@ -15,7 +15,7 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({
-    summary: 'Registra um novo condomínio e seu administrador raiz (US01)',
+    summary: 'Registra um novo condomínio e seu administrador raiz',
     description: `
       Cria de forma atômica o condomínio e o usuário administrador vinculado.
       
@@ -47,17 +47,28 @@ export class AuthController {
 
   @Post('login')
   @ApiOperation({
-    summary: 'Realiza login do administrador do condomínio (US02)',
-    description: `
-      Autentica o usuário e retorna um JWT token.
+    summary: 'Realiza login de administrador ou morador',
+description: `
+      Autentica o administrador ou morador e retorna um JWT token.
+      O morador deve usar as credenciais fornecidas pelo administrador do condomínio.
       
-      **Exemplo de cURL:**
+      **Exemplo de cURL (Admin):**
       \`\`\`bash
       curl -X POST http://localhost:3000/api/v1/auth/login \\
         -H "Content-Type: application/json" \\
         -d '{
           "email": "admin@reservaai.com.br",
           "password": "SenhaSegura123!"
+        }'
+      \`\`\`
+
+      **Exemplo de cURL (Morador):**
+      \`\`\`bash
+      curl -X POST http://localhost:3000/api/v1/auth/login \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "email": "morador@reservaai.com.br",
+          "password": "Senha123"
         }'
       \`\`\`
     `,
@@ -71,7 +82,7 @@ export class AuthController {
 
   @Post('logout')
   @ApiOperation({
-    summary: 'Realiza logout do usuário (US03)',
+    summary: 'Realiza logout do usuário',
     description: `
       Invalida a sessão do usuário.
       
