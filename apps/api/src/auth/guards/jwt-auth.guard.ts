@@ -27,7 +27,9 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const token = this.extractTokenFromHeader(request);
+    
+    // Tenta pegar token do cookie primeiro, depois do header Authorization
+    const token = this.extractToken(request);
 
     if (!token) {
       throw new UnauthorizedException('Token não fornecido');
@@ -43,9 +45,23 @@ export class JwtAuthGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractToken(request: Request): string | undefined {
+    // 1. Tenta do cookie (preferencial)
+    const cookieToken = request.cookies?.access_token;
+    if (cookieToken) {
+      return cookieToken;
+    }
+
+    // 2. Tenta do header Authorization (fallback para APIs externas)
+    const authHeader = request.headers.authorization;
+    if (authHeader) {
+      const [type, token] = authHeader.split(' ');
+      if (type === 'Bearer' && token) {
+        return token;
+      }
+    }
+
+    return undefined;
   }
 }
 /* eslint-enable @typescript-eslint/no-unsafe-assignment */

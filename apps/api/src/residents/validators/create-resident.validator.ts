@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateResidentInput } from '../interfaces/residents.interface';
 
 export interface CreateResidentValidationResult {
   isValid: boolean;
@@ -16,14 +15,48 @@ export class CreateResidentValidator {
   private readonly MAX_PHONE_LENGTH = 20;
   private readonly PASSWORD_REGEX = /^(?=.*[a-zA-Z])(?=.*[0-9])/;
 
-  validate(input: CreateResidentInput): CreateResidentValidationResult {
+  validate(input: any): CreateResidentValidationResult {
     const errors: string[] = [];
 
-    this.validateName(input.name, errors);
-    this.validateEmail(input.email, errors);
-    this.validatePassword(input.password, errors);
-    this.validateDocument(input.document, errors);
-    this.validatePhone(input.phone, errors);
+    if (!input.name || input.name.trim().length === 0) {
+      errors.push('O nome é obrigatório.');
+    } else {
+      if (input.name.trim().length < this.MIN_NAME_LENGTH) {
+        errors.push(`O nome deve ter pelo menos ${this.MIN_NAME_LENGTH} caracteres.`);
+      }
+      if (input.name.trim().length > this.MAX_NAME_LENGTH) {
+        errors.push(`O nome deve ter no máximo ${this.MAX_NAME_LENGTH} caracteres.`);
+      }
+    }
+
+    if (!input.email || input.email.trim().length === 0) {
+      errors.push('O e-mail é obrigatório.');
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(input.email)) {
+        errors.push('O e-mail deve ser um endereço válido.');
+      }
+    }
+
+    if (input.password) {
+      if (input.password.length < this.MIN_PASSWORD_LENGTH) {
+        errors.push(`A senha deve ter pelo menos ${this.MIN_PASSWORD_LENGTH} caracteres.`);
+      }
+      if (input.password.length > this.MAX_PASSWORD_LENGTH) {
+        errors.push(`A senha deve ter no máximo ${this.MAX_PASSWORD_LENGTH} caracteres.`);
+      }
+      if (!this.PASSWORD_REGEX.test(input.password)) {
+        errors.push('A senha deve conter pelo menos uma letra e um número.');
+      }
+    }
+
+    if (input.document && input.document.length > this.MAX_DOCUMENT_LENGTH) {
+      errors.push(`O documento deve ter no máximo ${this.MAX_DOCUMENT_LENGTH} caracteres.`);
+    }
+
+    if (input.phone && input.phone.length > this.MAX_PHONE_LENGTH) {
+      errors.push(`O telefone deve ter no máximo ${this.MAX_PHONE_LENGTH} caracteres.`);
+    }
 
     return {
       isValid: errors.length === 0,
@@ -32,85 +65,11 @@ export class CreateResidentValidator {
   }
 
   generateTemporaryPassword(): string {
-    const chars =
-      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let password = '';
     for (let i = 0; i < 8; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return password;
-  }
-
-  private validateName(name: string, errors: string[]): void {
-    if (!name || name.trim().length === 0) {
-      errors.push('Nome é obrigatório');
-      return;
-    }
-    if (name.trim().length < this.MIN_NAME_LENGTH) {
-      errors.push(
-        `Nome deve ter pelo menos ${this.MIN_NAME_LENGTH} caracteres`,
-      );
-    }
-    if (name.trim().length > this.MAX_NAME_LENGTH) {
-      errors.push(`Nome não pode exceder ${this.MAX_NAME_LENGTH} caracteres`);
-    }
-  }
-
-  private validateEmail(email: string, errors: string[]): void {
-    if (!email || email.trim().length === 0) {
-      errors.push('E-mail é obrigatório');
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      errors.push('E-mail deve ser um endereço válido');
-    }
-  }
-
-  private validatePassword(
-    password: string | undefined,
-    errors: string[],
-  ): void {
-    if (!password || password.length === 0) {
-      return;
-    }
-    if (password.length < this.MIN_PASSWORD_LENGTH) {
-      errors.push(
-        `Senha deve ter pelo menos ${this.MIN_PASSWORD_LENGTH} caracteres`,
-      );
-    }
-    if (password.length > this.MAX_PASSWORD_LENGTH) {
-      errors.push(
-        `Senha não pode exceder ${this.MAX_PASSWORD_LENGTH} caracteres`,
-      );
-    }
-    if (!this.PASSWORD_REGEX.test(password)) {
-      errors.push('Senha deve conter pelo menos uma letra e um número');
-    }
-  }
-
-  private validateDocument(
-    document: string | undefined,
-    errors: string[],
-  ): void {
-    if (!document) {
-      return;
-    }
-    if (document.length > this.MAX_DOCUMENT_LENGTH) {
-      errors.push(
-        `Documento não pode exceder ${this.MAX_DOCUMENT_LENGTH} caracteres`,
-      );
-    }
-  }
-
-  private validatePhone(phone: string | undefined, errors: string[]): void {
-    if (!phone) {
-      return;
-    }
-    if (phone.length > this.MAX_PHONE_LENGTH) {
-      errors.push(
-        `Telefone não pode exceder ${this.MAX_PHONE_LENGTH} caracteres`,
-      );
-    }
   }
 }

@@ -1,12 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import type {
-  RegisterTenantOutput,
-  LoginOutput,
-} from './interfaces/auth.interface';
+import { Controller, Post, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import type { Response } from 'express';
+import type { RegisterTenantOutput, LoginOutput } from './interfaces/auth.interface';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterTenantDto } from './dto/register-tenant.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
+import { setAuthCookie, clearAuthCookie } from './utils/cookie.utils';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -15,14 +14,18 @@ export class AuthController {
 
   @Post('register')
   @ApiOperation({
-    summary: 'Registra um novo condomínio e seu administrador raiz',
+    summary: 'US01 - Registrar condomínio e administrador raiz',
     description: `
-      Cria de forma atômica o condomínio e o usuário administrador vinculado.
+      **[US01]** Cria de forma atômica o condomínio e o usuário administrador raiz (Self-Service Onboarding).
+      
+      **Acesso:** Público (não requer autenticação)
+      **Regras de negócio:** RN02
       
       **Exemplo de cURL:**
       \`\`\`bash
       curl -X POST http://localhost:3000/api/v1/auth/register \\
         -H "Content-Type: application/json" \\
+        -c cookies.txt \\
         -d '{
           "adminName": "Lucas Admin",
           "adminEmail": "admin@reservaai.com.br",
@@ -35,66 +38,69 @@ export class AuthController {
   })
   @ApiResponse({
     status: 201,
-    description: 'Condomínio e Admin criados com sucesso.',
+    description: 'Condomínio e Admin criados com sucesso. Cookie HttpOnly definido.',
   })
   @ApiResponse({ status: 400, description: 'Dados de entrada inválidos.' })
   @ApiResponse({ status: 409, description: 'E-mail já cadastrado.' })
   async register(
     @Body() input: RegisterTenantDto,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<RegisterTenantOutput> {
-    return this.authService.registerTenant(input);
+    const result = await this.authService.registerTenant(input);
+    setAuthCookie(response, result.accessToken);
+    return result;
   }
 
   @Post('login')
   @ApiOperation({
-    summary: 'Realiza login de administrador ou morador',
-description: `
-      Autentica o administrador ou morador e retorna um JWT token.
-      O morador deve usar as credenciais fornecidas pelo administrador do condomínio.
+    summary: 'US02/US03.1 - Login de administrador ou morador',
+    description: `
+      **[US02]** Login de administrador para gerenciar dados do condomínio.
+      **[US03.1]** Login de morador com credenciais fornecidas pelo administrador.
       
-      **Exemplo de cURL (Admin):**
+      **Acesso:** Público (não requer autenticação)
+      
+      **Exemplo de cURL (com cookies):**
       \`\`\`bash
       curl -X POST http://localhost:3000/api/v1/auth/login \\
         -H "Content-Type: application/json" \\
-        -d '{
-          "email": "admin@reservaai.com.br",
-          "password": "SenhaSegura123!"
-        }'
-      \`\`\`
-
-      **Exemplo de cURL (Morador):**
-      \`\`\`bash
-      curl -X POST http://localhost:3000/api/v1/auth/login \\
-        -H "Content-Type: application/json" \\
-        -d '{
-          "email": "morador@reservaai.com.br",
-          "password": "Senha123"
-        }'
+        -c cookies.txt \\
+        -d '{"email": "admin@reservaai.com.br", "password": "SenhaSegura123!"}'
       \`\`\`
     `,
   })
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ status: 200, description: 'Login realizado com sucesso.' })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
-  async login(@Body() input: LoginDto): Promise<LoginOutput> {
-    return this.authService.login(input);
+  async login(
+    @Body() input: LoginDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<LoginOutput> {
+    const result = await this.authService.login(input);
+    setAuthCookie(response, result.accessToken);
+    return result;
   }
 
   @Post('logout')
   @ApiOperation({
-    summary: 'Realiza logout do usuário',
+    summary: 'Logout - Invalidar sessão',
     description: `
-      Invalida a sessão do usuário.
+      Invalida a sessão do usuário limpando o cookie HttpOnly.
+      
+      **Acesso:** Autenticado (requer JWT)
       
       **Exemplo de cURL:**
       \`\`\`bash
       curl -X POST http://localhost:3000/api/v1/auth/logout \\
-        -H "Authorization: Bearer <token>"
+        -b cookies.txt \\
+        -c cookies.txt
       \`\`\`
     `,
   })
-  @ApiResponse({ status: 200, description: 'Logout realizado com sucesso.' })
-  logout() {
+  @ApiCookieAuth()
+  @ApiResponse({ status: 200, description: 'Logout realizado com sucesso. Cookie limpo.' })
+  logout(@Res({ passthrough: true }) response: Response) {
+    clearAuthCookie(response);
     return { message: 'Logout realizado com sucesso' };
   }
 }

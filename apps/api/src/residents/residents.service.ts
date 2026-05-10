@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -15,6 +11,12 @@ import {
   CreateResidentOutput,
 } from './interfaces/residents.interface';
 import { CreateResidentValidator } from './validators/create-resident.validator';
+import {
+  ResidentNotFoundException,
+  ResidentAccessDeniedException,
+  EmailAlreadyExistsException,
+  ResidentValidationException,
+} from '../common/exceptions';
 
 interface CreateResidentInput {
   name: string;
@@ -39,9 +41,7 @@ export class ResidentsService {
     condominiumId: string;
   }): Promise<ResidentListOutput> {
     if (context.role !== Role.ADMIN) {
-      throw new ForbiddenException(
-        'Apenas administradores podem listar moradores',
-      );
+      throw new ResidentAccessDeniedException('listar');
     }
 
     const users = await this.prisma.user.findMany({
@@ -81,9 +81,7 @@ export class ResidentsService {
     context: { role: string; condominiumId: string },
   ): Promise<ResidentDetailOutput> {
     if (context.role !== Role.ADMIN) {
-      throw new ForbiddenException(
-        'Apenas administradores podem buscar moradores',
-      );
+      throw new ResidentAccessDeniedException('buscar');
     }
 
     const user = await this.prisma.user.findFirst({
@@ -98,7 +96,7 @@ export class ResidentsService {
     });
 
     if (!user) {
-      throw new NotFoundException('Morador não encontrado');
+      throw new ResidentNotFoundException(residentId);
     }
 
     return {
@@ -126,14 +124,12 @@ export class ResidentsService {
     },
   ): Promise<CreateResidentOutput> {
     if (context.role !== Role.ADMIN) {
-      throw new ForbiddenException(
-        'Apenas administradores podem cadastrar moradores',
-      );
+      throw new ResidentAccessDeniedException('cadastrar');
     }
 
     const validation = this.createResidentValidator.validate(input);
     if (!validation.isValid) {
-      throw new ForbiddenException(validation.errors);
+      throw new ResidentValidationException(validation.errors);
     }
 
     const existingUser = await this.prisma.user.findUnique({
@@ -141,7 +137,7 @@ export class ResidentsService {
     });
 
     if (existingUser) {
-      throw new ForbiddenException('Usuário com este email já existe');
+      throw new EmailAlreadyExistsException(input.email);
     }
 
     const password =
@@ -207,9 +203,7 @@ export class ResidentsService {
     context: { role: string; condominiumId: string },
   ): Promise<UpdateResidentPermissionsOutput> {
     if (context.role !== Role.ADMIN) {
-      throw new ForbiddenException(
-        'Apenas administradores podem alterar permissões',
-      );
+      throw new ResidentAccessDeniedException('alterar permissões de');
     }
 
     const user = await this.prisma.user.findFirst({
@@ -223,8 +217,8 @@ export class ResidentsService {
       },
     });
 
-    if (!user || !user.id || user.id === '') {
-      throw new NotFoundException('Morador não encontrado');
+    if (!user) {
+      throw new ResidentNotFoundException(residentId);
     }
 
     const hasResident =

@@ -2,10 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ResidentsService } from './residents.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { CreateResidentInput } from './interfaces/residents.interface';
 import { CreateResidentValidator } from './validators/create-resident.validator';
 import { Role, Provider, User, Condominium } from '@prisma/client';
+import {
+  ResidentAccessDeniedException,
+  ResidentNotFoundException,
+} from '../common/exceptions';
 
 interface MockPrismaTransaction {
   user: { create: jest.Mock; update: jest.Mock };
@@ -133,7 +136,7 @@ describe('ResidentsService', () => {
 
       await expect(
         service.createResident(createResidentInput, nonAdminContext),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(ResidentAccessDeniedException);
     });
 
     it('should create resident user successfully', async () => {
@@ -191,7 +194,7 @@ describe('ResidentsService', () => {
       };
 
       await expect(service.listResidents(nonAdminContext)).rejects.toThrow(
-        ForbiddenException,
+        ResidentAccessDeniedException,
       );
     });
   });
@@ -224,7 +227,7 @@ describe('ResidentsService', () => {
 
       await expect(
         service.getResidentById('invalid-id', adminContext),
-      ).rejects.toThrow(NotFoundException);
+      ).rejects.toThrow(ResidentNotFoundException);
     });
   });
 
@@ -286,7 +289,7 @@ describe('ResidentsService', () => {
           false,
           nonAdminContext,
         ),
-      ).rejects.toThrow(ForbiddenException);
+      ).rejects.toThrow(ResidentAccessDeniedException);
     });
   });
 });

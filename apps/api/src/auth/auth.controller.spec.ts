@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Response } from 'express';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { RegisterTenantInput } from './interfaces/auth.interface';
@@ -38,6 +39,11 @@ describe('AuthController', () => {
     },
   };
 
+  const mockResponse = {
+    cookie: jest.fn(),
+    clearCookie: jest.fn(),
+  } as unknown as Response;
+
   const registerInput: RegisterTenantInput = {
     condominiumName: 'Residencial Horizonte',
     condominiumAddress: 'Rua das Flores, 123',
@@ -72,15 +78,16 @@ describe('AuthController', () => {
 
   /* eslint-disable @typescript-eslint/unbound-method */
   describe('register', () => {
-    it('should call AuthService.registerTenant with correct data', () => {
-      return controller.register(registerInput).then((result) => {
+    it('should call AuthService.registerTenant with correct data and set cookie', () => {
+      return controller.register(registerInput, mockResponse).then((result) => {
         expect(service.registerTenant).toHaveBeenCalledWith(registerInput);
         expect(result).toEqual(mockRegisterResult);
+        expect(mockResponse.cookie).toHaveBeenCalled();
       });
     });
 
     it('should return accessToken, user, and condominium', () => {
-      return controller.register(registerInput).then((result) => {
+      return controller.register(registerInput, mockResponse).then((result) => {
         expect(result).toHaveProperty('message');
         expect(result).toHaveProperty('accessToken');
         expect(result).toHaveProperty('user');
@@ -92,15 +99,16 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    it('should call AuthService.login with correct data', () => {
-      return controller.login(loginInput).then((result) => {
+    it('should call AuthService.login with correct data and set cookie', () => {
+      return controller.login(loginInput, mockResponse).then((result) => {
         expect(service.login).toHaveBeenCalledWith(loginInput);
         expect(result).toEqual(mockLoginResult);
+        expect(mockResponse.cookie).toHaveBeenCalled();
       });
     });
 
     it('should return accessToken, user, and condominium on login', () => {
-      return controller.login(loginInput).then((result) => {
+      return controller.login(loginInput, mockResponse).then((result) => {
         expect(result).toHaveProperty('message');
         expect(result).toHaveProperty('accessToken');
         expect(result).toHaveProperty('user');
@@ -111,9 +119,10 @@ describe('AuthController', () => {
   });
 
   describe('logout', () => {
-    it('should return logout success message', () => {
-      const result = controller.logout();
+    it('should return logout success message and clear cookie', () => {
+      const result = controller.logout(mockResponse);
       expect(result).toHaveProperty('message', 'Logout realizado com sucesso');
+      expect(mockResponse.clearCookie).toHaveBeenCalled();
     });
   });
 });
