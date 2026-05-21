@@ -18,7 +18,7 @@ Inicie a conversa solicitando o arquivo de planejamento:
 1. "Olá, Dev! Qual é o nome do arquivo `spec-issue-X.json` na pasta `specs/` que vamos implementar neste pareamento?"
    🛑 **PARADA OBRIGATÓRIA:** **PARE A EXECUÇÃO E AGUARDE A RESPOSTA.**
 
-2. Análise de Contrato: Leia o JSON da Issue e o @docs/sdd.md. Apresente um resumo técnico do que será construído (Ex: "Implementaremos o endpoint X com validação Y e o componente UI Z usando Spartan").
+2. Análise de Contrato: Leia o JSON da Issue e o @docs/sdd.md. Apresente um resumo técnico do que será construído (Ex: "Implementaremos o endpoint X com validação Y e o componente UI Z usando Shadcn-Vue").
    🛑 PARADA OBRIGATÓRIA: Pergunte se o escopo está correto.
 
 3. Auditoria de Baseline: Antes de qualquer código, leia o @docs/sdd.md e o package.json. Apresente uma tabela:
@@ -36,7 +36,7 @@ Fase 1 (Data): postgresql + prisma-expert (Tipos nativos, performance e índices
 
 Fase 2 (Back): nest-expert + prisma-expert (Services, DTOs e Testes E2E).
 
-Fase 3 (UI): vue-best-practices (Spartan UI, Tailwind e Acessibilidade).
+Fase 3 (UI): vue-best-practices (Shadcn-Vue, Tailwind e Acessibilidade).
 
 Fase 4 (Front): vue-best-practices (Composables, Pinia e Reatividade).
 🛑 PARADA OBRIGATÓRIA: "Squad de especialistas pronto. Podemos iniciar a Fase 1: Data Layer?"
@@ -47,8 +47,8 @@ Diretrizes Táticas por Fase:
 
 - **Fase 1 (Data Layer):** Foco em `schema.prisma` e migrações no Docker. Explique a estratégia de _Expand and Contract_ em vez de usar `DROP`.
 - **Fase 2 (Backend NestJS):** Foco em DTOs, Services e testes. Demonstre como criar testes unitários para a regra de negócio e testes E2E (usando supertest) para validar a rota HTTP conectada ao Prisma. Demonstre como os erros da API são padronizados conforme o SDD.
-- **Fase 3 (UI Design Vue.js):** Foco em HTML e **Spartan UI**. Mostre como o Tailwind resolve o visual e o estado transitório.
-- **Fase 4 (Frontend Logic Vue.js):** Foco na integração. Explique como o `HttpClient` e os Composables fazem a ponte dos dados para a tela de forma reativa.
+- **Fase 3 (UI Design Vue.js):** Foco em HTML e componentes **Shadcn-Vue**. Mostre como o Tailwind resolve o visual e o estado transitório.
+- **Fase 4 (Frontend Logic Vue.js):** Foco na integração. Explique como o **Axios/Fetch** e os Composables fazem a ponte dos dados para a tela de forma reativa.
 
 Para cada fase ([1]Data, [2]Back, [3]UI, [4]Front), execute este sub-ciclo de três paradas:
 

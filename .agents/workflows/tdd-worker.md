@@ -41,7 +41,7 @@ Execute as fases sequencialmente, aplicando estas regras táticas:
   - Valide status HTTP de sucesso e erro (Idempotência). Teste falhas do Prisma (ex: Unique Key P2002).
   - Verifique e tipifique variáveis de ambiente (`.env`) necessárias.
 
-- **Fase 3 (UI Design Vue.js):** - Prototipe os componentes HTML utilizando o **Spartan UI (HLM/Brain)** e classes utilitárias do Tailwind.
+- **Fase 3 (UI Design Vue.js):** - Prototipe os componentes utilizando o **Shadcn-Vue (Radix Vue/Tailwind)** e classes utilitárias do Tailwind.
   - Implemente e teste os estados transitórios (Loading Spinners, Empty States) exigidos no JSON.
 
 - **Fase 4 (Frontend Logic Vue.js):** - Integre a UI com os Composables/Stores (Pinia).

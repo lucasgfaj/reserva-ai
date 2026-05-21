@@ -60,15 +60,15 @@ Aprovação: "O banco está acessível? O .env foi preenchido com as credenciais
 
 ## 🎨 Bloco 3: Core do Frontend Vue.js (Módulos 3 e 10)
 
-- **Variáveis de Ambiente (Módulo 9):** Configure as chaves no `environment.ts` baseadas no SDD.
-- Tailwind 4: Configure via @import "tailwindcss"; no styles.css
-- Spartan UI: Rode o setup inicial e adicione as variáveis de tema no @theme do CSS.
-- **Core (Módulo 6.3 e 10):** Configure o `app.config.ts` injetando o `provideHttpClient` global. Limpe o `app.component.html` deixando apenas o `<RouterView>`.
-  🛑 **PARADA OBRIGATÓRIA:** Explique as configurações feitas no `app.config.ts` e no Tailwind.
+- **Variáveis de Ambiente (Módulo 9):** Configure as chaves no `.env` e acesso via `import.meta.env` no Vue.
+- Tailwind 4: Configure via `@import "tailwindcss";` no `index.css`
+- Shadcn-Vue: Configure o setup inicial conforme a documentação do Shadcn-Vue.
+- **Core (Módulo 6.3 e 10):** Configure o `main.ts` instanciando o app Vue e o Router. Limpe o `App.vue` deixando apenas o `<RouterView />`.
+  🛑 **PARADA OBRIGATÓRIA:** Explique as configurações feitas no `main.ts` e no Tailwind.
   Didática de Verificação:
-- Smoke Test Page: Pergunte: "Deseja que eu crie uma rota /smoke-test com um hlm-button do Spartan para validarmos se o Tailwind 4 e os estilos do Spartan estão carregando corretamente?"
+- Smoke Test Page: Pergunte: "Deseja que eu crie uma componente de teste com um Button do Shadcn-Vue para validarmos se o Tailwind 4 e os estilos estão carregando corretamente?"
 - Início: Peça para rodar npm run dev:web.
-- Aprovação: "O botão apareceu com o estilo correto? Se sim, a integração Tailwind+Spartan foi um sucesso."
+- Aprovação: "O botão apareceu com o estilo correto? Se sim, a integração Tailwind+Shadcn foi um sucesso."
 
 ## 🏁 Bloco 4: Teste de Ignição e Baseline
 

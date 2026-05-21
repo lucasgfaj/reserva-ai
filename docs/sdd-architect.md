@@ -37,13 +37,13 @@ Divida a implementação ESTRITAMENTE nestas quatro fases sequenciais. Para CADA
     - Quais Guards/Decorators de autenticação/autorização a rota exige (ex: `@UseGuards(JwtAuthGuard)`), se precisar. 
     - Liste as novas Variáveis de Ambiente (`.env`) necessárias, se houver.
 
-* **Fase 3: UI Design (Angular):** 
-  - Quais arquivos `.html` e `.ts` de componentes (Pages ou UI Components) serão gerados.
-  - Liste explicitamente quais componentes da biblioteca **Spartan** (ex: `spn-command`, `spn-dialog`, `spn-menu`, `spn-input`) serão utilizados para materializar a referência visual do Stitch.  
+* **Fase 3: UI Design (Vue.js):** 
+  - Quais arquivos `.vue` de componentes (Pages ou UI Components) serão gerados.
+  - Liste explicitamente quais componentes de UI (baseados em Tailwind CSS) serão utilizados para materializar a referência visual do Stitch.  
   - Indique exatamente em quais momentos os componentes de Loading e Empty State (já padronizados no sistema) deverão ser acionados nesta tela.
 
-* **Fase 4: Frontend Logic (Angular):** 
-  - Quais arquivos de Services ou Stores (SignalStore) serão afetados.
+* **Fase 4: Frontend Logic (Vue.js):** 
+  - Quais arquivos de Composables ou Stores (Pinia) serão afetados.
   - Quais métodos farão a integração HTTP com a API.
   - Indique quais mensagens de erro (Toasts/Modais) deverão ser disparadas pelo serviço global de erros quando as APIs falharem (baseado nos HTTP Codes.
 
@@ -77,21 +77,6 @@ Se aprovado, gere o ficheiro `specs/spec-issue-X.json` preenchendo EXATAMENTE o 
       "artifacts": [],
       "methods": [],
       "details": ""
-    },
-    {
-      "phase": "3_ui_design_angular",
-      "skill": "@angular-expert",
-      "artifacts": [],
-      "spartan_components": [],
-      "ui_states": { "loading": "", "empty": "" },
-      "details": ""
-    },
-    {
-      "phase": "4_frontend_logic_angular",
-      "skill": "@angular-expert",
-      "artifacts": [],
-      "store_affected": false,
-      "error_handling": ""
     }
   ]
 }
