@@ -1,12 +1,20 @@
 <template>
   <div class="flex min-h-screen bg-surface text-on-surface">
     <!-- SideNavBar -->
-    <SideNavBar @logout="handleLogout" :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" />
+    <SideNavBar 
+      role="ADMIN" 
+      :userName="userName"
+      @logout="handleLogout"
+      @cta-click="handleQuickAction"
+      :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" />
 
     <!-- Main Content Area -->
     <main class="flex-1 flex flex-col min-h-screen w-full">
       <!-- TopAppBar -->
-      <TopAppBar @toggle-sidebar="sidebarOpen = !sidebarOpen" />
+      <TopAppBar 
+      :userName="userName" 
+      userRole="ADMIN"
+      @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
       <!-- Residents Content -->
       <div class="flex-1 p-4 md:p-6 lg:p-8 space-y-4 md:space-y-6 lg:space-y-8 w-full max-w-full">
@@ -17,7 +25,7 @@
             <p class="text-on-surface-variant mt-1 md:mt-2 text-sm md:text-base">Gerencie os moradores do condomínio</p>
           </div>
           <router-link 
-            to="/residents/new"
+            to="/condominium/residents/new"
             class="w-full sm:w-auto px-4 md:px-6 py-2.5 md:py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-sm md:text-base"
           >
             <span class="material-symbols-outlined text-lg">person_add</span>
@@ -60,7 +68,7 @@
               <tbody class="divide-y divide-slate-100">
                 <tr v-for="resident in filteredResidents" :key="resident.id" class="hover:bg-white transition-colors">
                   <td class="px-4 md:px-6 py-4">
-                    <router-link :to="`/residents/${resident.id}`" class="flex items-center gap-3 hover:opacity-80">
+                    <router-link :to="`/condominium/residents/${resident.id}`" class="flex items-center gap-3 hover:opacity-80">
                       <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                         {{ resident.name.charAt(0).toUpperCase() }}
                       </div>
@@ -87,7 +95,7 @@
                   <td class="px-4 md:px-6 py-4">
                     <div class="flex items-center gap-1 md:gap-2">
                       <router-link 
-                        :to="`/residents/${resident.id}/edit`"
+                        :to="`/condominium/residents/${resident.id}/edit`"
                         class="p-2 text-slate-400 hover:text-primary transition-colors"
                         title="Editar"
                       >
@@ -114,7 +122,7 @@
               <p class="mt-2">Nenhum morador encontrado</p>
             </div>
             <div v-else v-for="resident in filteredResidents" :key="resident.id" class="p-4 hover:bg-white transition-colors">
-              <router-link :to="`/residents/${resident.id}`" class="flex items-start gap-3">
+              <router-link :to="`/condominium/residents/${resident.id}`" class="flex items-start gap-3">
                 <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">
                   {{ resident.name.charAt(0).toUpperCase() }}
                 </div>
@@ -132,7 +140,7 @@
               </router-link>
               <div class="flex items-center gap-2 mt-3 ml-15">
                 <router-link 
-                  :to="`/residents/${resident.id}/edit`"
+                  :to="`/condominium/residents/${resident.id}/edit`"
                   class="flex-1 py-2 text-center text-sm text-slate-600 hover:text-primary border border-slate-200 rounded-lg"
                 >
                   Editar
@@ -186,8 +194,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import SideNavBar from '@/modules/dashboard/components/SideNavBar.vue'
-import TopAppBar from '@/modules/dashboard/components/TopAppBar.vue'
+import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
+import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { residentsService } from '../services/residents.service'
 import { http } from '@/api/http'
@@ -197,6 +205,9 @@ import { useApiError } from '@/modules/shared/composables/useApiError'
 const router = useRouter()
 const { error: showError, success: showSuccess } = useToast()
 const { handleError } = useApiError()
+
+const user = authService.getUser()
+const userName = ref(user?.name || '')
 
 interface Resident {
   id: string
@@ -262,6 +273,10 @@ const handleDelete = async () => {
   showSuccess('Morador inativado com sucesso')
   showDeleteModal.value = false
   deletingResident.value = null
+}
+
+const handleQuickAction = () => {
+  router.push('/condominium/residents/new')
 }
 
 const handleLogout = async () => {

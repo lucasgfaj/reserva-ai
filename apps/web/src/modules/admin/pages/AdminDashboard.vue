@@ -46,7 +46,7 @@
           <div class="col-span-1 lg:col-span-7 space-y-4 md:space-y-6">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-lg md:text-xl font-bold text-cyan-900 tracking-tight">Próximas Reservas</h3>
-              <router-link to="/admin/reservations" class="text-sm font-semibold text-primary hover:underline">Ver calendário completo</router-link>
+              <router-link to="/condominium/reservations" class="text-sm font-semibold text-primary hover:underline">Ver calendário completo</router-link>
             </div>
             
             <div class="space-y-3 md:space-y-4">

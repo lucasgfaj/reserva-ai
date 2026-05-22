@@ -26,7 +26,7 @@ router.beforeEach((to, from, next) => {
   if (to.path === '/dashboard') {
     const user = authService.getUser()
     if (user?.role === 'ADMIN') {
-      return next('/admin/dashboard')
+      return next('/condominium/dashboard')
     } else if (user?.role === 'RESIDENT') {
       return next('/resident/dashboard')
     }

@@ -4,11 +4,12 @@
       <div class="flex items-center gap-2">
         <span class="font-manrope font-extrabold text-sky-900 dark:text-sky-300 tracking-tight text-2xl">Reserva Aí!</span>
       </div>
-      <div class="hidden md:flex items-center gap-8">
+      <!-- <div class="hidden md:flex items-center gap-8"> 
         <a class="font-manrope font-semibold text-sm text-sky-900 dark:text-sky-300 hover:text-sky-700 transition-colors" href="#">Funcionalidades</a>
         <a class="font-manrope font-semibold text-sm text-slate-500 dark:text-slate-400 hover:text-sky-900 transition-colors" href="#">Planos</a>
         <a class="font-manrope font-semibold text-sm text-slate-500 dark:text-slate-400 hover:text-sky-900 transition-colors" href="#">Segurança</a>
       </div>
+      -->
       <div class="flex items-center gap-4">
         <template v-if="isAuthenticated">
           <router-link to="/dashboard" class="px-5 py-2 font-manrope font-semibold text-sm text-primary hover:bg-surface-container-high transition-all rounded-xl text-sky-900 dark:text-sky-300">Dashboard</router-link>

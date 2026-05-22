@@ -35,7 +35,7 @@
         </template>
       </AuthInput>
       <div class="flex justify-end">
-        <a href="#" class="text-xs font-bold text-primary hover:text-primary-dark transition-colors">Esqueceu a senha?</a>
+        <a href="#"  @click.prevent="development" class="text-xs font-bold text-primary hover:text-primary-dark transition-colors">Esqueceu a senha?</a>
       </div>
     </div>
 
@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref } from 'vue'
 import AuthInput from './AuthInput.vue'
 import { useValidation, type ValidationRules } from '@/modules/shared/composables/useValidation'
@@ -95,6 +96,10 @@ const handleSubmit = () => {
     const firstError = Object.values(validation.errors.value)[0]
     if (firstError) showError(firstError)
   }
+}
+
+const development = () => {
+  showError('Funcionalidade em desenvolvimento. Por favor, entre em contato com o suporte para assistência.');
 }
 </script>
 

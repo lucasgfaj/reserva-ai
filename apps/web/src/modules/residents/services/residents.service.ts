@@ -23,12 +23,12 @@ export interface ResidentListOutput {
 export const residentsService = {
   async getAll(): Promise<ResidentListOutput> {
     const response = await http.get('/residents')
-    return response.data
+    return response.data.data
   },
 
   async getById(id: string): Promise<Resident> {
     const response = await http.get(`/residents/${id}`)
-    return response.data
+    return response.data.data
   },
 
   async create(resident: {
@@ -50,7 +50,7 @@ export const residentsService = {
     if (resident.password?.trim()) payload.password = resident.password.trim()
     
     const response = await http.post('/residents', payload)
-    return response.data
+    return response.data.data
   },
 
   async updatePermissions(id: string, canBook: boolean) {

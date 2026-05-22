@@ -80,7 +80,7 @@ const menuItems = computed(() => menuConfig[props.role] || menuConfig.ADMIN)
 const roleLabel = computed(() => roleConfig[props.role]?.subtitle || 'Menu')
 const ctaLabel = computed(() => roleConfig[props.role]?.ctaLabel || '')
 const ctaIcon = computed(() => roleConfig[props.role]?.ctaIcon || 'add')
-const dashboardPath = computed(() => props.role === 'ADMIN' ? '/admin/dashboard' : '/resident/dashboard')
+const dashboardPath = computed(() => props.role === 'ADMIN' ? '/condominium/dashboard' : '/resident/dashboard')
 const ctaActionId = computed(() => props.role === 'ADMIN' ? 'admin-cta' : 'resident-cta')
 
 const isActiveRoute = (path: string) => route.path === path || route.path.startsWith(path + '/')

@@ -16,9 +16,13 @@
         @toggle-sidebar="sidebarOpen = !sidebarOpen" 
       />
 
-      <div class="flex-1 p-4 md:p-6 lg:p-8">
-        <h1 class="text-2xl font-bold text-cyan-900 mb-4">Minhas Reservas</h1>
-        <p class="text-gray-600">Em breve - Suas reservas (US09).</p>
+      <div class="flex-1 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center text-center">
+        <div class="w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mb-6">
+          <span class="material-symbols-outlined text-4xl text-sky-500">construction</span>
+        </div>
+        <h1 class="text-2xl font-bold text-cyan-900 mb-2">Minhas Reservas</h1>
+        <p class="text-slate-500 max-w-md mb-2">Esta funcionalidade está em desenvolvimento.</p>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-sky-50 text-sky-700 rounded-full text-sm font-medium">US09 - Minhas reservas</span>
       </div>
     </main>
 
