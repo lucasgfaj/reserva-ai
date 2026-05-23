@@ -7,6 +7,7 @@ import CondominiumSettingsPage from './pages/CondominiumSettingsPage.vue'
 import ResidentsListPage from '@/modules/residents/pages/ResidentsListPage.vue'
 import ResidentsDetailPage from '@/modules/residents/pages/ResidentsDetailPage.vue'
 import ResidentsFormPage from '@/modules/residents/pages/ResidentsFormPage.vue'
+import AvailabilityPage from '@/modules/resident/pages/AvailabilityPage.vue'
 
 export const adminRoutes = [
   {
@@ -63,5 +64,10 @@ export const adminRoutes = [
     path: '/condominium/settings',
     name: 'admin-settings',
     component: CondominiumSettingsPage,
+  },
+  {
+    path: '/condominium/availability',
+    name: 'admin-availability',
+    component: AvailabilityPage,
   },
 ]

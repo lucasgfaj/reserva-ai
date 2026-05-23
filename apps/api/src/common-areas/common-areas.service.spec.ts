@@ -18,6 +18,7 @@ import {
   CommonAreaUpdatedOutput,
   CreateCommonAreaInput,
   UpdateCommonAreaInput,
+  BusyDaysOutput,
 } from './interfaces/common-areas.interface';
 
 describe('CommonAreasService', () => {
@@ -67,6 +68,7 @@ describe('CommonAreasService', () => {
     },
     reservation: {
       count: jest.fn(),
+      findMany: jest.fn(),
     },
   };
 
@@ -351,6 +353,244 @@ describe('CommonAreasService', () => {
       const result = await service.updateCommonArea('area-uuid-001', { isUnderMaintenance: true }, mockContext);
 
       expect(result.isUnderMaintenance).toBe(true);
+    });
+  });
+
+  describe('getBusyDays', () => {
+    const mockArea = { ...mockCommonArea };
+
+    it('deve retornar dias ocupados no mês', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue([
+        {
+          startTime: new Date('2026-06-15T10:00:00.000Z'),
+          endTime: new Date('2026-06-15T12:00:00.000Z'),
+        },
+        {
+          startTime: new Date('2026-06-20T14:00:00.000Z'),
+          endTime: new Date('2026-06-20T16:00:00.000Z'),
+        },
+      ]);
+
+      const result = await service.getBusyDays('area-uuid-001', 2026, 6, mockContext);
+
+      expect(result.busyDates).toEqual(['2026-06-15', '2026-06-20']);
+      expect(result.year).toBe(2026);
+      expect(result.month).toBe(6);
+    });
+
+    it('deve retornar lista vazia se não houver reservas', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue([]);
+
+      const result = await service.getBusyDays('area-uuid-001', 2026, 6, mockContext);
+
+      expect(result.busyDates).toEqual([]);
+    });
+
+    it('deve incluir múltiplos dias para reservas que atravessam meia-noite', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue([
+        {
+          startTime: new Date('2026-06-14T22:00:00.000Z'),
+          endTime: new Date('2026-06-15T02:00:00.000Z'),
+        },
+      ]);
+
+      const result = await service.getBusyDays('area-uuid-001', 2026, 6, mockContext);
+
+      expect(result.busyDates).toContain('2026-06-14');
+      expect(result.busyDates).toContain('2026-06-15');
+    });
+
+    it('deve lançar CommonAreaNotFoundException se área não existir', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(null);
+
+      await expect(service.getBusyDays('inexistente', 2026, 6, mockContext))
+        .rejects.toThrow(CommonAreaNotFoundException);
+    });
+  });
+
+  describe('checkAvailability', () => {
+    const mockArea = {
+      ...mockCommonArea,
+      openTime: '08:00',
+      closeTime: '22:00',
+      operatingDays: '1,2,3,4,5,6,7',
+      isUnderMaintenance: false,
+    };
+
+    const mockReservations = [
+      {
+        id: 'res-1',
+        startTime: new Date('2026-06-15T14:00:00.000Z'),
+        endTime: new Date('2026-06-15T16:00:00.000Z'),
+        status: 'APPROVED',
+      },
+    ];
+
+    it('deve retornar disponível se não houver reservas conflitantes', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue([]);
+
+      const result = await service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '10:00',
+        endTime: '12:00',
+      }, mockContext);
+
+      expect(result.available).toBe(true);
+      expect(result.conflicts).toHaveLength(0);
+    });
+
+    it('deve retornar não disponível se houver reserva conflitante', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue(mockReservations);
+
+      const result = await service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '15:00',
+        endTime: '17:00',
+      }, mockContext);
+
+      expect(result.available).toBe(false);
+      expect(result.conflicts).toHaveLength(1);
+      expect(result.conflicts[0]).toMatchObject({
+        startTime: '14:00',
+        endTime: '16:00',
+      });
+    });
+
+    it('deve retornar disponível se reserva não conflitar (antes do início)', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue([]);
+
+      const result = await service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '08:00',
+        endTime: '10:00',
+      }, mockContext);
+
+      expect(result.available).toBe(true);
+    });
+
+    it('deve retornar disponível se reserva não conflitar (depois do fim)', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue([]);
+
+      const result = await service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '18:00',
+        endTime: '20:00',
+      }, mockContext);
+
+      expect(result.available).toBe(true);
+    });
+
+    it('deve lançar CommonAreaNotFoundException se área não existir', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(null);
+
+      await expect(service.checkAvailability('inexistente', {
+        date: '2026-06-15',
+        startTime: '10:00',
+        endTime: '12:00',
+      }, mockContext)).rejects.toThrow(CommonAreaNotFoundException);
+    });
+
+    it('deve lançar TenantAccessDeniedException se área for de outro condomínio', async () => {
+      const areaOutroCondo = { ...mockArea, condominiumId: 'outro-condo' };
+      mockPrisma.commonArea.findFirst.mockResolvedValue(areaOutroCondo);
+
+      await expect(service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '10:00',
+        endTime: '12:00',
+      }, mockContext)).rejects.toThrow(TenantAccessDeniedException);
+    });
+
+    it('deve lançar erro se área estiver em manutenção', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue({
+        ...mockArea,
+        isUnderMaintenance: true,
+      });
+
+      await expect(service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '10:00',
+        endTime: '12:00',
+      }, mockContext)).rejects.toThrow(CommonAreaValidationException);
+    });
+
+    it('deve lançar erro se data for fora dos dias operacionais', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue({
+        ...mockArea,
+        operatingDays: '1,2,3,4,5',
+      });
+
+      await expect(service.checkAvailability('area-uuid-001', {
+        date: '2026-06-14',
+        startTime: '10:00',
+        endTime: '12:00',
+      }, mockContext)).rejects.toThrow(CommonAreaValidationException);
+    });
+
+    it('deve lançar erro se horário solicitado for antes da abertura', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+
+      await expect(service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '06:00',
+        endTime: '08:00',
+      }, mockContext)).rejects.toThrow(CommonAreaValidationException);
+    });
+
+    it('deve lançar erro se horário solicitado for depois do fechamento', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+
+      await expect(service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '22:00',
+        endTime: '23:00',
+      }, mockContext)).rejects.toThrow(CommonAreaValidationException);
+    });
+
+    it('deve lançar erro se startTime for maior ou igual a endTime', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+
+      await expect(service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '14:00',
+        endTime: '13:00',
+      }, mockContext)).rejects.toThrow(CommonAreaValidationException);
+    });
+
+    it('deve lançar erro se RESIDENT não tiver condominiumId', async () => {
+      const contextSemCondo = { role: 'RESIDENT', condominiumId: null, userId: 'user-id' };
+
+      await expect(service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '10:00',
+        endTime: '12:00',
+      }, contextSemCondo as any)).rejects.toThrow(CommonAreaAccessDeniedException);
+    });
+
+    it('deve consultar reservas com status PENDING e APPROVED', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(mockArea);
+      mockPrisma.reservation.findMany.mockResolvedValue([]);
+
+      await service.checkAvailability('area-uuid-001', {
+        date: '2026-06-15',
+        startTime: '10:00',
+        endTime: '12:00',
+      }, mockContext);
+
+      expect(mockPrisma.reservation.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            status: { in: ['PENDING', 'APPROVED'] },
+          }),
+        }),
+      );
     });
   });
 

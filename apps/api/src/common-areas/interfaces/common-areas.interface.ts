@@ -61,6 +61,35 @@ export interface UpdateCommonAreaInput {
   isUnderMaintenance?: boolean;
 }
 
+export interface AvailabilityOutput {
+  available: boolean;
+  date: string;
+  commonAreaId: string;
+  commonAreaName: string;
+  openTime: string;
+  closeTime: string;
+  startTime?: string;
+  endTime?: string;
+  conflicts: {
+    startTime: string;
+    endTime: string;
+    status: string;
+  }[];
+}
+
+export interface CheckAvailabilityInput {
+  date: string;
+  startTime?: string;
+  endTime?: string;
+}
+
+export interface BusyDaysOutput {
+  commonAreaId: string;
+  year: number;
+  month: number;
+  busyDates: string[];
+}
+
 export interface CreateCommonAreaValidationResult {
   isValid: boolean;
   errors: string[];

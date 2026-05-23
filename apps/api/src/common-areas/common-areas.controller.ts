@@ -31,12 +31,15 @@ import { DomainExceptionFilter } from '../common/filters/domain-exception.filter
 import { CommonAreasService } from './common-areas.service';
 import { CreateCommonAreaDto } from './dto/create-common-area.dto';
 import { UpdateCommonAreaDto } from './dto/update-common-area.dto';
+import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import {
   CommonAreaListOutput,
   CommonAreaDetailOutput,
   CommonAreaCreatedOutput,
   CommonAreaUpdatedOutput,
   CommonAreaDeletedOutput,
+  AvailabilityOutput,
+  BusyDaysOutput,
 } from './interfaces/common-areas.interface';
 
 interface AuthRequest {
@@ -118,6 +121,63 @@ export class CommonAreasController {
     @Request() req: AuthRequest,
   ): Promise<CommonAreaDetailOutput> {
     return this.commonAreasService.getCommonAreaById(id, {
+      role: req.user.role,
+      condominiumId: req.user.condominiumId,
+      userId: req.user.sub,
+    });
+  }
+
+  @Get(':id/busy-days')
+  @ApiOperation({
+    summary: 'US06 - Listar dias ocupados no mês',
+    description: `
+      **[US06]** Retorna os dias do mês que possuem reservas para uma área comum.
+      
+      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)
+    `,
+  })
+  @ApiParam({ name: 'id', description: 'UUID da área comum' })
+  @ApiResponse({ status: 200, description: 'Lista de dias ocupados.' })
+  async getBusyDays(
+    @Param('id') id: string,
+    @Query('year') year: string,
+    @Query('month') month: string,
+    @Request() req: AuthRequest,
+  ): Promise<BusyDaysOutput> {
+    return this.commonAreasService.getBusyDays(id, Number(year), Number(month), {
+      role: req.user.role,
+      condominiumId: req.user.condominiumId,
+      userId: req.user.sub,
+    });
+  }
+
+  @Get(':id/availability')
+  @ApiOperation({
+    summary: 'US06 - Consultar disponibilidade de área comum',
+    description: `
+      **[US06]** Consulta a disponibilidade de uma área comum em uma data específica.
+      
+      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)
+      **Regras de negócio:** RN01, RN03, RN03.1
+      
+      Se startTime e endTime forem informados, verifica se o horário específico está disponível.
+      Caso contrário, retorna os horários de funcionamento da área.
+    `,
+  })
+  @ApiParam({ name: 'id', description: 'UUID da área comum' })
+  @ApiResponse({
+    status: 200,
+    description: 'Resultado da consulta de disponibilidade.',
+  })
+  @ApiResponse({ status: 400, description: 'Parâmetros inválidos.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 404, description: 'Área comum não encontrada.' })
+  async checkAvailability(
+    @Param('id') id: string,
+    @Query() query: AvailabilityQueryDto,
+    @Request() req: AuthRequest,
+  ): Promise<AvailabilityOutput> {
+    return this.commonAreasService.checkAvailability(id, query, {
       role: req.user.role,
       condominiumId: req.user.condominiumId,
       userId: req.user.sub,

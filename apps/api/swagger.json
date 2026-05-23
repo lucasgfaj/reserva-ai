@@ -491,11 +491,128 @@
           "common-areas"
         ]
       }
+    },
+    "/api/v1/common-areas/{id}/busy-days": {
+      "get": {
+        "description": "\n      **[US06]** Retorna os dias do mês que possuem reservas para uma área comum.\n      \n      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)\n    ",
+        "operationId": "CommonAreasController_getBusyDays",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de dias ocupados."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US06 - Listar dias ocupados no mês",
+        "tags": [
+          "common-areas"
+        ]
+      }
+    },
+    "/api/v1/common-areas/{id}/availability": {
+      "get": {
+        "description": "\n      **[US06]** Consulta a disponibilidade de uma área comum em uma data específica.\n      \n      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)\n      **Regras de negócio:** RN01, RN03, RN03.1\n      \n      Se startTime e endTime forem informados, verifica se o horário específico está disponível.\n      Caso contrário, retorna os horários de funcionamento da área.\n    ",
+        "operationId": "CommonAreasController_checkAvailability",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Data para consulta (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-06-15",
+              "type": "string"
+            }
+          },
+          {
+            "name": "startTime",
+            "required": false,
+            "in": "query",
+            "description": "Horário de início (HH:MM)",
+            "schema": {
+              "example": "10:00",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endTime",
+            "required": false,
+            "in": "query",
+            "description": "Horário de fim (HH:MM)",
+            "schema": {
+              "example": "12:00",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado da consulta de disponibilidade."
+          },
+          "400": {
+            "description": "Parâmetros inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US06 - Consultar disponibilidade de área comum",
+        "tags": [
+          "common-areas"
+        ]
+      }
     }
   },
   "info": {
     "title": "🚀 Reserva Aí! - API de Gestão de Condomínios",
-    "description": "## 📝 Sobre o Projeto\nO **Reserva Aí!** é uma solução completa para a modernização da gestão de condomínios.\n\n### 🛠️ Guia de Uso\n1. **Autenticação:** Após login, use o token JWT no header Authorization: `Bearer <token>`\n2. **Isolamento (Multi-tenant):** Dados isolados por condomínio (RN01)\n3. **Roles:** ADMIN (administrador), RESIDENT (morador), SUPER_ADMIN\n\n### 🔐 Segurança e Permissões\n| Role | Acesso |\n|------|--------|\n| ADMIN | CRUD completo: condomínio, moradores e áreas |\n| RESIDENT | READ: áreas comuns; BOOK: reservas |\n| SUPER_ADMIN | Global (sem condomínio vinculado) |\n\n### 📋 User Stories Implementadas\n| US | Descrição |\n|----|----------|\n| US01 | Criar conta e registrar condomínio |\n| US02 | Login e gerenciar dados do condomínio |\n| US03 | Cadastrar moradores (Admin) |\n| US03.1 | Login de morador |\n| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n| US05 | Visualizar áreas comuns |\n\n*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*",
+    "description": "## 📝 Sobre o Projeto\nO **Reserva Aí!** é uma solução completa para a modernização da gestão de condomínios.\n\n### 🛠️ Guia de Uso\n1. **Autenticação:** Após login, use o token JWT no header Authorization: `Bearer <token>`\n2. **Isolamento (Multi-tenant):** Dados isolados por condomínio (RN01)\n3. **Roles:** ADMIN (administrador), RESIDENT (morador), SUPER_ADMIN\n\n### 🔐 Segurança e Permissões\n| Role | Acesso |\n|------|--------|\n| ADMIN | CRUD completo: condomínio, moradores e áreas |\n| RESIDENT | READ: áreas comuns; BOOK: reservas |\n| SUPER_ADMIN | Global (sem condomínio vinculado) |\n\n### 📋 User Stories Implementadas\n| US | Descrição |\n|----|----------|\n| US01 | Criar conta e registrar condomínio |\n| US02 | Login e gerenciar dados do condomínio |\n| US03 | Cadastrar moradores (Admin) |\n| US03.1 | Login de morador |\n| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n| US05 | Visualizar áreas comuns |\n| US06 | Consultar disponibilidade de áreas comuns |\n\n*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*",
     "version": "1.0",
     "contact": {}
   },
@@ -510,7 +627,7 @@
     },
     {
       "name": "common-areas",
-      "description": "US04, US05 - Áreas Comuns"
+      "description": "US04, US05, US06 - Áreas Comuns"
     }
   ],
   "servers": [],

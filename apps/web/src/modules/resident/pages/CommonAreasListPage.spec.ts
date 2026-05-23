@@ -125,7 +125,7 @@ describe('CommonAreasListPage', () => {
     await wrapper.vm.$nextTick()
 
     const cards = wrapper.findAll('.cursor-pointer')
-    await cards[0].trigger('click')
+    await cards[0]!.trigger('click')
 
     expect(mockPush).toHaveBeenCalledWith('/resident/common-areas/1')
   })

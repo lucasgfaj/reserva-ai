@@ -18,6 +18,8 @@ describe('CommonAreasController', () => {
     createCommonArea: jest.fn(),
     updateCommonArea: jest.fn(),
     deleteCommonArea: jest.fn(),
+    checkAvailability: jest.fn(),
+    getBusyDays: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -104,6 +106,39 @@ describe('CommonAreasController', () => {
       const result = await controller.update('area-id', dto as any, mockAuthRequest as any);
 
       expect(service.updateCommonArea).toHaveBeenCalledWith('area-id', dto, {
+        role: 'ADMIN',
+        condominiumId: 'condo-id',
+        userId: 'admin-id',
+      });
+      expect(result).toEqual(expected);
+    });
+  });
+
+  describe('getBusyDays', () => {
+    it('should call getBusyDays with correct params', async () => {
+      const expected = { commonAreaId: 'area-id', year: 2026, month: 6, busyDates: ['2026-06-15'] };
+      mockService.getBusyDays.mockResolvedValue(expected);
+
+      const result = await controller.getBusyDays('area-id', '2026', '6', mockAuthRequest as any);
+
+      expect(service.getBusyDays).toHaveBeenCalledWith('area-id', 2026, 6, {
+        role: 'ADMIN',
+        condominiumId: 'condo-id',
+        userId: 'admin-id',
+      });
+      expect(result).toEqual(expected);
+    });
+  });
+
+  describe('checkAvailability', () => {
+    it('should call checkAvailability with correct params', async () => {
+      const query = { date: '2026-06-15', startTime: '10:00', endTime: '12:00' };
+      const expected = { available: true, conflicts: [] };
+      mockService.checkAvailability.mockResolvedValue(expected);
+
+      const result = await controller.checkAvailability('area-id', query as any, mockAuthRequest as any);
+
+      expect(service.checkAvailability).toHaveBeenCalledWith('area-id', query, {
         role: 'ADMIN',
         condominiumId: 'condo-id',
         userId: 'admin-id',

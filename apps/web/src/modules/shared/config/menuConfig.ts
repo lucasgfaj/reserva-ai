@@ -19,6 +19,7 @@ export const menuConfig: Record<UserRole, MenuItem[]> = {
     { path: '/condominium/residents', label: 'Moradores', icon: 'group' },
     { path: '/condominium/common-areas', label: 'Áreas Comuns', icon: 'pool' },
     { path: '/condominium/reservations', label: 'Reservas', icon: 'event_available' },
+    { path: '/condominium/availability', label: 'Disponibilidade', icon: 'calendar_month' },
     { path: '/condominium/reports', label: 'Relatórios', icon: 'assessment' },
   ],
   RESIDENT: [
