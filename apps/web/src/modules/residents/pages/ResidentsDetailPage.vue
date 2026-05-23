@@ -1,18 +1,28 @@
 <template>
   <div class="flex min-h-screen bg-surface text-on-surface">
     <!-- SideNavBar -->
-    <SideNavBar @logout="handleLogout" :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" />
+    <SideNavBar 
+      role="ADMIN" 
+      :userName="userName"
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="toggleCollapse"
+      @logout="handleLogout" 
+      @cta-click="handleQuickAction"
+      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']" />
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col min-h-screen w-full">
+    <main :class="['flex-1 flex flex-col min-h-screen w-full transition-all duration-300', sidebarCollapsed ? 'md:ml-16' : 'md:ml-72']">
       <!-- TopAppBar -->
-      <TopAppBar @toggle-sidebar="sidebarOpen = !sidebarOpen" />
+      <TopAppBar 
+        :userName="userName" 
+        userRole="ADMIN"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
       <!-- Detail Content -->
       <div class="flex-1 p-4 md:p-6 lg:p-8 w-full max-w-full">
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-1 md:gap-2 text-sm text-slate-500 mb-4 md:mb-6 lg:mb-8 overflow-x-auto">
-          <router-link to="/residents" class="hover:text-primary transition-colors whitespace-nowrap">
+          <router-link to="/condominium/residents" class="hover:text-primary transition-colors whitespace-nowrap">
             Moradores
           </router-link>
           <span class="material-symbols-outlined text-base md:text-lg">chevron_right</span>
@@ -39,7 +49,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full sm:w-auto">
               <router-link 
-                :to="`/residents/${resident.id}/edit`"
+                :to="`/condominium/residents/${resident.id}/edit`"
                 class="flex-1 sm:flex-none px-4 md:px-5 py-2.5 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 text-sm md:text-base"
               >
                 <span class="material-symbols-outlined text-lg">edit</span>
@@ -146,7 +156,7 @@
         <div v-else class="text-center py-12 md:py-20">
           <span class="material-symbols-outlined text-5xl md:text-6xl text-slate-300">person_off</span>
           <h2 class="text-lg md:text-xl font-bold text-slate-600 mt-4">Morador não encontrado</h2>
-          <router-link to="/residents" class="text-primary hover:underline mt-2 inline-block">
+          <router-link to="/condominium/residents" class="text-primary hover:underline mt-2 inline-block">
             Voltar para lista
           </router-link>
         </div>
@@ -189,13 +199,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import SideNavBar from '@/modules/dashboard/components/SideNavBar.vue'
-import TopAppBar from '@/modules/dashboard/components/TopAppBar.vue'
+import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
+import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { residentsService } from '../services/residents.service'
 import { http } from '@/api/http'
 import { useToast } from '@/modules/shared/composables/useToast'
 import { useApiError } from '@/modules/shared/composables/useApiError'
+import { useSidebar } from '@/modules/shared/composables/useSidebar'
 
 const route = useRoute()
 const router = useRouter()
@@ -211,7 +222,10 @@ interface Resident {
   canBook: boolean
 }
 
-const sidebarOpen = ref(false)
+const user = authService.getUser()
+const userName = ref(user?.name || '')
+
+const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 const resident = ref<Resident | null>(null)
 const loading = ref(true)
 const showDeleteModal = ref(false)
@@ -256,8 +270,12 @@ const handleDelete = async () => {
   showDeleteModal.value = false
 }
 
+const handleQuickAction = () => {
+  router.push('/condominium/residents/new')
+}
+
 const goBack = () => {
-  router.push('/residents')
+  router.push('/condominium/residents')
 }
 
 const handleLogout = async () => {
@@ -270,10 +288,6 @@ const handleLogout = async () => {
   router.push('/')
 }
 
-// Close sidebar on route change
-router.afterEach(() => {
-  sidebarOpen.value = false
-})
 
 onMounted(() => {
   fetchResident()

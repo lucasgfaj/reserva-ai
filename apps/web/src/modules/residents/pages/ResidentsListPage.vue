@@ -4,12 +4,14 @@
     <SideNavBar 
       role="ADMIN" 
       :userName="userName"
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="toggleCollapse"
       @logout="handleLogout"
       @cta-click="handleQuickAction"
-      :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" />
+      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']" />
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col min-h-screen w-full">
+    <main :class="['flex-1 flex flex-col min-h-screen w-full transition-all duration-300', sidebarCollapsed ? 'md:ml-16' : 'md:ml-72']">
       <!-- TopAppBar -->
       <TopAppBar 
       :userName="userName" 
@@ -201,6 +203,7 @@ import { residentsService } from '../services/residents.service'
 import { http } from '@/api/http'
 import { useToast } from '@/modules/shared/composables/useToast'
 import { useApiError } from '@/modules/shared/composables/useApiError'
+import { useSidebar } from '@/modules/shared/composables/useSidebar'
 
 const router = useRouter()
 const { error: showError, success: showSuccess } = useToast()
@@ -218,7 +221,7 @@ interface Resident {
   canBook: boolean
 }
 
-const sidebarOpen = ref(false)
+const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 const residents = ref<Resident[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
@@ -289,10 +292,6 @@ const handleLogout = async () => {
   router.push('/')
 }
 
-// Close sidebar on route change
-router.afterEach(() => {
-  sidebarOpen.value = false
-})
 
 onMounted(() => {
   fetchResidents()

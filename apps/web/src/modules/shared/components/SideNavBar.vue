@@ -1,58 +1,76 @@
 <template>
   <aside :class="[
-    'h-screen w-72 flex flex-col bg-slate-50 font-headline font-semibold tracking-tight text-sm border-r border-slate-100',
-    'fixed md:relative z-50 md:translate-x-0',
-    'transition-transform duration-300'
+    'h-screen flex flex-col bg-slate-50 font-headline font-semibold tracking-tight text-sm border-r border-slate-100',
+    'fixed z-50',
+    'transition-all duration-300',
+    collapsed ? 'w-16' : 'w-72',
   ]">
-    <div class="flex flex-col h-full py-6 md:py-8">
+    <div class="flex flex-col h-full py-6 md:py-8 overflow-hidden">
       <!-- Brand Identity -->
-      <div class="px-6 md:px-8 mb-8 md:mb-10 flex items-center gap-3">
-        <router-link :to="dashboardPath" class="flex items-center gap-3">
-          <div class="w-10 h-10 signature-gradient rounded-xl flex items-center justify-center text-white">
+      <div :class="collapsed ? 'px-0 flex justify-center mb-8 md:mb-10' : 'px-4 md:px-5 mb-8 md:mb-10 flex items-center gap-3'">
+        <router-link :to="dashboardPath" class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 signature-gradient rounded-xl flex items-center justify-center text-white flex-shrink-0">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">apartment</span>
           </div>
-          <div>
-            <h1 class="text-2xl font-black text-cyan-900 tracking-tighter leading-none">Reserva Aí!</h1>
-            <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-1">{{ roleLabel }}</p>
+          <div v-show="!collapsed" class="min-w-0">
+            <h1 class="text-xl md:text-2xl font-black text-cyan-900 tracking-tighter leading-tight break-words">{{ condominiumName }}</h1>
+            <p class="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-1 truncate">{{ roleLabel }}</p>
           </div>
         </router-link>
       </div>
-      
+
       <!-- Navigation Tabs -->
-      <nav class="flex-1 space-y-1 px-4 md:px-6">
-        <router-link 
+      <nav :class="collapsed ? 'flex-1 flex flex-col items-center space-y-1' : 'flex-1 space-y-1 px-3 md:px-4'">
+        <router-link
           v-for="item in menuItems"
           :key="item.path"
-          :to="item.path" 
+          :to="item.path"
           :class="getNavLinkClass(item.path)"
           @click="$emit('link-click')"
         >
           <span class="material-symbols-outlined">{{ item.icon }}</span>
-          <span>{{ item.label }}</span>
+          <span v-show="!collapsed" class="truncate">{{ item.label }}</span>
         </router-link>
       </nav>
-      
+
       <!-- CTA -->
-      <div class="px-6 md:px-8 mt-6">
-        <button 
+      <div :class="collapsed ? 'mt-6 flex justify-center' : 'px-3 md:px-4 mt-6'">
+        <button
           @click="$emit('cta-click', ctaActionId)"
-          class="w-full signature-gradient text-white rounded-xl py-3 px-4 flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
+          :class="[
+            'signature-gradient text-white rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity',
+            collapsed ? 'p-2 w-10 h-10' : 'py-3 px-4 w-full',
+          ]"
         >
           <span class="material-symbols-outlined text-sm">{{ ctaIcon }}</span>
-          <span>{{ ctaLabel }}</span>
+          <span v-show="!collapsed" class="truncate">{{ ctaLabel }}</span>
         </button>
       </div>
-      
+
       <!-- Footer Nav -->
-      <div class="mt-auto border-t border-slate-100 pt-4 md:pt-6 space-y-1 px-4 md:px-6">
-        <a href="#" :class="getNavLinkClass('')">
+      <div :class="collapsed ? 'mt-auto border-t border-slate-100 pt-4 md:pt-6 flex flex-col items-center space-y-1' : 'mt-auto border-t border-slate-100 pt-4 md:pt-6 space-y-1 px-3 md:px-4'">
+        <a href="#" :class="getFooterLinkClass">
           <span class="material-symbols-outlined">help_outline</span>
-          <span>Ajuda</span>
+          <span v-show="!collapsed">Ajuda</span>
         </a>
-        <a @click="$emit('logout')" class="flex items-center gap-4 text-error px-4 md:px-6 py-3 hover:bg-error/5 transition-colors duration-200 cursor-pointer">
-          <span class="material-symbols-outlined">logout</span>
-          <span>Sair</span>
+        <a @click="$emit('logout')" :class="getFooterLinkClass + ' text-error hover:bg-error/5'">
+          <span class="material-symbols-outlined flex-shrink-0">logout</span>
+          <span v-show="!collapsed">Sair</span>
         </a>
+      </div>
+
+      <!-- Collapse toggle -->
+      <div :class="collapsed ? 'pt-2 flex justify-center' : 'px-3 md:px-4 pt-2'">
+        <button
+          @click="$emit('toggle-collapse')"
+          class="flex items-center justify-center gap-2 text-slate-400 hover:text-cyan-700 py-2 rounded-xl hover:bg-slate-100 transition-colors"
+          :class="collapsed ? 'w-10 h-10' : 'w-full'"
+        >
+          <span class="material-symbols-outlined text-lg transition-transform duration-300" :class="collapsed ? 'rotate-180' : ''">
+            chevron_left
+          </span>
+          <span v-show="!collapsed" class="text-xs">Recolher</span>
+        </button>
       </div>
     </div>
   </aside>
@@ -62,19 +80,28 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { menuConfig, roleConfig, type UserRole } from '../config/menuConfig'
+import { authService } from '@/modules/auth/services/auth.service'
 
 const props = defineProps<{
   role: UserRole
   userName?: string
+  collapsed?: boolean
 }>()
 
 defineEmits<{
   logout: []
   'link-click': []
   'cta-click': [actionId: string]
+  'toggle-collapse': []
 }>()
 
 const route = useRoute()
+
+const condo = authService.getCondo()
+const condominiumName = computed(() => {
+  const name = condo?.name || 'Reserva Aí!'
+  return name.replace(/^Condom[ií]nio\s+/i, '')
+})
 
 const menuItems = computed(() => menuConfig[props.role] || menuConfig.ADMIN)
 const roleLabel = computed(() => roleConfig[props.role]?.subtitle || 'Menu')
@@ -86,14 +113,23 @@ const ctaActionId = computed(() => props.role === 'ADMIN' ? 'admin-cta' : 'resid
 const isActiveRoute = (path: string) => route.path === path || route.path.startsWith(path + '/')
 
 const getNavLinkClass = (path: string) => {
-  if (!path) {
-    return 'flex items-center gap-4 text-slate-500 px-4 md:px-6 py-3 hover:text-cyan-700 transition-colors duration-200 cursor-pointer rounded-l-full'
-  }
+  if (!path) return ''
   const isActive = isActiveRoute(path)
+  if (props.collapsed) {
+    return isActive
+      ? 'flex items-center justify-center w-10 h-10 rounded-xl text-cyan-900 font-bold bg-white shadow-sm border border-slate-100 transition-all'
+      : 'flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-cyan-700 hover:bg-slate-100 transition-colors duration-200'
+  }
   return isActive
-    ? 'flex items-center gap-4 text-cyan-900 font-bold bg-white rounded-l-full ml-0 md:ml-0 pl-4 py-3 transition-all shadow-sm border border-r-0 border-slate-100'
-    : 'flex items-center gap-4 text-slate-500 px-4 md:px-6 py-3 hover:text-cyan-700 transition-colors duration-200 rounded-l-full'
+    ? 'flex items-center gap-4 text-cyan-900 font-bold bg-white rounded-l-full py-3 transition-all shadow-sm border border-r-0 border-slate-100 px-4'
+    : 'flex items-center gap-4 text-slate-500 py-3 hover:text-cyan-700 transition-colors duration-200 rounded-l-full px-4'
 }
+
+const getFooterLinkClass = computed(() =>
+  props.collapsed
+    ? 'flex items-center justify-center w-10 h-10 rounded-xl text-slate-500 hover:text-cyan-700 hover:bg-slate-100 transition-colors duration-200'
+    : 'flex items-center gap-4 text-slate-500 py-3 hover:text-cyan-700 transition-colors duration-200 cursor-pointer rounded-l-full px-4'
+)
 </script>
 
 <style scoped>

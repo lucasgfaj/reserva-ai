@@ -47,6 +47,10 @@ export function useToast() {
   const info = (message: string, duration?: number) => 
     addToast(message, 'info', duration)
 
+  const clear = () => {
+    toasts.value = []
+  }
+
   return {
     toasts: readonly(toasts),
     addToast,
@@ -55,5 +59,6 @@ export function useToast() {
     error,
     warning,
     info,
+    clear,
   }
 }

@@ -4,12 +4,14 @@
     <SideNavBar 
       role="RESIDENT" 
       :userName="userName"
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="toggleCollapse"
       @logout="handleLogout"
-      :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" 
+      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']" 
     />
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col min-h-screen w-full">
+    <main :class="['flex-1 flex flex-col min-h-screen w-full transition-all duration-300', sidebarCollapsed ? 'md:ml-16' : 'md:ml-72']">
       <TopAppBar 
         :userName="userName" 
         userRole="RESIDENT"
@@ -42,9 +44,10 @@ import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
 import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { http } from '@/api/http'
+import { useSidebar } from '@/modules/shared/composables/useSidebar'
 
 const router = useRouter()
-const sidebarOpen = ref(false)
+const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const user = authService.getUser()
 const userName = ref(user?.name || '')
@@ -57,7 +60,4 @@ const handleLogout = async () => {
   router.push('/')
 }
 
-router.afterEach(() => {
-  sidebarOpen.value = false
-})
 </script>

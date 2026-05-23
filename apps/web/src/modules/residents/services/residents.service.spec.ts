@@ -19,10 +19,12 @@ describe('residentsService', () => {
     it('should return residents list', async () => {
       const mockResponse = {
         data: {
-          residents: [
-            { id: '1', name: 'John', email: 'john@test.com', role: 'RESIDENT', isActive: true, canBook: true },
-          ],
-          total: 1,
+          data: {
+            residents: [
+              { id: '1', name: 'John', email: 'john@test.com', role: 'RESIDENT', isActive: true, canBook: true },
+            ],
+            total: 1,
+          },
         },
       }
       vi.mocked(http.get).mockResolvedValue(mockResponse)
@@ -35,7 +37,7 @@ describe('residentsService', () => {
     })
 
     it('should handle empty residents list', async () => {
-      const mockResponse = { data: { residents: [], total: 0 } }
+      const mockResponse = { data: { data: { residents: [], total: 0 } } }
       vi.mocked(http.get).mockResolvedValue(mockResponse)
 
       const result = await residentsService.getAll()
@@ -48,7 +50,7 @@ describe('residentsService', () => {
   describe('getById', () => {
     it('should return resident by id', async () => {
       const mockResident = { id: '1', name: 'John', email: 'john@test.com', role: 'RESIDENT', isActive: true, canBook: true }
-      const mockResponse = { data: mockResident }
+      const mockResponse = { data: { data: mockResident } }
       vi.mocked(http.get).mockResolvedValue(mockResponse)
 
       const result = await residentsService.getById('1')
@@ -62,8 +64,10 @@ describe('residentsService', () => {
     it('should create resident with required fields', async () => {
       const mockResponse = {
         data: {
-          message: 'Morador cadastrado',
-          user: { id: '1', name: 'New User', email: 'new@test.com', role: 'RESIDENT' },
+          data: {
+            message: 'Morador cadastrado',
+            user: { id: '1', name: 'New User', email: 'new@test.com', role: 'RESIDENT' },
+          },
         },
       }
       vi.mocked(http.post).mockResolvedValue(mockResponse)
@@ -84,8 +88,10 @@ describe('residentsService', () => {
     it('should create resident with all fields', async () => {
       const mockResponse = {
         data: {
-          message: 'Morador cadastrado',
-          user: { id: '1', name: 'Full User', email: 'full@test.com', role: 'RESIDENT' },
+          data: {
+            message: 'Morador cadastrado',
+            user: { id: '1', name: 'Full User', email: 'full@test.com', role: 'RESIDENT' },
+          },
         },
       }
       vi.mocked(http.post).mockResolvedValue(mockResponse)
@@ -111,7 +117,7 @@ describe('residentsService', () => {
 
     it('should handle canBook false', async () => {
       const mockResponse = {
-        data: { message: 'Morador cadastrado' },
+        data: { data: { message: 'Morador cadastrado' } },
       }
       vi.mocked(http.post).mockResolvedValue(mockResponse)
 

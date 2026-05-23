@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
 
 jest.mock('bcrypt', () => ({
-  hash: jest.fn().mockResolvedValue('hashed_password'),
+  hash: jest.fn<(...args: any[]) => Promise<string>>().mockResolvedValue('hashed_password'),
 }));
