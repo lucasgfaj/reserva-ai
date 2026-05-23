@@ -125,6 +125,8 @@ model CommonArea {
   closeTime        String   @db.VarChar(5)
   operatingDays    Json?
   requiresApproval Boolean
+  icon             String?  @db.VarChar(50)
+  isUnderMaintenance Boolean @default(false)
   condominiumId    String   @db.Uuid
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

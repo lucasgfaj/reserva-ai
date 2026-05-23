@@ -54,12 +54,11 @@ describe('SideNavBar', () => {
     })
 
     const links = wrapper.findAll('nav a')
-    expect(links.length).toBe(5)
+    expect(links.length).toBe(4)
     expect(links.at(0)?.text()).toContain('Início')
     expect(links.at(1)?.text()).toContain('Áreas Comuns')
     expect(links.at(2)?.text()).toContain('Disponibilidade')
-    expect(links.at(3)?.text()).toContain('Nova Reserva')
-    expect(links.at(4)?.text()).toContain('Minhas Reservas')
+    expect(links.at(3)?.text()).toContain('Minhas Reservas')
   })
 
   it('should render super admin menu items', () => {

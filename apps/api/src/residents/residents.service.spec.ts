@@ -72,6 +72,7 @@ describe('ResidentsService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
         findFirst: jest.fn().mockResolvedValue(null),
         findMany: jest.fn().mockResolvedValue([mockResidentUser]),
+        count: jest.fn().mockResolvedValue(0),
       },
       resident: {
         create: jest.fn().mockResolvedValue({}),

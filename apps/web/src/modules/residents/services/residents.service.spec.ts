@@ -31,7 +31,7 @@ describe('residentsService', () => {
 
       const result = await residentsService.getAll()
 
-      expect(http.get).toHaveBeenCalledWith('/residents')
+      expect(http.get).toHaveBeenCalledWith('/residents', { params: { page: 1, limit: 10 } })
       expect(result.residents).toHaveLength(1)
       expect(result.total).toBe(1)
     })

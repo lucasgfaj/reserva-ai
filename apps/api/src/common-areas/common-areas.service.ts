@@ -24,6 +24,8 @@ interface ServiceContext {
   role: string;
   condominiumId: string | null;
   userId: string;
+  page?: number;
+  limit?: number;
 }
 
 @Injectable()
@@ -36,14 +38,28 @@ export class CommonAreasService {
   async listCommonAreas(context: ServiceContext): Promise<CommonAreaListOutput> {
     this.validateAccess(context);
 
-    const commonAreas = await this.prisma.commonArea.findMany({
-      where: { condominiumId: context.condominiumId as string },
-      orderBy: { name: 'asc' },
-    });
+    const page = context.page ?? 1;
+    const limit = context.limit ?? 10;
+    const skip = (page - 1) * limit;
+
+    const [commonAreas, total] = await Promise.all([
+      this.prisma.commonArea.findMany({
+        where: { condominiumId: context.condominiumId as string },
+        orderBy: { name: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.commonArea.count({
+        where: { condominiumId: context.condominiumId as string },
+      }),
+    ]);
 
     return {
       commonAreas: commonAreas as CommonAreaListOutput['commonAreas'],
-      total: commonAreas.length,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     };
   }
 
@@ -99,6 +115,8 @@ export class CommonAreasService {
         closeTime: input.closeTime,
         operatingDays: input.operatingDays,
         requiresApproval: input.requiresApproval ?? false,
+        icon: input.icon,
+        isUnderMaintenance: input.isUnderMaintenance ?? false,
         condominiumId: context.condominiumId as string,
       },
     });

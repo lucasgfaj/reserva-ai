@@ -101,7 +101,24 @@
       "get": {
         "description": "\n      **[US03]** Lista todos os moradores vinculados ao condomínio do administrador.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
         "operationId": "ResidentsController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de moradores retornada com sucesso."
@@ -259,7 +276,24 @@
       "get": {
         "description": "\n      **[US05]** Lista todas as áreas comuns disponíveis no condomínio.\n      \n      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n      \n      Retorna áreas ordenadas alfabeticamente por nome.\n    ",
         "operationId": "CommonAreasController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Lista de áreas comuns retornada com sucesso."
@@ -645,6 +679,16 @@
             "type": "boolean",
             "example": true,
             "description": "Indica se requer aprovação do administrador"
+          },
+          "icon": {
+            "type": "string",
+            "example": "pool",
+            "description": "Ícone (Material Symbol) para representar a área"
+          },
+          "isUnderMaintenance": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indica se a área está em manutenção"
           }
         },
         "required": [
@@ -690,6 +734,16 @@
             "type": "boolean",
             "example": true,
             "description": "Indica se requer aprovação do administrador"
+          },
+          "icon": {
+            "type": "string",
+            "example": "pool",
+            "description": "Ícone (Material Symbol) para representar a área"
+          },
+          "isUnderMaintenance": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indica se a área está em manutenção"
           }
         }
       }

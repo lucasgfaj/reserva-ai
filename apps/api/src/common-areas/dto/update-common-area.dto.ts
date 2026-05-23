@@ -42,4 +42,14 @@ export class UpdateCommonAreaDto {
   @IsOptional()
   @IsBoolean({ message: 'O campo requiresApproval deve ser verdadeiro ou falso.' })
   requiresApproval?: boolean;
+
+  @ApiPropertyOptional({ example: 'pool', description: 'Ícone (Material Symbol) para representar a área' })
+  @IsOptional()
+  @IsString({ message: 'O ícone deve ser um texto válido.' })
+  icon?: string;
+
+  @ApiPropertyOptional({ example: false, description: 'Indica se a área está em manutenção' })
+  @IsOptional()
+  @IsBoolean({ message: 'O campo isUnderMaintenance deve ser verdadeiro ou falso.' })
+  isUnderMaintenance?: boolean;
 }

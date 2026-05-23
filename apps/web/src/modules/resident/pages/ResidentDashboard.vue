@@ -1,130 +1,100 @@
 <template>
   <div class="flex min-h-screen bg-surface text-on-surface">
-    <!-- SideNavBar -->
-    <SideNavBar 
-      role="RESIDENT" 
+    <SideNavBar
+      role="RESIDENT"
       :userName="userName"
       :collapsed="sidebarCollapsed"
       @toggle-collapse="toggleCollapse"
       @logout="handleLogout"
-      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']" 
+      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']"
     />
 
-    <!-- Main Content Area -->
     <main :class="['flex-1 flex flex-col min-h-screen w-full transition-all duration-300', sidebarCollapsed ? 'md:ml-16' : 'md:ml-72']">
-      <TopAppBar 
-        :userName="userName" 
+      <TopAppBar
+        :userName="userName"
         userRole="RESIDENT"
-        @toggle-sidebar="sidebarOpen = !sidebarOpen" 
+        @toggle-sidebar="sidebarOpen = !sidebarOpen"
       />
 
-      <!-- Dashboard Content -->
-      <div class="flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 lg:space-y-12 w-full max-w-full">
-        <!-- Condominium Name Banner -->
-        <div class="bg-gradient-to-r from-cyan-700 to-cyan-900 rounded-2xl p-6 text-white">
-          <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <span class="material-symbols-outlined text-2xl">apartment</span>
-            </div>
-            <div>
-              <p class="text-sm text-white/70">Condomínio</p>
-              <h1 class="text-xl md:text-2xl font-bold">{{ condominiumName }}</h1>
-            </div>
-          </div>
+      <div class="flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 w-full max-w-full">
+        <!-- Welcome -->
+        <div>
+          <h2 class="text-2xl md:text-3xl font-extrabold text-primary tracking-tight">
+            Olá, {{ userName }}!
+          </h2>
+          <p class="text-on-surface-variant mt-1">
+            {{ welcomeMessage }}
+          </p>
         </div>
 
-        <!-- Welcome Section -->
-        <WelcomeSection 
-          :title="`Olá, ${userName}!`" 
-          :description="welcomeMessage" 
-        />
-
-        <!-- Stats Cards - Simplificado para Resident -->
-        <!-- WelcomeSection (reutilizável) -->
-        <WelcomeSection 
-          :title="`Olá, ${userName}!`" 
-          :description="welcomeMessage" 
-        />
-
-        <!-- Stats Cards - Simplificado para Resident -->
+        <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-          <StatsCard title="Minhas Reservas" :value="2" icon="event_available" trend="Próximas" variant="primary" />
-          <StatsCard title="Áreas Disponíveis" :value="5" icon="pool" variant="primary" />
+          <StatsCard title="Minhas Reservas" :value="reservationsCount" icon="event_available" trend="Próximas" variant="primary" />
+          <StatsCard title="Áreas Disponíveis" :value="commonAreasCount" icon="pool" variant="primary" />
         </div>
 
-        <!-- Main Grid Layout -->
+        <!-- Main Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
-          <!-- Left Column: My Reservations -->
-          <div class="col-span-1 lg:col-span-7 space-y-4 md:space-y-6">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-lg md:text-xl font-bold text-cyan-900 tracking-tight">Minhas Próximas Reservas</h3>
-              <router-link to="/resident/reservations" class="text-sm font-semibold text-primary hover:underline">Ver todas</router-link>
+          <!-- Left: My Reservations -->
+          <div class="col-span-1 lg:col-span-7 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-bold text-cyan-900">Minhas Próximas Reservas</h3>
+              <router-link to="/resident/reservations" class="text-sm font-semibold text-primary hover:underline">
+                Ver todas
+              </router-link>
             </div>
-            
-            <div class="space-y-3 md:space-y-4">
-              <ReservationItem 
-                title="Churrasqueira" 
-                schedule="Sáb, 14:00 - 18:00" 
-                resident="Você" 
-                status="Confirmado" 
-                icon="outdoor_grill"
+
+            <div v-if="reservations.length" class="space-y-3">
+              <ReservationItem
+                v-for="res in reservations"
+                :key="res.id"
+                v-bind="res"
               />
-              <ReservationItem 
-                title="Salão de Festas" 
-                schedule="Dom, 19:00 - 23:00" 
-                resident="Você" 
-                status="Pendente" 
-                icon="celebration"
-              />
+            </div>
+
+            <div v-else class="bg-surface-container-lowest rounded-xl p-8 text-center">
+              <div class="w-14 h-14 bg-sky-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-symbols-outlined text-3xl text-sky-500">event_busy</span>
+              </div>
+              <p class="text-slate-600 font-medium">Nenhuma reserva ativa</p>
+              <p class="text-sm text-slate-400 mt-1">Faça sua primeira reserva em uma área comum.</p>
+              <router-link
+                to="/resident/reservations/new"
+                class="inline-flex items-center gap-1.5 mt-4 px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:brightness-90 transition-all"
+              >
+                <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                Nova Reserva
+              </router-link>
             </div>
           </div>
 
-          <!-- Right Column -->
-          <div class="col-span-1 lg:col-span-5 space-y-6 md:space-y-8">
-            <!-- Quick Actions -->
+          <!-- Right: Quick Actions -->
+          <div class="col-span-1 lg:col-span-5 space-y-6">
             <QuickActions :actions="quickActions" @action="handleQuickAction" />
-            
-            <!-- Áreas Comuns Disponíveis -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
-              <h3 class="text-lg md:text-xl font-bold text-cyan-900 tracking-tight mb-4">Áreas Comuns</h3>
-              <div class="space-y-3">
-                <router-link to="/resident/common-areas" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary">pool</span>
-                  </div>
-                  <div class="flex-1">
-                    <p class="font-semibold text-cyan-900">Piscina</p>
-                    <p class="text-sm text-slate-500">09:00 - 21:00</p>
-                  </div>
-                </router-link>
-                <router-link to="/resident/common-areas" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary">outdoor_grill</span>
-                  </div>
-                  <div class="flex-1">
-                    <p class="font-semibold text-cyan-900">Churrasqueira</p>
-                    <p class="text-sm text-slate-500">10:00 - 22:00</p>
-                  </div>
-                </router-link>
-                <router-link to="/resident/common-areas" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
-                  <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-primary">celebration</span>
-                  </div>
-                  <div class="flex-1">
-                    <p class="font-semibold text-cyan-900">Salão de Festas</p>
-                    <p class="text-sm text-slate-500">08:00 - 23:00</p>
-                  </div>
-                </router-link>
+
+            <!-- Link rápido para áreas comuns -->
+            <router-link
+              to="/resident/common-areas"
+              class="block bg-gradient-to-r from-primary/5 to-transparent rounded-xl p-5 border border-primary/10 hover:border-primary/30 transition-colors group"
+            >
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <span class="material-symbols-outlined text-primary text-2xl">pool</span>
+                </div>
+                <div>
+                  <p class="font-bold text-cyan-900">Explorar Áreas Comuns</p>
+                  <p class="text-sm text-slate-500">{{ commonAreasCount }} área{{ commonAreasCount !== 1 ? 's' : '' }} disponí{{ commonAreasCount !== 1 ? 'veis' : 'vel' }}</p>
+                </div>
+                <span class="material-symbols-outlined ml-auto text-slate-300 group-hover:text-primary transition-colors">arrow_forward</span>
               </div>
-            </div>
+            </router-link>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- Mobile Overlay -->
-    <div 
-      v-if="sidebarOpen" 
+    <div
+      v-if="sidebarOpen"
       class="fixed inset-0 bg-black/50 z-40 md:hidden"
       @click="sidebarOpen = false"
     ></div>
@@ -132,11 +102,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
 import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
-import WelcomeSection from '@/modules/shared/components/WelcomeSection.vue'
 import StatsCard from '@/modules/dashboard/components/StatsCard.vue'
 import ReservationItem from '@/modules/dashboard/components/ReservationItem.vue'
 import QuickActions from '@/modules/dashboard/components/QuickActions.vue'
@@ -144,21 +113,46 @@ import { authService } from '@/modules/auth/services/auth.service'
 import { http } from '@/api/http'
 import { useSidebar } from '@/modules/shared/composables/useSidebar'
 
+interface Reservation {
+  id: string
+  title: string
+  schedule: string
+  resident: string
+  status: 'Confirmado' | 'Pendente' | 'Cancelado'
+  icon: string
+}
+
 const router = useRouter()
 const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const user = authService.getUser()
 const userName = ref(user?.name || 'Morador')
 
-const condoData = JSON.parse(localStorage.getItem('auth_condo') || '{}')
-const condominiumName = ref(condoData.name || '')
+const commonAreasCount = ref(0)
+const reservations = ref<Reservation[]>([])
 
-const welcomeMessage = computed(() => `Aqui está o resumo das suas reservas no ${condominiumName.value || 'Condomínio'} hoje.`)
+const reservationsCount = computed(() => reservations.value.length)
+
+const welcomeMessage = computed(() => {
+  const count = reservations.value.length
+  if (count === 0) return 'Você ainda não tem reservas. Que tal fazer uma agora?'
+  if (count === 1) return 'Você tem 1 reserva próxima.'
+  return `Você tem ${count} reservas próximas.`
+})
 
 const quickActions = [
   { id: 'new-reservation', label: 'Nova Reserva', icon: 'add_circle', primary: true },
   { id: 'my-areas', label: 'Ver Áreas', icon: 'pool', primary: false },
 ]
+
+async function fetchCommonAreas() {
+  try {
+    const response = await http.get('/common-areas')
+    commonAreasCount.value = response.data.data.total || 0
+  } catch {
+    commonAreasCount.value = 0
+  }
+}
 
 const handleLogout = async () => {
   try {
@@ -170,17 +164,13 @@ const handleLogout = async () => {
 
 const handleQuickAction = (actionId: string) => {
   if (actionId === 'new-reservation') {
-    router.push('/resident/reservations')
+    router.push('/resident/reservations/new')
   } else if (actionId === 'my-areas') {
     router.push('/resident/common-areas')
   }
 }
 
+onMounted(() => {
+  fetchCommonAreas()
+})
 </script>
-
-<style scoped>
-.font-headline { font-family: 'Manrope', sans-serif; }
-.font-body { font-family: 'Inter', sans-serif; }
-.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-.signature-gradient { background: linear-gradient(135deg, #004d75 0%, #006699 100%); }
-</style>

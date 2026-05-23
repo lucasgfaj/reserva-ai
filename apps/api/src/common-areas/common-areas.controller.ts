@@ -6,12 +6,15 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   UseGuards,
   UseInterceptors,
   UseFilters,
   Request,
   HttpCode,
   HttpStatus,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -75,11 +78,17 @@ export class CommonAreasController {
     status: 403,
     description: 'Super Admin sem condomínio vinculado.',
   })
-  async findAll(@Request() req: AuthRequest): Promise<CommonAreaListOutput> {
+  async findAll(
+    @Request() req: AuthRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<CommonAreaListOutput> {
     return this.commonAreasService.listCommonAreas({
       role: req.user.role,
       condominiumId: req.user.condominiumId,
       userId: req.user.sub,
+      page,
+      limit,
     });
   }
 

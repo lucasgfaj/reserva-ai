@@ -48,6 +48,8 @@ describe('CommonAreasService', () => {
     closeTime: '22:00',
     operatingDays: '1,2,3,4,5,6,7',
     requiresApproval: true,
+    icon: 'celebration',
+    isUnderMaintenance: false,
     condominiumId: mockCondoId,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -61,6 +63,7 @@ describe('CommonAreasService', () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      count: jest.fn(),
     },
     reservation: {
       count: jest.fn(),
@@ -85,6 +88,7 @@ describe('CommonAreasService', () => {
     it('(ADMIN) deve listar áreas do condomínio ordenadas por nome', async () => {
       const areas = [mockCommonArea];
       mockPrisma.commonArea.findMany.mockResolvedValue(areas);
+      mockPrisma.commonArea.count.mockResolvedValue(1);
 
       const result = await service.listCommonAreas(mockContext);
 
@@ -93,12 +97,15 @@ describe('CommonAreasService', () => {
       expect(mockPrisma.commonArea.findMany).toHaveBeenCalledWith({
         where: { condominiumId: mockCondoId },
         orderBy: { name: 'asc' },
+        skip: 0,
+        take: 10,
       });
     });
 
     it('(RESIDENT) deve listar áreas do condomínio', async () => {
       const areas = [mockCommonArea];
       mockPrisma.commonArea.findMany.mockResolvedValue(areas);
+      mockPrisma.commonArea.count.mockResolvedValue(1);
 
       const result = await service.listCommonAreas(mockResidentContext);
 
@@ -115,6 +122,7 @@ describe('CommonAreasService', () => {
 
     it('deve retornar lista vazia se condomínio não tem áreas', async () => {
       mockPrisma.commonArea.findMany.mockResolvedValue([]);
+      mockPrisma.commonArea.count.mockResolvedValue(0);
 
       const result = await service.listCommonAreas(mockContext);
 
@@ -228,6 +236,40 @@ describe('CommonAreasService', () => {
       await expect(service.createCommonArea(inputInvalido, mockContext))
         .rejects.toThrow(CommonAreaValidationException);
     });
+
+    it('deve criar área com ícone', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(null);
+      const inputComIcon = { ...validInput, icon: 'pool' };
+      mockPrisma.commonArea.create.mockResolvedValue({ ...mockCommonArea, ...inputComIcon });
+
+      const result = await service.createCommonArea(inputComIcon, mockContext);
+
+      expect(result.icon).toBe('pool');
+      expect(mockPrisma.commonArea.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ icon: 'pool' }),
+        }),
+      );
+    });
+
+    it('deve criar área com isUnderMaintenance true', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(null);
+      const inputEmManutencao = { ...validInput, isUnderMaintenance: true };
+      mockPrisma.commonArea.create.mockResolvedValue({ ...mockCommonArea, ...inputEmManutencao });
+
+      const result = await service.createCommonArea(inputEmManutencao, mockContext);
+
+      expect(result.isUnderMaintenance).toBe(true);
+    });
+
+    it('deve criar área com isUnderMaintenance false por padrão', async () => {
+      mockPrisma.commonArea.findFirst.mockResolvedValue(null);
+      mockPrisma.commonArea.create.mockResolvedValue(mockCommonArea);
+
+      const result = await service.createCommonArea(validInput, mockContext);
+
+      expect(result.isUnderMaintenance).toBe(false);
+    });
   });
 
   describe('updateCommonArea', () => {
@@ -287,6 +329,28 @@ describe('CommonAreasService', () => {
 
       await expect(service.updateCommonArea('area-uuid-001', { name: 'Churrasqueira' }, mockContext))
         .rejects.toThrow(CommonAreaNameConflictException);
+    });
+
+    it('deve atualizar ícone da área', async () => {
+      mockPrisma.commonArea.findFirst
+        .mockResolvedValueOnce(mockCommonArea)
+        .mockResolvedValueOnce(null);
+      mockPrisma.commonArea.update.mockResolvedValue({ ...mockCommonArea, icon: 'pool' });
+
+      const result = await service.updateCommonArea('area-uuid-001', { icon: 'pool' }, mockContext);
+
+      expect(result.icon).toBe('pool');
+    });
+
+    it('deve atualizar isUnderMaintenance', async () => {
+      mockPrisma.commonArea.findFirst
+        .mockResolvedValueOnce(mockCommonArea)
+        .mockResolvedValueOnce(null);
+      mockPrisma.commonArea.update.mockResolvedValue({ ...mockCommonArea, isUnderMaintenance: true });
+
+      const result = await service.updateCommonArea('area-uuid-001', { isUnderMaintenance: true }, mockContext);
+
+      expect(result.isUnderMaintenance).toBe(true);
     });
   });
 

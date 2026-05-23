@@ -39,23 +39,32 @@ export class ResidentsService {
   async listResidents(context: {
     role: string;
     condominiumId: string;
+    page?: number;
+    limit?: number;
   }): Promise<ResidentListOutput> {
     if (context.role !== Role.ADMIN) {
       throw new ResidentAccessDeniedException('listar');
     }
 
-    const users = await this.prisma.user.findMany({
-      where: {
-        condominiumId: context.condominiumId,
-        role: Role.RESIDENT,
-      },
-      include: {
-        resident: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    const currentPage = context.page ?? 1;
+    const pageLimit = context.limit ?? 10;
+    const skip = (currentPage - 1) * pageLimit;
+
+    const where = {
+      condominiumId: context.condominiumId,
+      role: Role.RESIDENT,
+    };
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        include: { resident: true },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageLimit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
 
     const residents: ResidentListItem[] = users.map((user) => ({
       id: user.id,
@@ -72,7 +81,10 @@ export class ResidentsService {
 
     return {
       residents,
-      total: residents.length,
+      total,
+      page: currentPage,
+      limit: pageLimit,
+      totalPages: Math.ceil(total / pageLimit),
     };
   }
 
