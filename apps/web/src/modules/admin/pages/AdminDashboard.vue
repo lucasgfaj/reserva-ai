@@ -4,13 +4,15 @@
     <SideNavBar 
       role="ADMIN" 
       :userName="userName"
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="toggleCollapse"
       @logout="handleLogout"
       @cta-click="handleQuickAction"
-      :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" 
+      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']" 
     />
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col min-h-screen w-full">
+    <main :class="['flex-1 flex flex-col min-h-screen w-full transition-all duration-300', sidebarCollapsed ? 'md:ml-16' : 'md:ml-72']">
       <!-- TopAppBar (reutilizável) -->
       <TopAppBar 
         :userName="userName" 
@@ -46,7 +48,7 @@
           <div class="col-span-1 lg:col-span-7 space-y-4 md:space-y-6">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-lg md:text-xl font-bold text-cyan-900 tracking-tight">Próximas Reservas</h3>
-              <router-link to="/admin/reservations" class="text-sm font-semibold text-primary hover:underline">Ver calendário completo</router-link>
+              <router-link to="/condominium/reservations" class="text-sm font-semibold text-primary hover:underline">Ver calendário completo</router-link>
             </div>
             
             <div class="space-y-3 md:space-y-4">
@@ -104,9 +106,10 @@ import QuickActions from '@/modules/dashboard/components/QuickActions.vue'
 import ActivityFeed from '@/modules/dashboard/components/ActivityFeed.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { http } from '@/api/http'
+import { useSidebar } from '@/modules/shared/composables/useSidebar'
 
 const router = useRouter()
-const sidebarOpen = ref(false)
+const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const user = authService.getUser()
 const userName = ref(user?.name || '')
@@ -139,9 +142,6 @@ const handleQuickAction = (actionId: string) => {
   console.log('Quick action:', actionId)
 }
 
-router.afterEach(() => {
-  sidebarOpen.value = false
-})
 </script>
 
 <style scoped>

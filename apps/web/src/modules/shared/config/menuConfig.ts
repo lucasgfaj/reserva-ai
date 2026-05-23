@@ -14,16 +14,19 @@ export interface RoleConfig {
 
 export const menuConfig: Record<UserRole, MenuItem[]> = {
   ADMIN: [
-    { path: '/admin/dashboard', label: 'Início', icon: 'dashboard' },
-    { path: '/admin/reservations', label: 'Reservas', icon: 'event_available' },
-    { path: '/admin/residents', label: 'Moradores', icon: 'group' },
-    { path: '/admin/common-areas', label: 'Áreas Comuns', icon: 'pool' },
-    { path: '/admin/reports', label: 'Relatórios', icon: 'assessment' },
+    { path: '/condominium/dashboard', label: 'Início', icon: 'dashboard' },
+    { path: '/condominium/settings', label: 'Condomínio', icon: 'apartment' },
+    { path: '/condominium/residents', label: 'Moradores', icon: 'group' },
+    { path: '/condominium/common-areas', label: 'Áreas Comuns', icon: 'pool' },
+    { path: '/condominium/reservations', label: 'Reservas', icon: 'event_available' },
+    { path: '/condominium/reports', label: 'Relatórios', icon: 'assessment' },
   ],
   RESIDENT: [
     { path: '/resident/dashboard', label: 'Início', icon: 'dashboard' },
-    { path: '/resident/reservations', label: 'Minhas Reservas', icon: 'event_available' },
     { path: '/resident/common-areas', label: 'Áreas Comuns', icon: 'pool' },
+    { path: '/resident/availability', label: 'Disponibilidade', icon: 'calendar_month' },
+    { path: '/resident/reservations/new', label: 'Nova Reserva', icon: 'add_circle' },
+    { path: '/resident/reservations', label: 'Minhas Reservas', icon: 'event_available' },
   ],
   SUPER_ADMIN: [
     { path: '/super/dashboard', label: 'Dashboard', icon: 'dashboard' },

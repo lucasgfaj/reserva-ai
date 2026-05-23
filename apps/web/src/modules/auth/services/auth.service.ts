@@ -60,6 +60,10 @@ class AuthService {
     return this.getStorage<AuthUser>(USER_KEY)
   }
 
+  getCondo(): { id: string; name: string } | null {
+    return this.getStorage<{ id: string; name: string }>(CONDO_KEY)
+  }
+
   isAuthenticated(): boolean {
     return !!this.getToken()
   }

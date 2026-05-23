@@ -1,45 +1,101 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, HttpException } from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import * as fs from 'fs';
+import cookieParser from 'cookie-parser';
 
 // Load environment variables before anything else
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { DomainExceptionFilter } from './common/filters/domain-exception.filter';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      exceptionFactory: (errors) => {
+        const messages = errors.map((error) => {
+          return Object.values(error.constraints || {}).join(', ');
+        });
+        return new HttpException(
+          {
+            statusCode: 400,
+            code: 'VALIDATION_FAILED',
+            message: messages.join('; '),
+            details: errors.map((e) => ({
+              field: e.property,
+              errors: Object.values(e.constraints || {}),
+            })),
+          },
+          400,
+        );
+      },
+    }),
+  );
+  app.useGlobalFilters(new DomainExceptionFilter(), new HttpExceptionFilter());
   app.enableCors({
     origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
   });
 
   const config = new DocumentBuilder()
-    .setTitle('🚀 Reserva Aí! - API de Gestão Inteligente')
+    .setTitle('🚀 Reserva Aí! - API de Gestão de Condomínios')
     .setDescription(
       '## 📝 Sobre o Projeto\n' +
-        'O **Reserva Aí!** é uma solução completa em arquitetura de microsserviços (monorepo) para a modernização da gestão de condomínios. Esta API provê o núcleo lógico para o controle de áreas comuns, gestão de moradores e automação de processos administrativos.\n\n' +
-        '### 🎯 Objetivos e Motivação\n' +
-        'A API foi projetada para resolver problemas críticos de conflitos de agenda e falta de transparência na gestão de recursos compartilhados. Através desta interface, síndicos (Admins) podem gerenciar seu patrimônio e moradores (Residents) podem realizar agendamentos em tempo real.\n\n' +
+        'O **Reserva Aí!** é uma solução completa para a modernização da gestão de condomínios.\n\n' +
         '### 🛠️ Guia de Uso\n' +
-        '1. **Autenticação:** A maioria das rotas exige um Token Bearer (JWT) gerado no Login.\n' +
-        '2. **Isolamento (Multi-tenant):** Segurança garantida através do isolamento lógico de dados por condomínio.\n' +
-        '3. **Versionamento:** Estamos na **v1**, garantindo estabilidade para o consumo via Frontend VueJS.\n\n' +
-        '---\n' +
+        '1. **Autenticação:** Após login, use o token JWT no header Authorization: `Bearer <token>`\n' +
+        '2. **Isolamento (Multi-tenant):** Dados isolados por condomínio (RN01)\n' +
+        '3. **Roles:** ADMIN (administrador), RESIDENT (morador), SUPER_ADMIN\n\n' +
+        '### 🔐 Segurança e Permissões\n' +
+        '| Role | Acesso |\n' +
+        '|------|--------|\n' +
+        '| ADMIN | CRUD completo: condomínio, moradores e áreas |\n' +
+        '| RESIDENT | READ: áreas comuns; BOOK: reservas |\n' +
+        '| SUPER_ADMIN | Global (sem condomínio vinculado) |\n\n' +
+        '### 📋 User Stories Implementadas\n' +
+        '| US | Descrição |\n' +
+        '|----|----------|\n' +
+        '| US01 | Criar conta e registrar condomínio |\n' +
+        '| US02 | Login e gerenciar dados do condomínio |\n' +
+        '| US03 | Cadastrar moradores (Admin) |\n' +
+        '| US03.1 | Login de morador |\n' +
+        '| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n' +
+        '| US05 | Visualizar áreas comuns |\n\n' +
         '*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*',
     )
     .setVersion('1.0')
-    .addTag('auth', 'Fluxos de Autenticação, Registro de Tenants e Sessão')
+    .addTag('auth', 'US01, US02, US03.1 - Autenticação e Registro')
+    .addTag('residents', 'US03 - Gestão de Moradores (Admin only)')
+    .addTag('common-areas', 'US04, US05 - Áreas Comuns')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Cole o token JWT retornado no login',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
+
+  // Exportar especificação OpenAPI para swagger.json
+  const swaggerJsonPath = path.join(process.cwd(), 'swagger.json');
+  fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
+  console.log(`📄 Swagger spec exported to: ${swaggerJsonPath}`);
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);

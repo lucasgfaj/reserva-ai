@@ -19,9 +19,9 @@
         @submit="handleLogin" 
       />
 
-      <AuthDivider>Ou entre com seu e-mail</AuthDivider>
+      <!-- <AuthDivider>Ou entre com seu e-mail</AuthDivider> -->
 
-      <AuthSocialButtons />
+      <!-- <AuthSocialButtons /> -->
     </div>
 
     <AuthSupportCards />
@@ -40,10 +40,12 @@ import AuthSupportCards from '../components/AuthSupportCards.vue'
 import LoginForm from '../components/LoginForm.vue'
 import { loginRequest } from '../auth.api'
 import { authService } from '../services/auth.service'
+import { useToast } from '@/modules/shared/composables/useToast'
 
 const router = useRouter()
 const isLoading = ref(false)
 const error = ref('')
+const { success: toastSuccess, error: toastError } = useToast()
 
 const authFeatures = [
   {
@@ -72,12 +74,12 @@ const handleLogin = async (credentials: { email: string; password: string }) => 
     localStorage.setItem('auth_token', response.accessToken)
     localStorage.setItem('auth_user', JSON.stringify(response.user))
     localStorage.setItem('auth_condo', JSON.stringify(response.condominium))
-    alert(response.message)
+    toastSuccess(response.message)
     router.push('/dashboard')
   } catch (err: any) {
     const errorMsg = err.response?.data?.message || 'Erro ao fazer login'
     error.value = errorMsg
-    alert(errorMsg)
+    toastError(errorMsg)
   } finally {
     isLoading.value = false
   }

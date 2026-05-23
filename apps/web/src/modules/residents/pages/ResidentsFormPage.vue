@@ -1,22 +1,32 @@
 <template>
   <div class="flex min-h-screen bg-surface text-on-surface">
     <!-- SideNavBar -->
-    <SideNavBar @logout="handleLogout" :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" />
+    <SideNavBar 
+      role="ADMIN" 
+      :userName="userName"
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="toggleCollapse"
+      @logout="handleLogout" 
+      @cta-click="handleQuickAction"
+      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']" />
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col min-h-screen w-full">
+    <main :class="['flex-1 flex flex-col min-h-screen w-full transition-all duration-300', sidebarCollapsed ? 'md:ml-16' : 'md:ml-72']">
       <!-- TopAppBar with hamburger -->
-      <TopAppBar @toggle-sidebar="sidebarOpen = !sidebarOpen" />
+      <TopAppBar 
+        :userName="userName" 
+        userRole="ADMIN"
+        @toggle-sidebar="sidebarOpen = !sidebarOpen" />
 
       <!-- Form Content -->
       <div class="flex-1 p-4 md:p-6 lg:p-8 w-full max-w-full">
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-1 md:gap-2 text-sm text-slate-500 mb-4 md:mb-6 lg:mb-8 overflow-x-auto">
-          <router-link to="/residents" class="hover:text-primary transition-colors whitespace-nowrap">
+          <router-link to="/condominium/residents" class="hover:text-primary transition-colors whitespace-nowrap">
             Moradores
           </router-link>
           <span v-if="isEditMode" class="material-symbols-outlined text-base md:text-lg">chevron_right</span>
-          <router-link v-if="isEditMode" :to="`/residents/${residentId}`" class="hover:text-primary transition-colors whitespace-nowrap">
+          <router-link v-if="isEditMode" :to="`/condominium/residents/${residentId}`" class="hover:text-primary transition-colors whitespace-nowrap">
             Detalhes
           </router-link>
           <span class="material-symbols-outlined text-base md:text-lg">chevron_right</span>
@@ -156,14 +166,15 @@ placeholder="Ap. 101 - Bloco A"
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import SideNavBar from '@/modules/dashboard/components/SideNavBar.vue'
-import TopAppBar from '@/modules/dashboard/components/TopAppBar.vue'
+import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
+import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { residentsService } from '../services/residents.service'
 import { http } from '@/api/http'
 import { useToast } from '@/modules/shared/composables/useToast'
 import { useApiError } from '@/modules/shared/composables/useApiError'
 import { useValidation, type ValidationRules } from '@/modules/shared/composables/useValidation'
+import { useSidebar } from '@/modules/shared/composables/useSidebar'
 
 const route = useRoute()
 const router = useRouter()
@@ -171,7 +182,10 @@ const { success: showSuccess, error: showError } = useToast()
 const { handleError } = useApiError()
 const validation = useValidation()
 
-const sidebarOpen = ref(false)
+const user = authService.getUser()
+const userName = ref(user?.name || '')
+
+const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const residentId = computed(() => route.params.id as string)
 const isEditMode = computed(() => !!route.params.id)
@@ -212,7 +226,7 @@ const fetchResident = async () => {
     }
   } catch (error) {
     console.error('Erro ao carregar morador:', error)
-    router.push('/residents')
+    router.push('/condominium/residents')
   } finally {
     loading.value = false
   }
@@ -241,7 +255,7 @@ const handleSubmit = async () => {
     if (isEditMode.value) {
       await residentsService.updatePermissions(residentId.value, formData.value.canBook)
       showSuccess('Morador atualizado com sucesso')
-      router.push(`/residents/${residentId.value}`)
+      router.push(`/condominium/residents/${residentId.value}`)
     } else {
       await residentsService.create({
         name: formData.value.name,
@@ -252,7 +266,7 @@ const handleSubmit = async () => {
         password: formData.value.password || undefined,
       })
       showSuccess('Morador criado com sucesso')
-      router.push('/residents')
+      router.push('/condominium/residents')
     }
   } catch (err) {
     handleError(err, 'Erro ao salvar morador')
@@ -261,11 +275,15 @@ const handleSubmit = async () => {
   }
 }
 
+const handleQuickAction = () => {
+  router.push('/condominium/residents/new')
+}
+
 const goBack = () => {
   if (isEditMode.value) {
-    router.push(`/residents/${residentId.value}`)
+    router.push(`/condominium/residents/${residentId.value}`)
   } else {
-    router.push('/residents')
+    router.push('/condominium/residents')
   }
 }
 
@@ -279,10 +297,6 @@ const handleLogout = async () => {
   router.push('/')
 }
 
-// Close sidebar on route change
-router.afterEach(() => {
-  sidebarOpen.value = false
-})
 
 onMounted(() => {
   if (isEditMode.value) {

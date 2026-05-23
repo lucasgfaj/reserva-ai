@@ -44,11 +44,13 @@ import AuthFooterBadges from '../components/AuthFooterBadges.vue'
 import RegisterForm from '../components/RegisterForm.vue'
 import { authService } from '../services/auth.service'
 import type { RegisterTenantDTO } from '../services/dtos/register-tenant.dto'
+import { useToast } from '@/modules/shared/composables/useToast'
 
 const router = useRouter()
 const isLoading = ref(false)
 const currentStep = ref(1)
 const errorMsg = ref('')
+const { success: toastSuccess, error: toastError } = useToast()
 
 const authFeatures = [
   {
@@ -74,11 +76,11 @@ const handleRegister = async (formData: RegisterTenantDTO) => {
 
   try {
     const response = await authService.registerTenant(formData)
-    alert(response.message)
+    toastSuccess(response.message)
     router.push('/dashboard')
   } catch (error: any) {
     errorMsg.value = error.response?.data?.message || 'Erro ao criar conta. Tente novamente.'
-    alert(errorMsg.value)
+    toastError(errorMsg.value)
   } finally {
     isLoading.value = false
   }

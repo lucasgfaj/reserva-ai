@@ -51,7 +51,7 @@ Divida a implementação ESTRITAMENTE nestas quatro fases sequenciais. Para CADA
 
 - **Fase 3: UI Design (Vue.js):**
   - Quais arquivos `.vue` de componentes (Pages ou UI Components) serão gerados.
-  - Liste explicitamente quais componentes da biblioteca **Spartan** (ex: `spn-command`, `spn-dialog`, `spn-menu`, `spn-input`) serão utilizados para materializar a referência visual do Stitch.
+  - Liste explicitamente quais componentes de UI (ex: Shadcn-Vue, Tailwind) serão utilizados para materializar a referência visual do Stitch.
   - Indique exatamente em quais momentos os componentes de Loading e Empty State (já padronizados no sistema) deverão ser acionados nesta tela.
 
 - **Fase 4: Frontend Logic (Vue.js):**
@@ -93,7 +93,7 @@ Se aprovado, gere o ficheiro `specs/spec-issue-X.json` preenchendo EXATAMENTE o 
       "phase": "3_ui_design_vuejs",
       "skill": "@vue-best-practices",
       "artifacts": [],
-      "spartan_components": [],
+      "ui_components": [],
       "ui_states": { "loading": "", "empty": "" },
       "details": ""
     },

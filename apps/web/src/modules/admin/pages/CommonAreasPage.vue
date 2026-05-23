@@ -4,21 +4,27 @@
     <SideNavBar 
       role="ADMIN" 
       :userName="userName"
+      :collapsed="sidebarCollapsed"
+      @toggle-collapse="toggleCollapse"
       @logout="handleLogout"
-      :class="['transition-transform', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed md:relative z-50 md:translate-x-0']" 
+      :class="['transition-transform duration-300', sidebarOpen ? 'translate-x-0' : '-translate-x-full', 'fixed z-50', 'md:translate-x-0']" 
     />
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col min-h-screen w-full">
+    <main :class="['flex-1 flex flex-col min-h-screen w-full transition-all duration-300', sidebarCollapsed ? 'md:ml-16' : 'md:ml-72']">
       <TopAppBar 
         :userName="userName" 
         userRole="ADMIN"
         @toggle-sidebar="sidebarOpen = !sidebarOpen" 
       />
 
-      <div class="flex-1 p-4 md:p-6 lg:p-8">
-        <h1 class="text-2xl font-bold text-cyan-900 mb-4">Áreas Comuns</h1>
-        <p class="text-gray-600">Em breve - Gerenciamento de áreas comuns (US04).</p>
+      <div class="flex-1 p-4 md:p-6 lg:p-8 flex flex-col items-center justify-center text-center">
+        <div class="w-20 h-20 bg-sky-100 rounded-full flex items-center justify-center mb-6">
+          <span class="material-symbols-outlined text-4xl text-sky-500">construction</span>
+        </div>
+        <h1 class="text-2xl font-bold text-cyan-900 mb-2">Áreas Comuns</h1>
+        <p class="text-slate-500 max-w-md mb-2">Esta funcionalidade está em desenvolvimento.</p>
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-sky-50 text-sky-700 rounded-full text-sm font-medium">US04 - Gerenciamento de áreas comuns</span>
       </div>
     </main>
 
@@ -38,9 +44,10 @@ import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
 import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { http } from '@/api/http'
+import { useSidebar } from '@/modules/shared/composables/useSidebar'
 
 const router = useRouter()
-const sidebarOpen = ref(false)
+const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const user = authService.getUser()
 const userName = ref(user?.name || '')
@@ -53,7 +60,4 @@ const handleLogout = async () => {
   router.push('/')
 }
 
-router.afterEach(() => {
-  sidebarOpen.value = false
-})
 </script>
