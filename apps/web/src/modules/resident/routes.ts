@@ -1,5 +1,6 @@
 import ResidentDashboard from './pages/ResidentDashboard.vue'
 import CommonAreasListPage from './pages/CommonAreasListPage.vue'
+import CommonAreaDetailPage from './pages/CommonAreaDetailPage.vue'
 import MyReservationsPage from './pages/MyReservationsPage.vue'
 import AvailabilityPage from './pages/AvailabilityPage.vue'
 import NewReservationPage from './pages/NewReservationPage.vue'
@@ -14,6 +15,11 @@ export const residentRoutes = [
     path: '/resident/common-areas',
     name: 'resident-common-areas',
     component: CommonAreasListPage,
+  },
+  {
+    path: '/resident/common-areas/:id',
+    name: 'resident-common-area-detail',
+    component: CommonAreaDetailPage,
   },
   {
     path: '/resident/reservations',

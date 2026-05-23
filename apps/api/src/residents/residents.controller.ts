@@ -5,12 +5,15 @@ import {
   Patch,
   Body,
   Param,
+  Query,
   UseGuards,
   UseInterceptors,
   UseFilters,
   Request,
   HttpCode,
   HttpStatus,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -71,10 +74,16 @@ export class ResidentsController {
     status: 403,
     description: 'Apenas administradores podem listar.',
   })
-  async findAll(@Request() req: AuthRequest): Promise<ResidentListOutput> {
+  async findAll(
+    @Request() req: AuthRequest,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ): Promise<ResidentListOutput> {
     return this.residentsService.listResidents({
       role: req.user.role,
       condominiumId: req.user.condominiumId,
+      page,
+      limit,
     });
   }
 

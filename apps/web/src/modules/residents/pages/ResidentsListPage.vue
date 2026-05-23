@@ -157,6 +157,8 @@
             </div>
           </div>
         </div>
+
+        <Pagination :current="page" :total-pages="totalPages" @page="goToPage" />
       </div>
     </main>
 
@@ -198,6 +200,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
 import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
+import Pagination from '@/modules/shared/components/Pagination.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { residentsService } from '../services/residents.service'
 import { http } from '@/api/http'
@@ -228,6 +231,8 @@ const searchQuery = ref('')
 const filterStatus = ref('all')
 const showDeleteModal = ref(false)
 const deletingResident = ref<Resident | null>(null)
+const page = ref(1)
+const totalPages = ref(1)
 
 const filteredResidents = computed(() => {
   let result = residents.value
@@ -243,11 +248,17 @@ const filteredResidents = computed(() => {
   return result
 })
 
+async function goToPage(p: number) {
+  page.value = p
+  await fetchResidents()
+}
+
 const fetchResidents = async () => {
   try {
     loading.value = true
-    const data = await residentsService.getAll()
+    const data = await residentsService.getAll(page.value, 5)
     residents.value = data.residents || []
+    totalPages.value = data.totalPages
   } catch (err) {
     handleError(err, 'Erro ao carregar moradores')
   } finally {

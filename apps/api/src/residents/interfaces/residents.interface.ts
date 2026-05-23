@@ -24,6 +24,9 @@ export interface CreateResidentInput {
 export interface ResidentListOutput {
   residents: ResidentListItem[];
   total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface ResidentDetailOutput {

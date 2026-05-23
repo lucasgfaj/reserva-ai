@@ -25,7 +25,6 @@ export const menuConfig: Record<UserRole, MenuItem[]> = {
     { path: '/resident/dashboard', label: 'Início', icon: 'dashboard' },
     { path: '/resident/common-areas', label: 'Áreas Comuns', icon: 'pool' },
     { path: '/resident/availability', label: 'Disponibilidade', icon: 'calendar_month' },
-    { path: '/resident/reservations/new', label: 'Nova Reserva', icon: 'add_circle' },
     { path: '/resident/reservations', label: 'Minhas Reservas', icon: 'event_available' },
   ],
   SUPER_ADMIN: [

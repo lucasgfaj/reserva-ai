@@ -1,6 +1,7 @@
 import AdminDashboard from './pages/AdminDashboard.vue'
 import ReservationsPage from './pages/ReservationsPage.vue'
 import CommonAreasPage from './pages/CommonAreasPage.vue'
+import CommonAreasFormPage from './pages/CommonAreasFormPage.vue'
 import ReportsPage from './pages/ReportsPage.vue'
 import CondominiumSettingsPage from './pages/CondominiumSettingsPage.vue'
 import ResidentsListPage from '@/modules/residents/pages/ResidentsListPage.vue'
@@ -42,6 +43,16 @@ export const adminRoutes = [
     path: '/condominium/common-areas',
     name: 'admin-common-areas',
     component: CommonAreasPage,
+  },
+  {
+    path: '/condominium/common-areas/new',
+    name: 'admin-common-areas-new',
+    component: CommonAreasFormPage,
+  },
+  {
+    path: '/condominium/common-areas/:id/edit',
+    name: 'admin-common-areas-edit',
+    component: CommonAreasFormPage,
   },
   {
     path: '/condominium/reports',

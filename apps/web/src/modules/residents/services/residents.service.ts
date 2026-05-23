@@ -18,11 +18,14 @@ export interface Resident {
 export interface ResidentListOutput {
   residents: Resident[]
   total: number
+  page: number
+  limit: number
+  totalPages: number
 }
 
 export const residentsService = {
-  async getAll(): Promise<ResidentListOutput> {
-    const response = await http.get('/residents')
+  async getAll(page = 1, limit = 10): Promise<ResidentListOutput> {
+    const response = await http.get('/residents', { params: { page, limit } })
     return response.data.data
   },
 

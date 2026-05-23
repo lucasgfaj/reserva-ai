@@ -7,6 +7,8 @@ export interface CommonAreaOutput {
   closeTime: string;
   operatingDays: string | null;
   requiresApproval: boolean;
+  icon: string | null;
+  isUnderMaintenance: boolean;
   condominiumId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -15,6 +17,9 @@ export interface CommonAreaOutput {
 export interface CommonAreaListOutput {
   commonAreas: CommonAreaOutput[];
   total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 export interface CommonAreaDetailOutput extends CommonAreaOutput {}
@@ -40,6 +45,8 @@ export interface CreateCommonAreaInput {
   closeTime: string;
   operatingDays?: string;
   requiresApproval?: boolean;
+  icon?: string;
+  isUnderMaintenance?: boolean;
 }
 
 export interface UpdateCommonAreaInput {
@@ -50,6 +57,8 @@ export interface UpdateCommonAreaInput {
   closeTime?: string;
   operatingDays?: string;
   requiresApproval?: boolean;
+  icon?: string;
+  isUnderMaintenance?: boolean;
 }
 
 export interface CreateCommonAreaValidationResult {
