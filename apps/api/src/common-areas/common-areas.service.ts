@@ -18,6 +18,9 @@ import {
   CommonAreaDeletedOutput,
   CreateCommonAreaInput,
   UpdateCommonAreaInput,
+  CheckAvailabilityInput,
+  AvailabilityOutput,
+  BusyDaysOutput,
 } from './interfaces/common-areas.interface';
 
 interface ServiceContext {
@@ -199,6 +202,156 @@ export class CommonAreasService {
     return {
       message: 'Área comum deletada com sucesso',
       id: areaId,
+    };
+  }
+
+  async getBusyDays(
+    areaId: string,
+    year: number,
+    month: number,
+    context: ServiceContext,
+  ): Promise<BusyDaysOutput> {
+    this.validateAccess(context);
+
+    const commonArea = await this.prisma.commonArea.findFirst({
+      where: { id: areaId },
+    });
+
+    if (!commonArea) {
+      throw new CommonAreaNotFoundException(areaId);
+    }
+
+    this.validateTenantAccess(commonArea.condominiumId, context.condominiumId);
+
+    const startDate = new Date(Date.UTC(year, month - 1, 1));
+    const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+    const reservations = await this.prisma.reservation.findMany({
+      where: {
+        commonAreaId: areaId,
+        status: { in: ['PENDING', 'APPROVED'] },
+        startTime: { lte: endDate },
+        endTime: { gte: startDate },
+      },
+      select: { startTime: true, endTime: true },
+    });
+
+    const busySet = new Set<string>()
+
+    for (const r of reservations) {
+      const startDate = new Date(r.startTime).toISOString().split('T')[0]
+      const endDate = new Date(r.endTime).toISOString().split('T')[0]
+      const current = new Date(startDate + 'T12:00:00Z')
+      const end = new Date(endDate + 'T12:00:00Z')
+
+      while (current <= end) {
+        busySet.add(current.toISOString().split('T')[0])
+        current.setUTCDate(current.getUTCDate() + 1)
+      }
+    }
+
+    return {
+      commonAreaId: areaId,
+      year,
+      month,
+      busyDates: Array.from(busySet).sort(),
+    };
+  }
+
+  async checkAvailability(
+    areaId: string,
+    input: CheckAvailabilityInput,
+    context: ServiceContext,
+  ): Promise<AvailabilityOutput> {
+    this.validateAccess(context);
+
+    const commonArea = await this.prisma.commonArea.findFirst({
+      where: { id: areaId },
+    });
+
+    if (!commonArea) {
+      throw new CommonAreaNotFoundException(areaId);
+    }
+
+    this.validateTenantAccess(commonArea.condominiumId, context.condominiumId);
+
+    if (commonArea.isUnderMaintenance) {
+      throw new CommonAreaValidationException([
+        'Esta área comum está em manutenção e não disponível para reservas.',
+      ]);
+    }
+
+    const requestedDate = new Date(input.date + 'T12:00:00Z');
+    const dayOfWeek = ((requestedDate.getUTCDay() + 6) % 7) + 1;
+
+    const operatingDays: number[] = typeof commonArea.operatingDays === 'string'
+      ? commonArea.operatingDays.split(',').map(Number)
+      : Array.isArray(commonArea.operatingDays)
+        ? commonArea.operatingDays.map(Number)
+        : [];
+
+    if (!operatingDays.includes(dayOfWeek)) {
+      throw new CommonAreaValidationException([
+        `Esta área não funciona no dia solicitado (dia da semana ${dayOfWeek}).`,
+      ]);
+    }
+
+    const startTime = input.startTime ?? commonArea.openTime;
+    const endTime = input.endTime ?? commonArea.closeTime;
+
+    if (startTime < commonArea.openTime) {
+      throw new CommonAreaValidationException([
+        `O horário de início (${startTime}) é antes da abertura (${commonArea.openTime}).`,
+      ]);
+    }
+
+    if (endTime > commonArea.closeTime) {
+      throw new CommonAreaValidationException([
+        `O horário de fim (${endTime}) é depois do fechamento (${commonArea.closeTime}).`,
+      ]);
+    }
+
+    if (startTime >= endTime) {
+      throw new CommonAreaValidationException([
+        'O horário de início deve ser anterior ao horário de fim.',
+      ]);
+    }
+
+    const startDateTime = new Date(`${input.date}T${startTime}:00.000Z`);
+    const endDateTime = new Date(`${input.date}T${endTime}:00.000Z`);
+
+    const conflicts = await this.prisma.reservation.findMany({
+      where: {
+        commonAreaId: areaId,
+        status: { in: ['PENDING', 'APPROVED'] },
+        startTime: { lt: endDateTime },
+        endTime: { gt: startDateTime },
+      },
+      select: {
+        startTime: true,
+        endTime: true,
+        status: true,
+      },
+      orderBy: { startTime: 'asc' },
+    });
+
+    const formatTime = (dt: Date) =>
+      `${String(dt.getUTCHours()).padStart(2, '0')}:${String(dt.getUTCMinutes()).padStart(2, '0')}`;
+
+    return {
+      available: conflicts.length === 0,
+      date: input.date,
+      commonAreaId: commonArea.id,
+      commonAreaName: commonArea.name,
+      openTime: commonArea.openTime,
+      closeTime: commonArea.closeTime,
+      startTime: input.startTime,
+      endTime: input.endTime,
+      conflicts: conflicts.map((c) => ({
+        startTime: formatTime(c.startTime),
+        endTime: formatTime(c.endTime),
+        status: c.status,
+      })),
     };
   }
 

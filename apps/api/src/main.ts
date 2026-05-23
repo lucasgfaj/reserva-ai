@@ -70,13 +70,14 @@ async function bootstrap() {
         '| US03 | Cadastrar moradores (Admin) |\n' +
         '| US03.1 | Login de morador |\n' +
         '| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n' +
-        '| US05 | Visualizar áreas comuns |\n\n' +
+        '| US05 | Visualizar áreas comuns |\n' +
+        '| US06 | Consultar disponibilidade de áreas comuns |\n\n' +
         '*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*',
     )
     .setVersion('1.0')
     .addTag('auth', 'US01, US02, US03.1 - Autenticação e Registro')
     .addTag('residents', 'US03 - Gestão de Moradores (Admin only)')
-    .addTag('common-areas', 'US04, US05 - Áreas Comuns')
+    .addTag('common-areas', 'US04, US05, US06 - Áreas Comuns')
     .addBearerAuth(
       {
         type: 'http',
