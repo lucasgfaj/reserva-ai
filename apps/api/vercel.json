@@ -2,8 +2,13 @@
   "version": 2,
   "buildCommand": "npx prisma generate && npx nest build",
   "outputDirectory": "dist",
+  "functions": {
+    "src/main.js": {
+      "runtime": "@vercel/node@3"
+    }
+  },
   "routes": [
-    { "src": "/api/v1/(.*)", "dest": "/api" },
-    { "src": "/api/v1", "dest": "/api" }
+    { "src": "/api/v1/(.*)", "dest": "src/main.js" },
+    { "src": "/api/v1", "dest": "src/main.js" }
   ]
 }

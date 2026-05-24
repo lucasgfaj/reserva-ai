@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
 import cookieParser from 'cookie-parser';
+import serverless from 'serverless-http';
 
 // Load environment variables before anything else
 dotenv.config({ path: path.join(process.cwd(), '.env') });
@@ -14,7 +15,9 @@ import { DomainExceptionFilter } from './common/filters/domain-exception.filter'
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-async function bootstrap() {
+let cachedApp: Awaited<ReturnType<typeof NestFactory.create>>;
+
+async function buildApp() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
@@ -49,6 +52,11 @@ async function bootstrap() {
     ],
     credentials: true,
   });
+  return app;
+}
+
+async function bootstrap() {
+  const app = await buildApp();
 
   const config = new DocumentBuilder()
     .setTitle('🚀 Reserva Aí! - API de Gestão de Condomínios')
@@ -107,7 +115,18 @@ async function bootstrap() {
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 
-bootstrap().catch((err) => {
-  console.error('Failed to bootstrap application:', err);
-  process.exit(1);
+export const handler = serverless(async (req, res) => {
+  if (!cachedApp) {
+    cachedApp = await buildApp();
+    await cachedApp.init();
+  }
+  const expressInstance = cachedApp.getHttpAdapter().getInstance();
+  return expressInstance(req, res);
 });
+
+if (!process.env.VERCEL) {
+  bootstrap().catch((err) => {
+    console.error('Failed to bootstrap application:', err);
+    process.exit(1);
+  });
+}
