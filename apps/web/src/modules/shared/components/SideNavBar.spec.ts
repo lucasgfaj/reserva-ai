@@ -38,13 +38,15 @@ describe('SideNavBar', () => {
     })
 
     const links = wrapper.findAll('nav a')
-    expect(links.length).toBe(6)
+    expect(links.length).toBe(8)
     expect(links.at(0)?.text()).toContain('Início')
     expect(links.at(1)?.text()).toContain('Condomínio')
     expect(links.at(2)?.text()).toContain('Moradores')
     expect(links.at(3)?.text()).toContain('Áreas Comuns')
     expect(links.at(4)?.text()).toContain('Reservas')
-    expect(links.at(5)?.text()).toContain('Relatórios')
+    expect(links.at(5)?.text()).toContain('Disponibilidade')
+    expect(links.at(6)?.text()).toContain('Comunicados')
+    expect(links.at(7)?.text()).toContain('Relatórios')
   })
 
   it('should render resident menu items', () => {
@@ -54,11 +56,12 @@ describe('SideNavBar', () => {
     })
 
     const links = wrapper.findAll('nav a')
-    expect(links.length).toBe(4)
+    expect(links.length).toBe(5)
     expect(links.at(0)?.text()).toContain('Início')
     expect(links.at(1)?.text()).toContain('Áreas Comuns')
     expect(links.at(2)?.text()).toContain('Disponibilidade')
     expect(links.at(3)?.text()).toContain('Minhas Reservas')
+    expect(links.at(4)?.text()).toContain('Comunicados')
   })
 
   it('should render super admin menu items', () => {
@@ -159,17 +162,17 @@ describe('SideNavBar', () => {
     expect(wrapper.text()).toContain('Ajuda')
   })
 
-  it('should emit logout on sair click', async () => {
+  it('should emit link-click on help link click', async () => {
     const wrapper = mount(SideNavBar, {
       props: { role: 'ADMIN' },
       global: { plugins: [router] },
     })
 
-    const logoutLink = wrapper.findAll('a').filter(a => a.text().includes('Sair'))
-    expect(logoutLink.length).toBeGreaterThan(0)
-    await logoutLink[0].trigger('click')
-    expect(wrapper.emitted('logout')).toBeTruthy()
-    expect(wrapper.emitted('logout')?.length).toBe(1)
+    const helpLink = wrapper.findAll('a').filter(a => a.text().includes('Ajuda'))
+    expect(helpLink.length).toBeGreaterThan(0)
+    await helpLink[0].trigger('click')
+    expect(wrapper.emitted('link-click')).toBeTruthy()
+    expect(wrapper.emitted('link-click')?.length).toBe(1)
   })
 
   it('should emit cta-click on CTA button click', async () => {
