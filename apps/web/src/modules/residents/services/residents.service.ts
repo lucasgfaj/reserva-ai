@@ -53,7 +53,11 @@ export const residentsService = {
     if (resident.password?.trim()) payload.password = resident.password.trim()
     
     const response = await http.post('/residents', payload)
-    return response.data.data
+    return response.data.data as {
+      message: string
+      temporaryPassword: string
+      user: { id: string; name: string; email: string; role: string }
+    }
   },
 
   async updatePermissions(id: string, canBook: boolean) {

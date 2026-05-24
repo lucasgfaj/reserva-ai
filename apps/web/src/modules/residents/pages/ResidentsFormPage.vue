@@ -257,7 +257,7 @@ const handleSubmit = async () => {
       showSuccess('Morador atualizado com sucesso')
       router.push(`/condominium/residents/${residentId.value}`)
     } else {
-      await residentsService.create({
+      const result = await residentsService.create({
         name: formData.value.name,
         email: formData.value.email,
         unit: formData.value.unit || undefined,
@@ -265,7 +265,11 @@ const handleSubmit = async () => {
         canBook: formData.value.canBook,
         password: formData.value.password || undefined,
       })
-      showSuccess('Morador criado com sucesso')
+      const hasTemp = !formData.value.password
+      const msg = hasTemp
+        ? `Morador criado com sucesso! Senha temporária: ${result.temporaryPassword}. Repasse ao morador — ele deverá alterá-la no primeiro acesso.`
+        : 'Morador criado com sucesso!'
+      showSuccess(msg)
       router.push('/condominium/residents')
     }
   } catch (err) {

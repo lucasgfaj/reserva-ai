@@ -8,24 +8,11 @@
       <span class="material-symbols-outlined text-2xl">menu</span>
     </button>
 
-    <!-- Search - hidden on mobile -->
-    <div class="hidden md:flex items-center gap-6 flex-1">
-      <div class="relative w-full max-w-md focus-within:ring-2 focus-within:ring-cyan-500/20 rounded-xl transition-all">
-        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
-        <input
-          class="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border-none rounded-xl text-sm focus:ring-0 placeholder:text-slate-400"
-          placeholder="Pesquisar..."
-          type="text"
-        />
-      </div>
-    </div>
+    <!-- Spacer -->
+    <div class="hidden md:block flex-1"></div>
 
     <!-- Right side -->
     <div class="flex items-center gap-4 md:gap-6">
-      <!-- Mobile: Search icon -->
-      <button class="md:hidden p-2 text-slate-400 hover:text-cyan-900 transition-colors relative">
-        <span class="material-symbols-outlined">search</span>
-      </button>
 
       <!-- Notifications -->
       <div class="relative" ref="notificationRef">
@@ -129,6 +116,14 @@
                 <span class="material-symbols-outlined text-slate-400 text-lg">settings</span>
                 Configurações
               </router-link>
+              <router-link
+                :to="helpLink"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                @click="showProfile = false"
+              >
+                <span class="material-symbols-outlined text-slate-400 text-lg">help</span>
+                Ajuda
+              </router-link>
               <button
                 @click="handleLogout"
                 class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
@@ -171,6 +166,10 @@ const announcementsLink = computed(() => {
 
 const settingsLink = computed(() => {
   return props.userRole === 'ADMIN' ? '/condominium/settings/account' : '/resident/settings'
+})
+
+const helpLink = computed(() => {
+  return props.userRole === 'ADMIN' ? '/condominium/help' : '/resident/help'
 })
 
 const roleLabel = computed(() => {

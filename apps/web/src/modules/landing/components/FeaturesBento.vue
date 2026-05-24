@@ -14,9 +14,7 @@
           <h3 class="font-manrope font-bold text-3xl text-sky-900 dark:text-sky-300 mb-4 group-hover:text-white transition-colors">Transparência em Tempo Real</h3>
           <p class="text-slate-600 dark:text-slate-400 text-lg max-w-md group-hover:text-white/80 transition-colors">Agenda compartilhada atualizada instantaneamente. Sem duplicidade de reservas ou discussões sobre horários.</p>
         </div>
-        <div class="mt-8 flex items-center gap-2 text-sky-900 dark:text-sky-300 font-bold group-hover:text-white cursor-pointer">
-          Saiba mais <span class="material-symbols-outlined">trending_flat</span>
-        </div>
+        <div class="mt-8"></div>
       </div>
       <!-- Small Bento Item 1 -->
       <div class="bg-slate-50 dark:bg-slate-900/50 p-8 rounded-[2rem] flex flex-col items-start justify-center">
@@ -38,11 +36,8 @@
       <div class="md:col-span-2 relative overflow-hidden rounded-[2rem] h-[400px]">
         <img class="w-full h-full object-cover" data-alt="blurred elegant restaurant interior with modern furniture and soft warm ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmiXNsC3Ntztws7zV4z2qShAB4gpVHr2t6jpvpUd98wpEB3P1kWD-ZHEhaG_eCcFHqZANAQ1r4QKglgsuDmN4s_X8PxQ5ee2YEz5gvnSiLJGa0xRYF2jF6KaBeQ3f265XcRLADqviPVXoLMFME7xtvYmtI6Mi-aQugEAJPWhJERD3KXaeqj8hMV6ekVVJXjbTootrDAnluU9CH1IPrwkyUrV-KLKP9_RpucND-uaFD3qUemkQoWVFwDm8KrNRApWbuWvHGulkX0RAH"/>
         <div class="absolute inset-0 bg-gradient-to-r from-sky-900/90 to-transparent flex flex-col justify-center p-12">
-          <h3 class="font-manrope font-bold text-3xl text-white mb-4">Gestão de Visitantes</h3>
-          <p class="text-white/80 text-lg max-w-sm mb-8">Liberação de convidados integrada à reserva do salão, trazendo mais segurança e controle para a portaria.</p>
-          <button class="w-fit px-6 py-3 bg-white text-sky-900 font-manrope font-bold rounded-xl hover:bg-slate-50 transition-colors">
-            Explorar Portaria Digital
-          </button>
+          <h3 class="font-manrope font-bold text-3xl text-white mb-4">Comunicados Instantâneos</h3>
+          <p class="text-white/80 text-lg max-w-sm">A administração envia avisos em tempo real para todos os moradores. Manutenções, eventos e novidades sem papel nem grupos de WhatsApp.</p>
         </div>
       </div>
     </div>

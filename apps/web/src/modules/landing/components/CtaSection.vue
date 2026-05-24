@@ -8,20 +8,17 @@
       </h2>
       
       <p class="text-slate-600 dark:text-slate-400 text-lg lg:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-        Junte-se a centenas de síndicos que escolheram a eficiência. Teste grátis por 15 dias, sem compromisso.
+        Código aberto, gratuito e autogerenciável. Sem taxas, sem surpresas, sem vínculo.
       </p>
       
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
         <router-link to="/register" class="w-full sm:w-auto px-10 py-4 bg-sky-900 dark:bg-sky-700 text-white font-manrope font-bold text-lg rounded-2xl shadow-xl shadow-sky-900/20 active:scale-95 transition-transform flex justify-center items-center">
-          Começar Teste Grátis
+          Começar agora
         </router-link>
-        <!-- <button class="w-full sm:w-auto px-10 py-4 bg-white dark:bg-slate-800 text-sky-900 dark:text-sky-300 font-manrope font-bold text-lg rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-          Falar com Consultor
-        </button> -->
       </div>
       
       <p class="text-slate-400 dark:text-slate-500 text-xs font-semibold uppercase tracking-widest">
-        Sem necessidade de cartão de crédito • Instalação em 24h
+        Open source • Autogerenciável • Sem vínculo contratual
       </p>
     </div>
   </section>

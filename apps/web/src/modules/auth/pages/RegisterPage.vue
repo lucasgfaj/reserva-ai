@@ -62,11 +62,6 @@ const authFeatures = [
     title: 'Interface Personalizada',
     description: 'Configure áreas comuns, regras e horários de acordo com a identidade do seu prédio.',
     icon: 'dashboard_customize'
-  },
-  {
-    title: 'Suporte Concierge',
-    description: 'Equipe dedicada para auxiliar na implementação e treinamento da sua equipe.',
-    icon: 'support_agent'
   }
 ]
 

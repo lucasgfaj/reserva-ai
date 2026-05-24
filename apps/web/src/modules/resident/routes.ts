@@ -6,6 +6,7 @@ import AvailabilityPage from './pages/AvailabilityPage.vue'
 import NewReservationPage from './pages/NewReservationPage.vue'
 import AnnouncementsPage from './pages/AnnouncementsPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
+import HelpPage from '@/modules/shared/pages/HelpPage.vue'
 
 export const residentRoutes = [
   {
@@ -47,5 +48,10 @@ export const residentRoutes = [
     path: '/resident/settings',
     name: 'resident-settings',
     component: SettingsPage,
+  },
+  {
+    path: '/resident/help',
+    name: 'resident-help',
+    component: HelpPage,
   },
 ]
