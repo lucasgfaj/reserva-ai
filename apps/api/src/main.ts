@@ -43,7 +43,10 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new DomainExceptionFilter(), new HttpExceptionFilter());
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: process.env.CORS_ORIGIN?.split(',') || [
+      'http://localhost:5173',
+      'http://localhost:5174',
+    ],
     credentials: true,
   });
 

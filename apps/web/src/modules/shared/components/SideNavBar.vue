@@ -49,10 +49,10 @@
 
       <!-- Footer Nav -->
       <div :class="collapsed ? 'mt-auto border-t border-slate-100 pt-4 md:pt-6 flex flex-col items-center space-y-1' : 'mt-auto border-t border-slate-100 pt-4 md:pt-6 space-y-1 px-3 md:px-4'">
-        <a href="#" :class="getFooterLinkClass">
+        <router-link :to="helpPath" :class="getFooterLinkClass" @click="$emit('link-click')">
           <span class="material-symbols-outlined">help_outline</span>
           <span v-show="!collapsed">Ajuda</span>
-        </a>
+        </router-link>
       </div>
 
       <!-- Collapse toggle -->
@@ -108,6 +108,8 @@ const ctaActionId = computed(() => {
   if (props.role === 'RESIDENT') return 'new-reservation'
   return `${props.role.toLowerCase()}-cta`
 })
+
+const helpPath = computed(() => props.role === 'ADMIN' ? '/condominium/help' : '/resident/help')
 
 const isActiveRoute = (path: string) => route.path === path || route.path.startsWith(path + '/')
 

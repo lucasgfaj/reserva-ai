@@ -205,7 +205,11 @@ export class ReservationsService {
     }
 
     if (query?.from) {
-      where.endTime = { gte: new Date(query.from + 'T00:00:00.000Z') };
+      const fromStr = query.from;
+      const fromDate = fromStr.includes('T')
+        ? new Date(fromStr)
+        : new Date(fromStr + 'T00:00:00.000Z');
+      where.endTime = { gte: fromDate };
     }
 
     if (query?.to) {
