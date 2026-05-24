@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "npx prisma generate && npx nest build",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/index.ts": {
+      "runtime": "@vercel/node@3"
+    }
+  },
+  "routes": [
+    { "src": "/api/v1/(.*)", "dest": "api/index.ts" },
+    { "src": "/api/v1", "dest": "api/index.ts" }
+  ]
+}
