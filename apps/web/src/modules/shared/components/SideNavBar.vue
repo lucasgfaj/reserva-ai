@@ -53,10 +53,6 @@
           <span class="material-symbols-outlined">help_outline</span>
           <span v-show="!collapsed">Ajuda</span>
         </a>
-        <a @click="$emit('logout')" :class="getFooterLinkClass + ' text-error hover:bg-error/5'">
-          <span class="material-symbols-outlined flex-shrink-0">logout</span>
-          <span v-show="!collapsed">Sair</span>
-        </a>
       </div>
 
       <!-- Collapse toggle -->

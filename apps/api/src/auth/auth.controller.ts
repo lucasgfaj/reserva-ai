@@ -1,10 +1,14 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Post, Patch, Body, HttpCode, HttpStatus, Res, Request, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
+import type { Request as ExpressRequest } from 'express';
 import type { RegisterTenantOutput, LoginOutput } from './interfaces/auth.interface';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterTenantDto } from './dto/register-tenant.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiCookieAuth, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { setAuthCookie, clearAuthCookie } from './utils/cookie.utils';
 
 @ApiTags('auth')
@@ -102,5 +106,58 @@ export class AuthController {
   logout(@Res({ passthrough: true }) response: Response) {
     clearAuthCookie(response);
     return { message: 'Logout realizado com sucesso' };
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Atualizar perfil do usuário autenticado',
+    description: `
+      Atualiza nome e/ou e-mail do usuário autenticado.
+      
+      **Acesso:** Autenticado (requer JWT)
+    `,
+  })
+  @ApiResponse({ status: 200, description: 'Perfil atualizado.' })
+  @ApiResponse({ status: 409, description: 'E-mail já em uso.' })
+  async updateProfile(
+    @Body() dto: UpdateProfileDto,
+    @Request() req: ExpressRequest,
+  ): Promise<{ id: string; name: string; email: string; role: string }> {
+    const user = req.user as { sub: string };
+    return this.authService.updateProfile(user.sub, dto);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Alterar senha do usuário autenticado',
+    description: `
+      Altera a senha do usuário autenticado.
+      
+      **Acesso:** Autenticado (requer JWT)
+      
+      **Exemplo de cURL:**
+      \`\`\`bash
+      curl -X PATCH http://localhost:3000/api/v1/auth/change-password \\
+        -H "Content-Type: application/json" \\
+        -b cookies.txt \\
+        -d '{"currentPassword": "SenhaAtual123!", "newPassword": "NovaSenha456!"}'
+      \`\`\`
+    `,
+  })
+  @ApiResponse({ status: 200, description: 'Senha alterada com sucesso.' })
+  @ApiResponse({ status: 400, description: 'Senha atual incorreta ou dados inválidos.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  async changePassword(
+    @Body() dto: ChangePasswordDto,
+    @Request() req: ExpressRequest,
+  ): Promise<{ message: string }> {
+    const user = req.user as { sub: string };
+    return this.authService.changePassword(user.sub, dto.currentPassword, dto.newPassword);
   }
 }

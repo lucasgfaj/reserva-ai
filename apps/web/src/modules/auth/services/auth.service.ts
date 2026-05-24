@@ -95,6 +95,13 @@ class AuthService {
     this.removeStorage(USER_KEY)
     this.removeStorage(CONDO_KEY)
   }
+
+  updateUser(data: { name?: string; email?: string }): void {
+    const user = this.getUser()
+    if (user) {
+      this.setStorage(USER_KEY, { ...user, ...data })
+    }
+  }
 }
 
 export const authService = new AuthService()

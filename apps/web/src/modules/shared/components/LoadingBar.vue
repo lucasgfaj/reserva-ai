@@ -1,6 +1,9 @@
 <template>
-  <div v-if="isLoading" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/10 pointer-events-auto">
-    <div class="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin shadow-lg bg-white" />
+  <div
+    v-if="isLoading"
+    class="fixed top-0 left-0 z-[9999] w-full h-1 pointer-events-none"
+  >
+    <div class="h-full bg-primary animate-loading-bar rounded-r-full" />
   </div>
 </template>
 
@@ -9,3 +12,15 @@ import { useLoading } from '../composables/useLoading'
 
 const { isLoading } = useLoading()
 </script>
+
+<style scoped>
+@keyframes loading {
+  0% { width: 0; margin-left: 0; }
+  30% { width: 30%; margin-left: 0; }
+  70% { width: 60%; margin-left: 40%; }
+  100% { width: 100%; margin-left: 0; }
+}
+.animate-loading-bar {
+  animation: loading 1.2s ease-in-out infinite;
+}
+</style>

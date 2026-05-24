@@ -6,6 +6,7 @@ export interface CommonAreaOutput {
   openTime: string;
   closeTime: string;
   operatingDays: string | null;
+  closedDates: string[] | null;
   requiresApproval: boolean;
   icon: string | null;
   isUnderMaintenance: boolean;
@@ -44,6 +45,7 @@ export interface CreateCommonAreaInput {
   openTime: string;
   closeTime: string;
   operatingDays?: string;
+  closedDates?: string[];
   requiresApproval?: boolean;
   icon?: string;
   isUnderMaintenance?: boolean;
@@ -56,6 +58,7 @@ export interface UpdateCommonAreaInput {
   openTime?: string;
   closeTime?: string;
   operatingDays?: string;
+  closedDates?: string[];
   requiresApproval?: boolean;
   icon?: string;
   isUnderMaintenance?: boolean;

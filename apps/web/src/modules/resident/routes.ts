@@ -4,6 +4,8 @@ import CommonAreaDetailPage from './pages/CommonAreaDetailPage.vue'
 import MyReservationsPage from './pages/MyReservationsPage.vue'
 import AvailabilityPage from './pages/AvailabilityPage.vue'
 import NewReservationPage from './pages/NewReservationPage.vue'
+import AnnouncementsPage from './pages/AnnouncementsPage.vue'
+import SettingsPage from './pages/SettingsPage.vue'
 
 export const residentRoutes = [
   {
@@ -35,5 +37,15 @@ export const residentRoutes = [
     path: '/resident/reservations/new',
     name: 'resident-reservations-new',
     component: NewReservationPage,
+  },
+  {
+    path: '/resident/announcements',
+    name: 'resident-announcements',
+    component: AnnouncementsPage,
+  },
+  {
+    path: '/resident/settings',
+    name: 'resident-settings',
+    component: SettingsPage,
   },
 ]

@@ -201,13 +201,13 @@ const area = ref<CommonArea | null>(null)
 const loading = ref(true)
 
 const DAYS_MAP: Record<number, { label: string; value: number }> = {
-  1: { label: 'Dom', value: 1 },
-  2: { label: 'Seg', value: 2 },
-  3: { label: 'Ter', value: 3 },
-  4: { label: 'Qua', value: 4 },
-  5: { label: 'Qui', value: 5 },
-  6: { label: 'Sex', value: 6 },
-  7: { label: 'Sáb', value: 7 },
+  1: { label: 'Seg', value: 1 },
+  2: { label: 'Ter', value: 2 },
+  3: { label: 'Qua', value: 3 },
+  4: { label: 'Qui', value: 4 },
+  5: { label: 'Sex', value: 5 },
+  6: { label: 'Sáb', value: 6 },
+  7: { label: 'Dom', value: 7 },
 }
 
 function getOperatingDaysList(days: number[] | string | null): { label: string; value: number; active: boolean }[] {

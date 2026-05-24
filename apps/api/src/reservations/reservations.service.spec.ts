@@ -15,6 +15,7 @@ import {
   ReservationNotFoundException,
   ReservationAlreadyCanceledException,
   ReservationAccessDeniedException,
+  ReservationNotPendingException,
 } from './exceptions';
 
 describe('ReservationsService', () => {
@@ -78,6 +79,10 @@ describe('ReservationsService', () => {
       update: jest.fn(),
       count: jest.fn(),
     },
+    reservationApproval: {
+      create: jest.fn(),
+    },
+    $transaction: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -510,6 +515,140 @@ describe('ReservationsService', () => {
 
       await expect(service.cancelReservation('res-1', mockContext))
         .rejects.toThrow(ReservationAccessDeniedException);
+    });
+  });
+
+  describe('approveReservation', () => {
+    const mockReservation = {
+      id: 'res-1',
+      residentId: mockResidentId,
+      commonAreaId: 'area-1',
+      startTime: new Date('2026-07-20T14:00:00.000Z'),
+      endTime: new Date('2026-07-20T16:00:00.000Z'),
+      status: 'PENDING',
+      notes: null,
+      canceledById: null,
+      canceledAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      commonArea: { id: 'area-1', condominiumId: mockCondoId },
+    };
+
+    it('(ADMIN) deve aprovar reserva pendente', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue(mockReservation);
+      mockPrisma.$transaction.mockResolvedValue([
+        { ...mockReservation, status: 'APPROVED' },
+        { id: 'approval-1', reservationId: 'res-1', status: 'APPROVED' },
+      ]);
+
+      const result = await service.approveReservation('res-1', mockAdminContext);
+
+      expect(result.status).toBe('APPROVED');
+      expect(mockPrisma.$transaction).toHaveBeenCalled();
+    });
+
+    it('deve lançar ReservationAccessDeniedException se não for ADMIN', async () => {
+      await expect(service.approveReservation('res-1', mockContext))
+        .rejects.toThrow(ReservationAccessDeniedException);
+    });
+
+    it('deve lançar ReservationNotFoundException se reserva não existir', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue(null);
+
+      await expect(service.approveReservation('inexistente', mockAdminContext))
+        .rejects.toThrow(ReservationNotFoundException);
+    });
+
+    it('deve lançar TenantAccessDeniedException se for de outro condomínio', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue({
+        ...mockReservation,
+        commonArea: { id: 'area-1', condominiumId: 'outro-condo' },
+      });
+
+      await expect(service.approveReservation('res-1', mockAdminContext))
+        .rejects.toThrow(TenantAccessDeniedException);
+    });
+
+    it('deve lançar ReservationNotPendingException se já estiver aprovada', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue({
+        ...mockReservation,
+        status: 'APPROVED',
+      });
+
+      await expect(service.approveReservation('res-1', mockAdminContext))
+        .rejects.toThrow(ReservationNotPendingException);
+    });
+
+    it('deve lançar ReservationNotPendingException se já estiver rejeitada', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue({
+        ...mockReservation,
+        status: 'REJECTED',
+      });
+
+      await expect(service.approveReservation('res-1', mockAdminContext))
+        .rejects.toThrow(ReservationNotPendingException);
+    });
+  });
+
+  describe('rejectReservation', () => {
+    const mockReservation = {
+      id: 'res-1',
+      residentId: mockResidentId,
+      commonAreaId: 'area-1',
+      startTime: new Date('2026-07-20T14:00:00.000Z'),
+      endTime: new Date('2026-07-20T16:00:00.000Z'),
+      status: 'PENDING',
+      notes: null,
+      canceledById: null,
+      canceledAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      commonArea: { id: 'area-1', condominiumId: mockCondoId },
+    };
+
+    it('(ADMIN) deve rejeitar reserva pendente', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue(mockReservation);
+      mockPrisma.$transaction.mockResolvedValue([
+        { ...mockReservation, status: 'REJECTED' },
+        { id: 'approval-1', reservationId: 'res-1', status: 'REJECTED' },
+      ]);
+
+      const result = await service.rejectReservation('res-1', mockAdminContext);
+
+      expect(result.status).toBe('REJECTED');
+      expect(mockPrisma.$transaction).toHaveBeenCalled();
+    });
+
+    it('deve lançar ReservationAccessDeniedException se não for ADMIN', async () => {
+      await expect(service.rejectReservation('res-1', mockContext))
+        .rejects.toThrow(ReservationAccessDeniedException);
+    });
+
+    it('deve lançar ReservationNotFoundException se reserva não existir', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue(null);
+
+      await expect(service.rejectReservation('inexistente', mockAdminContext))
+        .rejects.toThrow(ReservationNotFoundException);
+    });
+
+    it('deve lançar TenantAccessDeniedException se for de outro condomínio', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue({
+        ...mockReservation,
+        commonArea: { id: 'area-1', condominiumId: 'outro-condo' },
+      });
+
+      await expect(service.rejectReservation('res-1', mockAdminContext))
+        .rejects.toThrow(TenantAccessDeniedException);
+    });
+
+    it('deve lançar ReservationNotPendingException se já estiver cancelada', async () => {
+      mockPrisma.reservation.findFirst.mockResolvedValue({
+        ...mockReservation,
+        status: 'CANCELED',
+      });
+
+      await expect(service.rejectReservation('res-1', mockAdminContext))
+        .rejects.toThrow(ReservationNotPendingException);
     });
   });
 });

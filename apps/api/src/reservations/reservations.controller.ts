@@ -79,11 +79,11 @@ export class ReservationsController {
     summary: 'US08 - Cancelar reserva',
     description: `
       **[US08]** Cancela uma reserva.
-      
+
       **Acesso:**
       - RESIDENT: cancela apenas as próprias reservas
       - ADMIN: cancela qualquer reserva do condomínio
-      
+
       Registra o ID do usuário que cancelou e a data do cancelamento (auditoria).
     `,
   })
@@ -97,6 +97,62 @@ export class ReservationsController {
     @Request() req: AuthRequest,
   ): Promise<ReservationOutput> {
     return this.reservationsService.cancelReservation(id, {
+      role: req.user.role,
+      condominiumId: req.user.condominiumId,
+      userId: req.user.sub,
+    });
+  }
+
+  @Patch(':id/approve')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'US11 - Aprovar reserva',
+    description: `
+      **[US11]** Aprova uma reserva pendente.
+
+      **Acesso:** Apenas ADMIN
+
+      Altera o status para APPROVED e registra o histórico de aprovação.
+    `,
+  })
+  @ApiResponse({ status: 200, description: 'Reserva aprovada.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado.' })
+  @ApiResponse({ status: 404, description: 'Reserva não encontrada.' })
+  @ApiResponse({ status: 409, description: 'Reserva não está pendente.' })
+  async approve(
+    @Param('id') id: string,
+    @Request() req: AuthRequest,
+  ): Promise<ReservationOutput> {
+    return this.reservationsService.approveReservation(id, {
+      role: req.user.role,
+      condominiumId: req.user.condominiumId,
+      userId: req.user.sub,
+    });
+  }
+
+  @Patch(':id/reject')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'US11 - Rejeitar reserva',
+    description: `
+      **[US11]** Rejeita uma reserva pendente.
+
+      **Acesso:** Apenas ADMIN
+
+      Altera o status para REJECTED e registra o histórico de aprovação.
+    `,
+  })
+  @ApiResponse({ status: 200, description: 'Reserva rejeitada.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Acesso negado.' })
+  @ApiResponse({ status: 404, description: 'Reserva não encontrada.' })
+  @ApiResponse({ status: 409, description: 'Reserva não está pendente.' })
+  async reject(
+    @Param('id') id: string,
+    @Request() req: AuthRequest,
+  ): Promise<ReservationOutput> {
+    return this.reservationsService.rejectReservation(id, {
       role: req.user.role,
       condominiumId: req.user.condominiumId,
       userId: req.user.sub,

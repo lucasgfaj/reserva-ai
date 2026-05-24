@@ -8,6 +8,8 @@ import ResidentsListPage from '@/modules/residents/pages/ResidentsListPage.vue'
 import ResidentsDetailPage from '@/modules/residents/pages/ResidentsDetailPage.vue'
 import ResidentsFormPage from '@/modules/residents/pages/ResidentsFormPage.vue'
 import AvailabilityPage from '@/modules/resident/pages/AvailabilityPage.vue'
+import AnnouncementsPage from './pages/AnnouncementsPage.vue'
+import AccountSettingsPage from './pages/AccountSettingsPage.vue'
 
 export const adminRoutes = [
   {
@@ -69,5 +71,15 @@ export const adminRoutes = [
     path: '/condominium/availability',
     name: 'admin-availability',
     component: AvailabilityPage,
+  },
+  {
+    path: '/condominium/announcements',
+    name: 'admin-announcements',
+    component: AnnouncementsPage,
+  },
+  {
+    path: '/condominium/settings/account',
+    name: 'admin-account-settings',
+    component: AccountSettingsPage,
   },
 ]
