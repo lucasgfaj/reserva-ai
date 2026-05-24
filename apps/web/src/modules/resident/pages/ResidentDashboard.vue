@@ -154,6 +154,33 @@ async function fetchCommonAreas() {
   }
 }
 
+async function fetchReservations() {
+  try {
+    const res = await http.get('/reservations', { params: { status: 'APPROVED', limit: 5 } })
+    const data = (res.data as any).data as any
+    reservations.value = (data.reservations || []).map((r: any) => ({
+      id: r.id,
+      title: r.commonArea?.name || 'Área Comum',
+      schedule: `${formatDate(r.startTime)} • ${formatTime(r.startTime)} - ${formatTime(r.endTime)}`,
+      resident: r.resident?.user?.name || '',
+      status: r.status === 'APPROVED' ? 'Confirmado' : r.status === 'PENDING' ? 'Pendente' : 'Cancelado',
+      icon: r.commonArea?.icon || 'home_work',
+    }))
+  } catch {
+    reservations.value = []
+  }
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
+}
+
+function formatTime(dateStr: string): string {
+  const d = new Date(dateStr)
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
+}
+
 const handleLogout = async () => {
   try {
     await http.post('/auth/logout')
@@ -172,5 +199,6 @@ const handleQuickAction = (actionId: string) => {
 
 onMounted(() => {
   fetchCommonAreas()
+  fetchReservations()
 })
 </script>
