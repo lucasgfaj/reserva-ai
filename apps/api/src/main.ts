@@ -106,10 +106,14 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  // Exportar especificação OpenAPI para swagger.json
-  const swaggerJsonPath = path.join(process.cwd(), 'swagger.json');
-  fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
-  console.log(`📄 Swagger spec exported to: ${swaggerJsonPath}`);
+  // Exportar especificação OpenAPI para swagger.json (falha silenciosa em FS read-only)
+  try {
+    const swaggerJsonPath = path.join(process.cwd(), 'swagger.json');
+    fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
+    console.log(`📄 Swagger spec exported to: ${swaggerJsonPath}`);
+  } catch {
+    // ignores EROFS in serverless environments
+  }
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);
