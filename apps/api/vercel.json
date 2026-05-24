@@ -1,14 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "npx prisma generate && npx nest build",
-  "outputDirectory": "dist",
+  "buildCommand": "npx prisma generate && npm run build",
   "functions": {
-    "src/main.js": {
+    "dist/main.js": {
       "runtime": "nodejs20.x"
     }
   },
   "routes": [
-    { "src": "/api/v1/(.*)", "dest": "src/main.js" },
-    { "src": "/api/v1", "dest": "src/main.js" }
+    {
+      "src": "/(.*)",
+      "dest": "dist/main.js"
+    }
   ]
 }

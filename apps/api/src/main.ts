@@ -1,34 +1,32 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, HttpException } from '@nestjs/common';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-import * as fs from 'fs';
+import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 import serverless from 'serverless-http';
 
-// Load environment variables before anything else
-dotenv.config({ path: path.join(process.cwd(), '.env') });
-
-import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DomainExceptionFilter } from './common/filters/domain-exception.filter';
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-let cachedApp: Awaited<ReturnType<typeof NestFactory.create>>;
+let cachedServer;
 
-async function buildApp() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   app.use(cookieParser());
+
   app.setGlobalPrefix('api/v1');
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       transform: true,
       exceptionFactory: (errors) => {
-        const messages = errors.map((error) => {
-          return Object.values(error.constraints || {}).join(', ');
-        });
+        const messages = errors.map((error) =>
+          Object.values(error.constraints || {}).join(', ')
+        );
+
         return new HttpException(
           {
             statusCode: 400,
@@ -44,7 +42,12 @@ async function buildApp() {
       },
     }),
   );
-  app.useGlobalFilters(new DomainExceptionFilter(), new HttpExceptionFilter());
+
+  app.useGlobalFilters(
+    new DomainExceptionFilter(),
+    new HttpExceptionFilter(),
+  );
+
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(',') || [
       'http://localhost:5173',
@@ -52,85 +55,31 @@ async function buildApp() {
     ],
     credentials: true,
   });
-  return app;
-}
-
-async function bootstrap() {
-  const app = await buildApp();
 
   const config = new DocumentBuilder()
-    .setTitle('🚀 Reserva Aí! - API de Gestão de Condomínios')
-    .setDescription(
-      '## 📝 Sobre o Projeto\n' +
-        'O **Reserva Aí!** é uma solução completa para a modernização da gestão de condomínios.\n\n' +
-        '### 🛠️ Guia de Uso\n' +
-        '1. **Autenticação:** Após login, use o token JWT no header Authorization: `Bearer <token>`\n' +
-        '2. **Isolamento (Multi-tenant):** Dados isolados por condomínio (RN01)\n' +
-        '3. **Roles:** ADMIN (administrador), RESIDENT (morador), SUPER_ADMIN\n\n' +
-        '### 🔐 Segurança e Permissões\n' +
-        '| Role | Acesso |\n' +
-        '|------|--------|\n' +
-        '| ADMIN | CRUD completo: condomínio, moradores e áreas |\n' +
-        '| RESIDENT | READ: áreas comuns; BOOK: reservas |\n' +
-        '| SUPER_ADMIN | Global (sem condomínio vinculado) |\n\n' +
-        '### 📋 User Stories Implementadas\n' +
-        '| US | Descrição |\n' +
-        '|----|----------|\n' +
-        '| US01 | Criar conta e registrar condomínio |\n' +
-        '| US02 | Login e gerenciar dados do condomínio |\n' +
-        '| US03 | Cadastrar moradores (Admin) |\n' +
-        '| US03.1 | Login de morador |\n' +
-        '| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n' +
-        '| US05 | Visualizar áreas comuns |\n' +
-        '| US06 | Consultar disponibilidade de áreas comuns |\n' +
-        '| US07 | Realizar reserva de área comum |\n\n' +
-        '*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*',
-    )
+    .setTitle('Reserva Aí API')
     .setVersion('1.0')
-    .addTag('auth', 'US01, US02, US03.1 - Autenticação e Registro')
-    .addTag('residents', 'US03 - Gestão de Moradores (Admin only)')
-    .addTag('reservations', 'US07 - Reservas')
-.addTag('common-areas', 'US04, US05, US06 - Áreas Comuns')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Cole o token JWT retornado no login',
-        in: 'header',
-      },
-      'JWT-auth',
-    )
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/v1/docs', app, document);
 
-  // Exportar especificação OpenAPI para swagger.json (falha silenciosa em FS read-only)
-  try {
-    const swaggerJsonPath = path.join(process.cwd(), 'swagger.json');
-    fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
-    console.log(`📄 Swagger spec exported to: ${swaggerJsonPath}`);
-  } catch {
-    // ignores EROFS in serverless environments
-  }
+  SwaggerModule.setup(
+    'api/v1/docs',
+    app,
+    document,
+  );
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  await app.init();
+
+  const expressApp = app.getHttpAdapter().getInstance();
+
+  return serverless(expressApp);
 }
 
-export const handler = serverless(async (req, res) => {
-  if (!cachedApp) {
-    cachedApp = await buildApp();
-    await cachedApp.init();
+export const handler = async (req, res) => {
+  if (!cachedServer) {
+    cachedServer = await bootstrap();
   }
-  const expressInstance = cachedApp.getHttpAdapter().getInstance();
-  return expressInstance(req, res);
-});
 
-if (!process.env.VERCEL) {
-  bootstrap().catch((err) => {
-    console.error('Failed to bootstrap application:', err);
-    process.exit(1);
-  });
-}
+  return cachedServer(req, res);
+};
