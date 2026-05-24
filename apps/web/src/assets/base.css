@@ -1,0 +1,77 @@
+:root {
+  --color-primary: #004d75;
+  --color-primary-dark: #003652;
+  --color-primary-container: #006699;
+  
+  --color-background: #f7f9fe;
+  --color-background-soft: #eceef3;
+  --color-background-mute: #d8dadf;
+  
+  --color-border: rgba(0, 77, 117, 0.1);
+  --color-border-hover: rgba(0, 77, 117, 0.2);
+  
+  --color-heading: #191c1f;
+  --color-text: #40484f;
+  --color-text-muted: #707880;
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 77, 117, 0.05);
+  --glass-shadow: 0 12px 40px rgba(0, 77, 117, 0.08);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  line-height: 1.6;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+
+.signature-gradient {
+  background: linear-gradient(135deg, #004d75 0%, #006699 100%);
+}
+
+.soft-input {
+  @apply w-full bg-surface-container-low border-0 border-b-2 border-outline-variant px-4 py-3 text-on-surface placeholder:text-outline focus:ring-0 focus:bg-surface-container-lowest focus:border-primary transition-all outline-none rounded-t-lg;
+}
+
+.shadow-premium {
+  box-shadow: 0 12px 40px rgba(0, 77, 117, 0.15);
+}
+
+.shadow-premium-hover {
+  box-shadow: 0 12px 40px rgba(0, 77, 117, 0.25);
+}
+
+.avatar {
+  @apply w-10 h-10 rounded-full border-2 border-white object-cover shadow-sm;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

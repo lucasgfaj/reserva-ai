@@ -1,0 +1,66 @@
+name: CI - Validação do Monorepo
+
+# 1. Quando este robô deve ser ativado?
+on:
+  pull_request:
+    branches: [ "develop", "main" ]
+  push:
+    branches: [ "develop", "main" ] # <-- Captura o Merge final para validação!
+    
+# 2. O que ele deve fazer?
+jobs:
+  testagem-automatica:
+    name: 🧪 Instalar, Configurar BD e Testar
+    runs-on: ubuntu-latest
+
+    # 3. Subindo o Banco de Dados para os testes (Conforme SDD e Docker local)
+    services:
+      postgres:
+        image: postgres:16 # <-- Extraído do SDD!
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: reserva_ai_db_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: 📥 Clonar o repositório
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Configurar Node.js (Conforme SDD)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # <-- Extraído do SDD!
+          cache: 'npm'
+
+      # Como agora temos o Monorepo configurado, basta um comando na raiz!
+      - name: 📦 Instalar dependências (NPM Workspaces)
+        run: npm ci
+
+      # O Prisma precisa rodar as migrations na pasta da API
+      - name: 🗄️ Preparar Banco de Dados (Prisma)
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/reserva_ai_db_test?schema=public"
+        run: |
+          npm run prisma:generate -w apps/api
+          npm run prisma:deploy -w apps/api
+          # Limpar banco de teste para garantir testes limpos
+          npx prisma db execute --stdin <<< 'TRUNCATE TABLE users CASCADE; TRUNCATE TABLE condominiums CASCADE;' -w apps/api || true
+
+      # O comando de teste usa a flag -w para testar a API diretamente pela raiz
+      - name: 🔍 Rodar Testes Unitários
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/reserva_ai_db_test?schema=public"
+        run: npm run test -w apps/api
+
+      # E2E tests precisam de banco com migrations
+      - name: 🔍 Rodar Testes E2E
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/reserva_ai_db_test?schema=public"
+        run: npm run test:e2e -w apps/api

@@ -1,0 +1,31 @@
+{
+    "name": "reserva-ai",
+    "version": "1.0.0",
+    "description": "Monorepo do projeto da disciplina",
+    "private": true,
+    "workspaces": [
+        "apps/*"
+    ],
+"scripts": {
+    "dev:prisma": "npm run prisma:generate -w apps/api && npm run prisma:deploy -w apps/api",
+    "dev:prisma:seed": "npm run prisma:generate -w apps/api && npm run prisma:deploy -w apps/api && npm run prisma:seed -w apps/api",
+    "dev:prisma:studio": "cd apps/api && npx prisma studio -p 5555",
+    "dev:api": "npm run start:dev -w apps/api",
+    "dev:api:test": "npm run test -w apps/api",
+    "dev:api:test:cover": "npm run test --workspace apps/api -- --coverage",
+    "dev:api:test:e2e": "export DATABASE_URL=\"postgresql://postgres:postgres@localhost:5432/reserva_ai_db?schema=public\" && npm run test:e2e -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:web:test": "npm run test -w apps/web",
+    "dev:web:test:watch": "npm run test:watch -w apps/web"
+  },
+    "keywords": [
+        "nestjs",
+        "vuejs",
+        "monorepo"
+    ],
+    "author": "Special Topics in Software Engineering",
+    "license": "UNLICENSED",
+    "devDependencies": {
+        "isexe": "^4.0.0"
+    }
+}

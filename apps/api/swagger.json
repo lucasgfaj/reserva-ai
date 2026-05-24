@@ -1,0 +1,1561 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "description": "\n      **[US01]** Cria de forma atômica o condomínio e o usuário administrador raiz (Self-Service Onboarding).\n      \n      **Acesso:** Público (não requer autenticação)\n      **Regras de negócio:** RN02\n      \n      **Exemplo de cURL:**\n      ```bash\n      curl -X POST http://localhost:3000/api/v1/auth/register \\\n        -H \"Content-Type: application/json\" \\\n        -c cookies.txt \\\n        -d '{\n          \"adminName\": \"Lucas Admin\",\n          \"adminEmail\": \"admin@reservaai.com.br\",\n          \"adminPassword\": \"SenhaSegura123!\",\n          \"condominiumName\": \"Residencial Horizonte\",\n          \"condominiumAddress\": \"Rua das Flores, 123\"\n        }'\n      ```\n    ",
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterTenantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Condomínio e Admin criados com sucesso. Cookie HttpOnly definido."
+          },
+          "400": {
+            "description": "Dados de entrada inválidos."
+          },
+          "409": {
+            "description": "E-mail já cadastrado."
+          }
+        },
+        "summary": "US01 - Registrar condomínio e administrador raiz",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "\n      **[US02]** Login de administrador para gerenciar dados do condomínio.\n      **[US03.1]** Login de morador com credenciais fornecidas pelo administrador.\n      \n      **Acesso:** Público (não requer autenticação)\n      \n      **Exemplo de cURL (com cookies):**\n      ```bash\n      curl -X POST http://localhost:3000/api/v1/auth/login \\\n        -H \"Content-Type: application/json\" \\\n        -c cookies.txt \\\n        -d '{\"email\": \"admin@reservaai.com.br\", \"password\": \"SenhaSegura123!\"}'\n      ```\n    ",
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login realizado com sucesso."
+          },
+          "401": {
+            "description": "Credenciais inválidas."
+          }
+        },
+        "summary": "US02/US03.1 - Login de administrador ou morador",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "description": "\n      Invalida a sessão do usuário limpando o cookie HttpOnly.\n      \n      **Acesso:** Autenticado (requer JWT)\n      \n      **Exemplo de cURL:**\n      ```bash\n      curl -X POST http://localhost:3000/api/v1/auth/logout \\\n        -b cookies.txt \\\n        -c cookies.txt\n      ```\n    ",
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Logout realizado com sucesso. Cookie limpo."
+          }
+        },
+        "security": [
+          {
+            "cookie": []
+          }
+        ],
+        "summary": "Logout - Invalidar sessão",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "patch": {
+        "description": "\n      Atualiza nome e/ou e-mail do usuário autenticado.\n      \n      **Acesso:** Autenticado (requer JWT)\n    ",
+        "operationId": "AuthController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil atualizado."
+          },
+          "409": {
+            "description": "E-mail já em uso."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar perfil do usuário autenticado",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "description": "\n      Altera a senha do usuário autenticado.\n      \n      **Acesso:** Autenticado (requer JWT)\n      \n      **Exemplo de cURL:**\n      ```bash\n      curl -X PATCH http://localhost:3000/api/v1/auth/change-password \\\n        -H \"Content-Type: application/json\" \\\n        -b cookies.txt \\\n        -d '{\"currentPassword\": \"SenhaAtual123!\", \"newPassword\": \"NovaSenha456!\"}'\n      ```\n    ",
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha alterada com sucesso."
+          },
+          "400": {
+            "description": "Senha atual incorreta ou dados inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Alterar senha do usuário autenticado",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/residents": {
+      "get": {
+        "description": "\n      **[US03]** Lista todos os moradores vinculados ao condomínio do administrador.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
+        "operationId": "ResidentsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de moradores retornada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores podem listar."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US03 - Listar moradores do condomínio (Admin)",
+        "tags": [
+          "residents"
+        ]
+      },
+      "post": {
+        "description": "\n      **[US03]** Cadastra as credenciais de um novo morador de forma restrita (morador não possui tela de registro livre).\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01, RN01.1, RN01.2\n      \n      Se password não for fornecida, será gerada automaticamente (8 caracteres).\n    ",
+        "operationId": "ResidentsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResidentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Morador criado com sucesso."
+          },
+          "400": {
+            "description": "Dados de entrada inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores podem cadastrar."
+          },
+          "409": {
+            "description": "E-mail já cadastrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US03 - Cadastrar morador (Admin)",
+        "tags": [
+          "residents"
+        ]
+      }
+    },
+    "/api/v1/residents/{id}": {
+      "get": {
+        "description": "\n      **[US03]** Busca os detalhes de um morador específico.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
+        "operationId": "ResidentsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do morador",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Morador encontrado."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores podem buscar."
+          },
+          "404": {
+            "description": "Morador não encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US03 - Buscar morador pelo ID (Admin)",
+        "tags": [
+          "residents"
+        ]
+      }
+    },
+    "/api/v1/residents/{id}/permissions": {
+      "patch": {
+        "description": "\n      **[US03]** Permite ao administrador ativar ou desativar o privilégio de reserva (canBook) de um morador.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
+        "operationId": "ResidentsController_updatePermissions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do morador",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePermissionsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Permissão atualizada."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores podem alterar."
+          },
+          "404": {
+            "description": "Morador não encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US03 - Alterar permissão de reserva (Admin)",
+        "tags": [
+          "residents"
+        ]
+      }
+    },
+    "/api/v1/common-areas": {
+      "get": {
+        "description": "\n      **[US05]** Lista todas as áreas comuns disponíveis no condomínio.\n      \n      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n      \n      Retorna áreas ordenadas alfabeticamente por nome.\n    ",
+        "operationId": "CommonAreasController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de áreas comuns retornada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Super Admin sem condomínio vinculado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US05 - Listar áreas comuns do condomínio",
+        "tags": [
+          "common-areas"
+        ]
+      },
+      "post": {
+        "description": "\n      **[US04]** Cadastra e gerencia áreas comuns disponíveis para reserva.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01, RN03, RN03.1\n      \n      **Horário de funcionamento:** openTime e closeTime no formato HH:MM (ex: 08:00, 22:00)\n      **Dias de funcionamento:** Lista de 1 a 7 separados por vírgula (1=Domingo a 7=Sábado)\n    ",
+        "operationId": "CommonAreasController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommonAreaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Área comum criada com sucesso."
+          },
+          "400": {
+            "description": "Dados de entrada inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores podem cadastrar."
+          },
+          "409": {
+            "description": "Já existe área comum com este nome."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US04 - Cadastrar área comum (Admin)",
+        "tags": [
+          "common-areas"
+        ]
+      }
+    },
+    "/api/v1/common-areas/{id}": {
+      "get": {
+        "description": "\n      **[US05]** Busca os detalhes de uma área comum específica.\n      \n      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)\n      **Regras de negócio:** RN01, RN03.1 (horário de funcionamento)\n    ",
+        "operationId": "CommonAreasController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Área comum encontrada."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Área pertencente a outro condomínio."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US05 - Buscar área comum pelo ID",
+        "tags": [
+          "common-areas"
+        ]
+      },
+      "patch": {
+        "description": "\n      **[US04]** Atualiza os dados de uma área comum existente.\n\n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
+        "operationId": "CommonAreasController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommonAreaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Área comum atualizada com sucesso."
+          },
+          "400": {
+            "description": "Dados de entrada inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores podem atualizar."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          },
+          "409": {
+            "description": "Já existe área comum com este nome."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US04 - Atualizar área comum (Admin)",
+        "tags": [
+          "common-areas"
+        ]
+      },
+      "delete": {
+        "description": "\n      **[US04]** Deleta uma área comum do condomínio.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN04 (não usar exclusão física)\n      \n      **Restrição:** Só é possível deletar áreas sem reservas ativas (PENDING ou APPROVED).\n    ",
+        "operationId": "CommonAreasController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Área comum deletada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores podem deletar."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          },
+          "409": {
+            "description": "Área comum possui reservas ativas."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US04 - Deletar área comum (Admin)",
+        "tags": [
+          "common-areas"
+        ]
+      }
+    },
+    "/api/v1/common-areas/{id}/busy-days": {
+      "get": {
+        "description": "\n      **[US06]** Retorna os dias do mês que possuem reservas para uma área comum.\n      \n      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)\n    ",
+        "operationId": "CommonAreasController_getBusyDays",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de dias ocupados."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US06 - Listar dias ocupados no mês",
+        "tags": [
+          "common-areas"
+        ]
+      }
+    },
+    "/api/v1/common-areas/{id}/availability": {
+      "get": {
+        "description": "\n      **[US06]** Consulta a disponibilidade de uma área comum em uma data específica.\n      \n      **Acesso:** Administradores (ADMIN) e Moradores (RESIDENT)\n      **Regras de negócio:** RN01, RN03, RN03.1\n      \n      Se startTime e endTime forem informados, verifica se o horário específico está disponível.\n      Caso contrário, retorna os horários de funcionamento da área.\n    ",
+        "operationId": "CommonAreasController_checkAvailability",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": true,
+            "in": "query",
+            "description": "Data para consulta (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-06-15",
+              "type": "string"
+            }
+          },
+          {
+            "name": "startTime",
+            "required": false,
+            "in": "query",
+            "description": "Horário de início (HH:MM)",
+            "schema": {
+              "example": "10:00",
+              "type": "string"
+            }
+          },
+          {
+            "name": "endTime",
+            "required": false,
+            "in": "query",
+            "description": "Horário de fim (HH:MM)",
+            "schema": {
+              "example": "12:00",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultado da consulta de disponibilidade."
+          },
+          "400": {
+            "description": "Parâmetros inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US06 - Consultar disponibilidade de área comum",
+        "tags": [
+          "common-areas"
+        ]
+      }
+    },
+    "/api/v1/common-areas/{id}/closed-dates": {
+      "post": {
+        "description": "\n      Marca uma data específica como fechada para a área comum.\n\n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n    ",
+        "operationId": "CommonAreasController_addClosedDate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddClosedDateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data fechada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fechar data específica",
+        "tags": [
+          "common-areas"
+        ]
+      },
+      "delete": {
+        "description": "\n      Remove uma data da lista de datas fechadas.\n\n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n    ",
+        "operationId": "CommonAreasController_removeClosedDate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveClosedDateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data reaberta com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reabrir data específica",
+        "tags": [
+          "common-areas"
+        ]
+      }
+    },
+    "/api/v1/reservations": {
+      "get": {
+        "description": "\n      **[US09/US10]** Lista reservas.\n\n      **Acesso:**\n      - RESIDENT: lista apenas as próprias reservas\n      - ADMIN: lista todas as reservas do condomínio\n    ",
+        "operationId": "ReservationsController_findAll",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de reservas."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US09/US10 - Listar reservas",
+        "tags": [
+          "reservations"
+        ]
+      },
+      "post": {
+        "description": "\n      **[US07]** Realiza uma reserva de área comum em um período disponível.\n      \n      **Acesso:** Moradores (RESIDENT) e Administradores (ADMIN)\n      **Regras de negócio:** RN01, RN03, RN03.1\n      \n      Para RESIDENT, o residentId é obtido automaticamente do token JWT.\n      Para ADMIN, pode-se informar o residentId no body.\n    ",
+        "operationId": "ReservationsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reserva criada com sucesso."
+          },
+          "400": {
+            "description": "Dados de entrada inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Acesso negado."
+          },
+          "404": {
+            "description": "Área ou morador não encontrado."
+          },
+          "409": {
+            "description": "Conflito de horário."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US07 - Criar uma reserva",
+        "tags": [
+          "reservations"
+        ]
+      }
+    },
+    "/api/v1/reservations/{id}/cancel": {
+      "patch": {
+        "description": "\n      **[US08]** Cancela uma reserva.\n\n      **Acesso:**\n      - RESIDENT: cancela apenas as próprias reservas\n      - ADMIN: cancela qualquer reserva do condomínio\n\n      Registra o ID do usuário que cancelou e a data do cancelamento (auditoria).\n    ",
+        "operationId": "ReservationsController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reserva cancelada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Acesso negado."
+          },
+          "404": {
+            "description": "Reserva não encontrada."
+          },
+          "409": {
+            "description": "Reserva já cancelada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US08 - Cancelar reserva",
+        "tags": [
+          "reservations"
+        ]
+      }
+    },
+    "/api/v1/reservations/{id}/approve": {
+      "patch": {
+        "description": "\n      **[US11]** Aprova uma reserva pendente.\n\n      **Acesso:** Apenas ADMIN\n\n      Altera o status para APPROVED e registra o histórico de aprovação.\n    ",
+        "operationId": "ReservationsController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reserva aprovada."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Acesso negado."
+          },
+          "404": {
+            "description": "Reserva não encontrada."
+          },
+          "409": {
+            "description": "Reserva não está pendente."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US11 - Aprovar reserva",
+        "tags": [
+          "reservations"
+        ]
+      }
+    },
+    "/api/v1/reservations/{id}/reject": {
+      "patch": {
+        "description": "\n      **[US11]** Rejeita uma reserva pendente.\n\n      **Acesso:** Apenas ADMIN\n\n      Altera o status para REJECTED e registra o histórico de aprovação.\n    ",
+        "operationId": "ReservationsController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reserva rejeitada."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Acesso negado."
+          },
+          "404": {
+            "description": "Reserva não encontrada."
+          },
+          "409": {
+            "description": "Reserva não está pendente."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US11 - Rejeitar reserva",
+        "tags": [
+          "reservations"
+        ]
+      }
+    },
+    "/api/v1/condominiums": {
+      "get": {
+        "description": "Retorna os dados do condomínio do administrador autenticado.",
+        "operationId": "CondominiumsController_findCurrent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dados do condomínio."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US02 - Obter dados do condomínio atual",
+        "tags": [
+          "condominiums"
+        ]
+      },
+      "patch": {
+        "description": "Atualiza os dados do condomínio do administrador autenticado.",
+        "operationId": "CondominiumsController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCondominiumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Condomínio atualizado."
+          },
+          "400": {
+            "description": "Dados inválidos."
+          },
+          "404": {
+            "description": "Condomínio não encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US02 - Atualizar dados do condomínio",
+        "tags": [
+          "condominiums"
+        ]
+      }
+    },
+    "/api/v1/announcements": {
+      "post": {
+        "operationId": "AnnouncementsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comunicado criado."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar comunicado (Admin)",
+        "tags": [
+          "announcements"
+        ]
+      },
+      "get": {
+        "operationId": "AnnouncementsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de comunicados."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar comunicados do condomínio",
+        "tags": [
+          "announcements"
+        ]
+      }
+    },
+    "/api/v1/announcements/{id}": {
+      "delete": {
+        "operationId": "AnnouncementsController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do comunicado",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comunicado removido."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          },
+          "404": {
+            "description": "Comunicado não encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover comunicado (Admin)",
+        "tags": [
+          "announcements"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "🚀 Reserva Aí! - API de Gestão de Condomínios",
+    "description": "## 📝 Sobre o Projeto\nO **Reserva Aí!** é uma solução completa para a modernização da gestão de condomínios.\n\n### 🛠️ Guia de Uso\n1. **Autenticação:** Após login, use o token JWT no header Authorization: `Bearer <token>`\n2. **Isolamento (Multi-tenant):** Dados isolados por condomínio (RN01)\n3. **Roles:** ADMIN (administrador), RESIDENT (morador), SUPER_ADMIN\n\n### 🔐 Segurança e Permissões\n| Role | Acesso |\n|------|--------|\n| ADMIN | CRUD completo: condomínio, moradores e áreas |\n| RESIDENT | READ: áreas comuns; BOOK: reservas |\n| SUPER_ADMIN | Global (sem condomínio vinculado) |\n\n### 📋 User Stories Implementadas\n| US | Descrição |\n|----|----------|\n| US01 | Criar conta e registrar condomínio |\n| US02 | Login e gerenciar dados do condomínio |\n| US03 | Cadastrar moradores (Admin) |\n| US03.1 | Login de morador |\n| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n| US05 | Visualizar áreas comuns |\n| US06 | Consultar disponibilidade de áreas comuns |\n| US07 | Realizar reserva de área comum |\n\n*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "US01, US02, US03.1 - Autenticação e Registro"
+    },
+    {
+      "name": "residents",
+      "description": "US03 - Gestão de Moradores (Admin only)"
+    },
+    {
+      "name": "reservations",
+      "description": "US07 - Reservas"
+    },
+    {
+      "name": "common-areas",
+      "description": "US04, US05, US06 - Áreas Comuns"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "JWT",
+        "description": "Cole o token JWT retornado no login",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "RegisterTenantDto": {
+        "type": "object",
+        "properties": {
+          "condominiumName": {
+            "type": "string",
+            "example": "Residencial Horizonte",
+            "description": "Nome do condomínio (Mapeado para Condominium.name - VARCHAR 150)"
+          },
+          "condominiumAddress": {
+            "type": "string",
+            "example": "Rua das Flores, 123",
+            "description": "Endereço completo (Mapeado para Condominium.address - VARCHAR 255)"
+          },
+          "adminName": {
+            "type": "string",
+            "example": "Lucas Admin",
+            "description": "Nome completo do administrador (Mapeado para User.name - VARCHAR 120)"
+          },
+          "adminEmail": {
+            "type": "string",
+            "example": "admin@reservaai.com.br",
+            "description": "E-mail para login (Mapeado para User.email - VARCHAR 150 - Único)"
+          },
+          "adminPassword": {
+            "type": "string",
+            "example": "SenhaSegura123!@",
+            "description": "Senha que será hasheada via Bcrypt (mín 8 chars, letra, número e qualquer especial)",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "condominiumName",
+          "condominiumAddress",
+          "adminName",
+          "adminEmail",
+          "adminPassword"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@reservaai.com.br",
+            "description": "E-mail do usuário cadastrado"
+          },
+          "password": {
+            "type": "string",
+            "example": "Senha123!",
+            "description": "Senha do usuário",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "João Silva",
+            "description": "Nome do usuário"
+          },
+          "email": {
+            "type": "string",
+            "example": "joao@email.com",
+            "description": "E-mail do usuário"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "example": "SenhaAtual123!",
+            "description": "Senha atual do usuário"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "NovaSenha456!",
+            "description": "Nova senha"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "UpdatePermissionsDto": {
+        "type": "object",
+        "properties": {
+          "canBook": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indica se o morador pode realizar reservas"
+          }
+        },
+        "required": [
+          "canBook"
+        ]
+      },
+      "CreateResidentDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "João Morador",
+            "description": "Nome completo do morador (3-120 caracteres)"
+          },
+          "email": {
+            "type": "string",
+            "example": "joao@reservaai.com.br",
+            "description": "E-mail único para login do morador"
+          },
+          "password": {
+            "type": "string",
+            "example": "Test1234",
+            "description": "Senha opcional. Se não fornecida, será gerada automaticamente (8 caracteres)",
+            "minLength": 8
+          },
+          "unitId": {
+            "type": "string",
+            "example": "uuid-da-unidade",
+            "description": "UUID da unidade residencial (opcional)"
+          },
+          "document": {
+            "type": "string",
+            "example": "12345678901",
+            "description": "Documento do morador (CPF/RG)"
+          },
+          "phone": {
+            "type": "string",
+            "example": "11999999999",
+            "description": "Telefone de contato do morador"
+          },
+          "canBook": {
+            "type": "boolean",
+            "example": true,
+            "description": "Indica se o morador pode realizar reservas (padrão: true)"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ]
+      },
+      "CreateCommonAreaDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Salão de Festas",
+            "description": "Nome da área comum (2-120 caracteres)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Espaço para eventos",
+            "description": "Descrição da área comum"
+          },
+          "capacity": {
+            "type": "number",
+            "example": 50,
+            "description": "Capacidade máxima (0-10000)"
+          },
+          "openTime": {
+            "type": "string",
+            "example": "08:00",
+            "description": "Horário de abertura (HH:MM)"
+          },
+          "closeTime": {
+            "type": "string",
+            "example": "22:00",
+            "description": "Horário de fechamento (HH:MM)"
+          },
+          "operatingDays": {
+            "type": "string",
+            "example": "1,2,3,4,5,6,7",
+            "description": "Dias de funcionamento (1=Domingo a 7=Sábado)"
+          },
+          "requiresApproval": {
+            "type": "boolean",
+            "example": true,
+            "description": "Indica se requer aprovação do administrador"
+          },
+          "icon": {
+            "type": "string",
+            "example": "pool",
+            "description": "Ícone (Material Symbol) para representar a área"
+          },
+          "isUnderMaintenance": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indica se a área está em manutenção"
+          }
+        },
+        "required": [
+          "name",
+          "openTime",
+          "closeTime"
+        ]
+      },
+      "UpdateCommonAreaDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Salão de Festas Premium",
+            "description": "Nome da área comum (2-120 caracteres)"
+          },
+          "description": {
+            "type": "string",
+            "example": "Espaço para eventos",
+            "description": "Descrição da área comum"
+          },
+          "capacity": {
+            "type": "number",
+            "example": 100,
+            "description": "Capacidade máxima (0-10000)"
+          },
+          "openTime": {
+            "type": "string",
+            "example": "09:00",
+            "description": "Horário de abertura (HH:MM)"
+          },
+          "closeTime": {
+            "type": "string",
+            "example": "23:00",
+            "description": "Horário de fechamento (HH:MM)"
+          },
+          "operatingDays": {
+            "type": "string",
+            "example": "1,2,3,4,5,6,7",
+            "description": "Dias de funcionamento (1=Domingo a 7=Sábado)"
+          },
+          "requiresApproval": {
+            "type": "boolean",
+            "example": true,
+            "description": "Indica se requer aprovação do administrador"
+          },
+          "icon": {
+            "type": "string",
+            "example": "pool",
+            "description": "Ícone (Material Symbol) para representar a área"
+          },
+          "isUnderMaintenance": {
+            "type": "boolean",
+            "example": false,
+            "description": "Indica se a área está em manutenção"
+          }
+        }
+      },
+      "AddClosedDateDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-12-25",
+            "description": "Data a ser fechada (YYYY-MM-DD)"
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "RemoveClosedDateDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-12-25",
+            "description": "Data a ser reaberta (YYYY-MM-DD)"
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "CreateReservationDto": {
+        "type": "object",
+        "properties": {
+          "commonAreaId": {
+            "type": "string",
+            "description": "UUID da área comum"
+          },
+          "date": {
+            "type": "string",
+            "description": "Data da reserva (YYYY-MM-DD)",
+            "example": "2026-07-15"
+          },
+          "startTime": {
+            "type": "string",
+            "description": "Horário de início (HH:MM)",
+            "example": "10:00"
+          },
+          "endTime": {
+            "type": "string",
+            "description": "Horário de fim (HH:MM)",
+            "example": "12:00"
+          },
+          "notes": {
+            "type": "string",
+            "description": "Observações"
+          },
+          "residentId": {
+            "type": "string",
+            "description": "UUID do morador (apenas admin)"
+          }
+        },
+        "required": [
+          "commonAreaId",
+          "date",
+          "startTime",
+          "endTime"
+        ]
+      },
+      "UpdateCondominiumDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateAnnouncementDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Manutenção na Piscina",
+            "description": "Título do comunicado"
+          },
+          "content": {
+            "type": "string",
+            "example": "A piscina estará fechada para manutenção no dia 25/12.",
+            "description": "Conteúdo do comunicado"
+          }
+        },
+        "required": [
+          "title",
+          "content"
+        ]
+      }
+    }
+  }
+}
