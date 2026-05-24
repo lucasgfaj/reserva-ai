@@ -63,6 +63,21 @@
             </div>
           </div>
 
+          <!-- CTA Card -->
+          <div v-if="selectedAreaId" class="bg-gradient-to-r from-primary/5 to-white border border-primary/10 rounded-2xl p-4 mb-6 flex items-center justify-between">
+            <div>
+              <p class="text-sm font-semibold text-cyan-900">Quer fazer uma reserva?</p>
+              <p class="text-xs text-slate-500">Clique em <span class="text-primary font-medium">Reservar</span> ao lado de um horário disponível</p>
+            </div>
+            <router-link
+              :to="{ name: 'resident-reservations-new', query: { areaId: selectedAreaId } }"
+              class="inline-flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-xl hover:brightness-90 transition-all text-sm font-semibold"
+            >
+              <span class="material-symbols-outlined text-[16px]">add_circle</span>
+              Nova Reserva
+            </router-link>
+          </div>
+
           <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
             <!-- Calendar -->
             <div class="xl:col-span-2 bg-white rounded-2xl p-4 md:p-6 border border-slate-100 shadow-sm">
@@ -180,6 +195,13 @@
                     <span v-if="!slot.available" class="text-xs text-red-400 ml-auto">
                       {{ statusLabel(slot.status) }}
                     </span>
+                    <button
+                      v-if="slot.available"
+                      @click.stop="goToReservation(slot)"
+                      class="ml-auto text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                    >
+                      Reservar
+                    </button>
                   </div>
                 </div>
               </template>
@@ -289,6 +311,14 @@ const operatingDaysSet = computed(() => {
   return new Set(days.map((d) => map[d] ?? d))
 })
 
+function isTimePast(time: string, date: string): boolean {
+  const today = new Date()
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  if (date !== todayStr) return false
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m <= today.getHours() * 60 + today.getMinutes()
+}
+
 const timeSlots = computed<TimeSlot[]>(() => {
   if (!result.value) return []
   const { openTime, closeTime, conflicts } = result.value
@@ -300,14 +330,16 @@ const timeSlots = computed<TimeSlot[]>(() => {
 
   for (const c of sorted) {
     if (cursor < c.startTime) {
-      slots.push({ start: cursor, end: c.startTime, available: true })
+      const past = isTimePast(cursor, selectedDate.value)
+      slots.push({ start: cursor, end: c.startTime, available: !past })
     }
     slots.push({ start: c.startTime, end: c.endTime, available: false, status: c.status })
     cursor = c.endTime > cursor ? c.endTime : cursor
   }
 
   if (cursor < closeTime) {
-    slots.push({ start: cursor, end: closeTime, available: true })
+    const past = isTimePast(cursor, selectedDate.value)
+    slots.push({ start: cursor, end: closeTime, available: !past })
   }
 
   return slots
@@ -449,7 +481,21 @@ async function fetchAreas() {
   }
 }
 
-const handleQuickAction = () => {}
+function goToReservation(slot: TimeSlot) {
+  router.push({
+    name: 'resident-reservations-new',
+    query: {
+      areaId: selectedAreaId.value,
+      date: selectedDate.value,
+      startTime: slot.start,
+      endTime: slot.end,
+    },
+  })
+}
+
+const handleQuickAction = (actionId: string) => {
+  if (actionId === 'new-reservation') router.push('/resident/reservations/new')
+}
 
 const handleLogout = async () => {
   try { await http.post('/auth/logout') } catch {}

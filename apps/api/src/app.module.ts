@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { ResidentsModule } from './residents/residents.module';
 import { CommonAreasModule } from './common-areas/common-areas.module';
+import { ReservationsModule } from './reservations/reservations.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 
@@ -18,6 +19,7 @@ import { LoggerMiddleware } from './logger/logger.middleware';
     AuthModule,
     ResidentsModule,
     CommonAreasModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
