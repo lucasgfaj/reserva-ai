@@ -97,6 +97,77 @@
         ]
       }
     },
+    "/api/v1/auth/me": {
+      "patch": {
+        "description": "\n      Atualiza nome e/ou e-mail do usuário autenticado.\n      \n      **Acesso:** Autenticado (requer JWT)\n    ",
+        "operationId": "AuthController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Perfil atualizado."
+          },
+          "409": {
+            "description": "E-mail já em uso."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar perfil do usuário autenticado",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "description": "\n      Altera a senha do usuário autenticado.\n      \n      **Acesso:** Autenticado (requer JWT)\n      \n      **Exemplo de cURL:**\n      ```bash\n      curl -X PATCH http://localhost:3000/api/v1/auth/change-password \\\n        -H \"Content-Type: application/json\" \\\n        -b cookies.txt \\\n        -d '{\"currentPassword\": \"SenhaAtual123!\", \"newPassword\": \"NovaSenha456!\"}'\n      ```\n    ",
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Senha alterada com sucesso."
+          },
+          "400": {
+            "description": "Senha atual incorreta ou dados inválidos."
+          },
+          "401": {
+            "description": "Não autenticado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Alterar senha do usuário autenticado",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/api/v1/residents": {
       "get": {
         "description": "\n      **[US03]** Lista todos os moradores vinculados ao condomínio do administrador.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
@@ -397,7 +468,7 @@
         ]
       },
       "patch": {
-        "description": "\n      **[US04]** Atualiza os dados de uma área comum existente.\n      \n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
+        "description": "\n      **[US04]** Atualiza os dados de uma área comum existente.\n\n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n      **Regras de negócio:** RN01 (isolamento por condomínio)\n    ",
         "operationId": "CommonAreasController_update",
         "parameters": [
           {
@@ -609,6 +680,104 @@
         ]
       }
     },
+    "/api/v1/common-areas/{id}/closed-dates": {
+      "post": {
+        "description": "\n      Marca uma data específica como fechada para a área comum.\n\n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n    ",
+        "operationId": "CommonAreasController_addClosedDate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddClosedDateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data fechada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Fechar data específica",
+        "tags": [
+          "common-areas"
+        ]
+      },
+      "delete": {
+        "description": "\n      Remove uma data da lista de datas fechadas.\n\n      **Acesso:** Apenas administradores (ROLE.ADMIN)\n    ",
+        "operationId": "CommonAreasController_removeClosedDate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da área comum",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveClosedDateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data reaberta com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          },
+          "404": {
+            "description": "Área comum não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reabrir data específica",
+        "tags": [
+          "common-areas"
+        ]
+      }
+    },
     "/api/v1/reservations": {
       "get": {
         "description": "\n      **[US09/US10]** Lista reservas.\n\n      **Acesso:**\n      - RESIDENT: lista apenas as próprias reservas\n      - ADMIN: lista todas as reservas do condomínio\n    ",
@@ -717,7 +886,7 @@
     },
     "/api/v1/reservations/{id}/cancel": {
       "patch": {
-        "description": "\n      **[US08]** Cancela uma reserva.\n      \n      **Acesso:**\n      - RESIDENT: cancela apenas as próprias reservas\n      - ADMIN: cancela qualquer reserva do condomínio\n      \n      Registra o ID do usuário que cancelou e a data do cancelamento (auditoria).\n    ",
+        "description": "\n      **[US08]** Cancela uma reserva.\n\n      **Acesso:**\n      - RESIDENT: cancela apenas as próprias reservas\n      - ADMIN: cancela qualquer reserva do condomínio\n\n      Registra o ID do usuário que cancelou e a data do cancelamento (auditoria).\n    ",
         "operationId": "ReservationsController_cancel",
         "parameters": [
           {
@@ -754,6 +923,256 @@
         "summary": "US08 - Cancelar reserva",
         "tags": [
           "reservations"
+        ]
+      }
+    },
+    "/api/v1/reservations/{id}/approve": {
+      "patch": {
+        "description": "\n      **[US11]** Aprova uma reserva pendente.\n\n      **Acesso:** Apenas ADMIN\n\n      Altera o status para APPROVED e registra o histórico de aprovação.\n    ",
+        "operationId": "ReservationsController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reserva aprovada."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Acesso negado."
+          },
+          "404": {
+            "description": "Reserva não encontrada."
+          },
+          "409": {
+            "description": "Reserva não está pendente."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US11 - Aprovar reserva",
+        "tags": [
+          "reservations"
+        ]
+      }
+    },
+    "/api/v1/reservations/{id}/reject": {
+      "patch": {
+        "description": "\n      **[US11]** Rejeita uma reserva pendente.\n\n      **Acesso:** Apenas ADMIN\n\n      Altera o status para REJECTED e registra o histórico de aprovação.\n    ",
+        "operationId": "ReservationsController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reserva rejeitada."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Acesso negado."
+          },
+          "404": {
+            "description": "Reserva não encontrada."
+          },
+          "409": {
+            "description": "Reserva não está pendente."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US11 - Rejeitar reserva",
+        "tags": [
+          "reservations"
+        ]
+      }
+    },
+    "/api/v1/condominiums": {
+      "get": {
+        "description": "Retorna os dados do condomínio do administrador autenticado.",
+        "operationId": "CondominiumsController_findCurrent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dados do condomínio."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US02 - Obter dados do condomínio atual",
+        "tags": [
+          "condominiums"
+        ]
+      },
+      "patch": {
+        "description": "Atualiza os dados do condomínio do administrador autenticado.",
+        "operationId": "CondominiumsController_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCondominiumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Condomínio atualizado."
+          },
+          "400": {
+            "description": "Dados inválidos."
+          },
+          "404": {
+            "description": "Condomínio não encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "US02 - Atualizar dados do condomínio",
+        "tags": [
+          "condominiums"
+        ]
+      }
+    },
+    "/api/v1/announcements": {
+      "post": {
+        "operationId": "AnnouncementsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAnnouncementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comunicado criado."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar comunicado (Admin)",
+        "tags": [
+          "announcements"
+        ]
+      },
+      "get": {
+        "operationId": "AnnouncementsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de comunicados."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar comunicados do condomínio",
+        "tags": [
+          "announcements"
+        ]
+      }
+    },
+    "/api/v1/announcements/{id}": {
+      "delete": {
+        "operationId": "AnnouncementsController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do comunicado",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Comunicado removido."
+          },
+          "401": {
+            "description": "Não autenticado."
+          },
+          "403": {
+            "description": "Apenas administradores."
+          },
+          "404": {
+            "description": "Comunicado não encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover comunicado (Admin)",
+        "tags": [
+          "announcements"
         ]
       }
     }
@@ -851,6 +1270,40 @@
         "required": [
           "email",
           "password"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "João Silva",
+            "description": "Nome do usuário"
+          },
+          "email": {
+            "type": "string",
+            "example": "joao@email.com",
+            "description": "E-mail do usuário"
+          }
+        }
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "example": "SenhaAtual123!",
+            "description": "Senha atual do usuário"
+          },
+          "newPassword": {
+            "type": "string",
+            "example": "NovaSenha456!",
+            "description": "Nova senha"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
         ]
       },
       "UpdatePermissionsDto": {
@@ -1016,6 +1469,32 @@
           }
         }
       },
+      "AddClosedDateDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-12-25",
+            "description": "Data a ser fechada (YYYY-MM-DD)"
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "RemoveClosedDateDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "example": "2026-12-25",
+            "description": "Data a ser reaberta (YYYY-MM-DD)"
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
       "CreateReservationDto": {
         "type": "object",
         "properties": {
@@ -1052,6 +1531,29 @@
           "date",
           "startTime",
           "endTime"
+        ]
+      },
+      "UpdateCondominiumDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CreateAnnouncementDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Manutenção na Piscina",
+            "description": "Título do comunicado"
+          },
+          "content": {
+            "type": "string",
+            "example": "A piscina estará fechada para manutenção no dia 25/12.",
+            "description": "Conteúdo do comunicado"
+          }
+        },
+        "required": [
+          "title",
+          "content"
         ]
       }
     }

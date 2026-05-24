@@ -6,6 +6,8 @@ import { AuthModule } from './auth/auth.module';
 import { ResidentsModule } from './residents/residents.module';
 import { CommonAreasModule } from './common-areas/common-areas.module';
 import { ReservationsModule } from './reservations/reservations.module';
+import { CondominiumsModule } from './condominiums/condominiums.module';
+import { AnnouncementsModule } from './announcements/announcements.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 
@@ -20,6 +22,8 @@ import { LoggerMiddleware } from './logger/logger.middleware';
     ResidentsModule,
     CommonAreasModule,
     ReservationsModule,
+    CondominiumsModule,
+    AnnouncementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

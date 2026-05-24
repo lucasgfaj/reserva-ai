@@ -250,6 +250,14 @@ export class CommonAreasService {
       }
     }
 
+    const closedDates = this.getClosedDates(commonArea.closedDates);
+    for (const d of closedDates) {
+      const dt = new Date(d + 'T12:00:00Z');
+      if (dt >= startDate && dt <= endDate) {
+        busySet.add(d);
+      }
+    }
+
     return {
       commonAreaId: areaId,
       year,
@@ -290,9 +298,18 @@ export class CommonAreasService {
         ? commonArea.operatingDays.map(Number)
         : [];
 
-    if (!operatingDays.includes(dayOfWeek)) {
+    const normalized = operatingDays.map((d) => (d === 0 ? 7 : d));
+
+    if (!normalized.includes(dayOfWeek)) {
       throw new CommonAreaValidationException([
         `Esta área não funciona no dia solicitado (dia da semana ${dayOfWeek}).`,
+      ]);
+    }
+
+    const closedDates = this.getClosedDates(commonArea.closedDates);
+    if (closedDates.includes(input.date)) {
+      throw new CommonAreaValidationException([
+        'Esta área está fechada na data solicitada.',
       ]);
     }
 
@@ -353,6 +370,74 @@ export class CommonAreasService {
         status: c.status,
       })),
     };
+  }
+
+  private getClosedDates(closedDates: any): string[] {
+    if (Array.isArray(closedDates)) {
+      return closedDates.map(String);
+    }
+    return [];
+  }
+
+  async addClosedDate(
+    areaId: string,
+    date: string,
+    context: ServiceContext,
+  ): Promise<CommonAreaUpdatedOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new CommonAreaAccessDeniedException('fechar data');
+    }
+
+    const commonArea = await this.prisma.commonArea.findFirst({
+      where: { id: areaId },
+    });
+
+    if (!commonArea) {
+      throw new CommonAreaNotFoundException(areaId);
+    }
+
+    this.validateTenantAccess(commonArea.condominiumId, context.condominiumId);
+
+    const current = this.getClosedDates(commonArea.closedDates);
+    if (!current.includes(date)) {
+      current.push(date);
+    }
+
+    const updated = await this.prisma.commonArea.update({
+      where: { id: areaId },
+      data: { closedDates: current },
+    });
+
+    return updated as unknown as CommonAreaUpdatedOutput;
+  }
+
+  async removeClosedDate(
+    areaId: string,
+    date: string,
+    context: ServiceContext,
+  ): Promise<CommonAreaUpdatedOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new CommonAreaAccessDeniedException('reabrir data');
+    }
+
+    const commonArea = await this.prisma.commonArea.findFirst({
+      where: { id: areaId },
+    });
+
+    if (!commonArea) {
+      throw new CommonAreaNotFoundException(areaId);
+    }
+
+    this.validateTenantAccess(commonArea.condominiumId, context.condominiumId);
+
+    const current = this.getClosedDates(commonArea.closedDates).filter((d) => d !== date);
+
+    const updated = await this.prisma.commonArea.update({
+      where: { id: areaId },
+      data: { closedDates: current },
+    });
+
+    return updated as unknown as CommonAreaUpdatedOutput;
   }
 
   private validateAccess(context: ServiceContext): void {

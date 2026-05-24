@@ -64,7 +64,7 @@
           </div>
 
           <!-- CTA Card -->
-          <div v-if="selectedAreaId" class="bg-gradient-to-r from-primary/5 to-white border border-primary/10 rounded-2xl p-4 mb-6 flex items-center justify-between">
+          <div v-if="selectedAreaId && userRole === 'RESIDENT'" class="bg-gradient-to-r from-primary/5 to-white border border-primary/10 rounded-2xl p-4 mb-6 flex items-center justify-between">
             <div>
               <p class="text-sm font-semibold text-cyan-900">Quer fazer uma reserva?</p>
               <p class="text-xs text-slate-500">Clique em <span class="text-primary font-medium">Reservar</span> ao lado de um horário disponível</p>
@@ -196,7 +196,7 @@
                       {{ statusLabel(slot.status) }}
                     </span>
                     <button
-                      v-if="slot.available"
+                      v-if="slot.available && userRole === 'RESIDENT'"
                       @click.stop="goToReservation(slot)"
                       class="ml-auto text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
                     >
@@ -273,11 +273,11 @@ interface CalendarDay {
 
 const router = useRouter()
 const route = useRoute()
-const userRole = computed(() => route.path.startsWith('/condominium') ? 'ADMIN' : 'RESIDENT')
 const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const user = authService.getUser()
 const userName = ref(user?.name || '')
+const userRole = computed(() => user?.role || 'RESIDENT')
 
 const areas = ref<CommonArea[]>([])
 const loadingAreas = ref(true)
@@ -306,7 +306,12 @@ const monthLabel = computed(() => {
 const operatingDaysSet = computed(() => {
   const area = selectedArea.value
   if (!area?.operatingDays) return new Set<number>()
-  const days = Array.isArray(area.operatingDays) ? area.operatingDays : []
+  let days: number[] = []
+  if (Array.isArray(area.operatingDays)) {
+    days = area.operatingDays
+  } else if (typeof area.operatingDays === 'string') {
+    days = area.operatingDays.split(',').map(Number)
+  }
   const map: Record<number, number> = { 0: 7, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 }
   return new Set(days.map((d) => map[d] ?? d))
 })
@@ -503,8 +508,17 @@ const handleLogout = async () => {
   router.push('/')
 }
 
-onMounted(() => {
-  fetchAreas()
+onMounted(async () => {
+  await fetchAreas()
+  if (route.query.area) {
+    selectedAreaId.value = route.query.area as string
+    if (route.query.date) {
+      selectedDate.value = route.query.date as string
+      checkAvailability()
+    } else {
+      fetchBusyDays()
+    }
+  }
 })
 </script>
 

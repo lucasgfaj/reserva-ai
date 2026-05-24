@@ -42,6 +42,7 @@ model Condominium {
   users       User[]
   blocks      Block[]
   commonAreas CommonArea[]
+  announcements Announcement[]
 
   @@map("condominiums")
 }
@@ -64,6 +65,7 @@ model User {
 
   approvedReservations ReservationApproval[]
   canceledReservations Reservation[]         @relation("CanceledReservations")
+  announcements        Announcement[]
 
   @@map("users")
 }
@@ -124,6 +126,7 @@ model CommonArea {
   openTime         String   @db.VarChar(5)
   closeTime        String   @db.VarChar(5)
   operatingDays    Json?
+  closedDates      Json?
   requiresApproval Boolean
   icon             String?  @db.VarChar(50)
   isUnderMaintenance Boolean @default(false)
@@ -173,4 +176,21 @@ model ReservationApproval {
   approver    User        @relation(fields: [approvedBy], references: [id])
 
   @@map("reservation_approvals")
+}
+
+// ANNOUNCEMENT
+model Announcement {
+  id            String   @id @default(uuid()) @db.Uuid
+  title         String   @db.VarChar(200)
+  content       String   @db.Text
+  condominiumId String   @db.Uuid
+  authorId      String   @db.Uuid
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  condominium Condominium @relation(fields: [condominiumId], references: [id])
+  author      User        @relation(fields: [authorId], references: [id])
+
+  @@map("announcements")
 }

@@ -120,14 +120,37 @@
                             </div>
                           </div>
                           <div class="flex flex-col gap-2 justify-start items-end">
+                            <template v-if="res.status === 'PENDING'">
+                              <button
+                                @click.stop="confirmApprove(res)"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all text-sm font-medium"
+                              >
+                                <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                                Aprovar
+                              </button>
+                              <button
+                                @click.stop="confirmReject(res)"
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-xl hover:bg-red-100 transition-all text-sm font-medium"
+                              >
+                                <span class="material-symbols-outlined text-[16px]">cancel</span>
+                                Rejeitar
+                              </button>
+                            </template>
                             <button
                               v-if="res.status === 'PENDING' || res.status === 'APPROVED'"
                               @click.stop="confirmCancel(res)"
-                              class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-xl hover:bg-red-100 transition-all text-sm font-medium"
+                              class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-200 transition-all text-sm font-medium"
                             >
-                              <span class="material-symbols-outlined text-[16px]">cancel</span>
+                              <span class="material-symbols-outlined text-[16px]">block</span>
                               Cancelar
                             </button>
+                            <router-link
+                              :to="`/condominium/availability?area=${res.commonAreaId}&date=${res.startTime.split('T')[0]}`"
+                              class="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-primary border border-primary/20 rounded-xl hover:bg-primary/5 transition-all text-sm font-medium"
+                            >
+                              <span class="material-symbols-outlined text-[16px]">calendar_month</span>
+                              Ver disponibilidade
+                            </router-link>
                           </div>
                         </div>
                       </div>
@@ -324,6 +347,30 @@ async function confirmCancel(res: Reservation) {
     expandedId.value = null
   } catch {
     alert('Erro ao cancelar reserva.')
+  }
+}
+
+async function confirmApprove(res: Reservation) {
+  if (!confirm(`Aprovar reserva de ${res.resident?.user?.name || 'N/D'} para "${res.commonArea?.name}"?`)) return
+  try {
+    await http.patch(`/reservations/${res.id}/approve`)
+    timelines.value = {}
+    await fetchReservations()
+    expandedId.value = null
+  } catch {
+    alert('Erro ao aprovar reserva.')
+  }
+}
+
+async function confirmReject(res: Reservation) {
+  if (!confirm(`Rejeitar reserva de ${res.resident?.user?.name || 'N/D'} para "${res.commonArea?.name}"?`)) return
+  try {
+    await http.patch(`/reservations/${res.id}/reject`)
+    timelines.value = {}
+    await fetchReservations()
+    expandedId.value = null
+  } catch {
+    alert('Erro ao rejeitar reserva.')
   }
 }
 

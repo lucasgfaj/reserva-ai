@@ -176,7 +176,7 @@ interface CommonArea {
   capacity: number | null
   openTime: string
   closeTime: string
-  operatingDays: number[] | null
+  operatingDays: number[] | string | null
   requiresApproval: boolean
   icon: string | null
   isUnderMaintenance: boolean
@@ -207,22 +207,28 @@ const page = ref(1)
 const totalPages = ref(1)
 
 const DAYS_LABELS: Record<number, string> = {
-  0: 'Dom',
   1: 'Seg',
   2: 'Ter',
   3: 'Qua',
   4: 'Qui',
   5: 'Sex',
   6: 'Sáb',
+  7: 'Dom',
 }
 
-function formatOperatingDays(days: number[] | null): string {
-  if (!days || days.length === 0) return 'Todos os dias'
-  if (days.length === 7) return 'Todos os dias'
-  return days
-    .sort((a, b) => a - b)
-    .map((d) => DAYS_LABELS[d] || '')
-    .join(', ')
+function getDaysArray(days: number[] | string | null): number[] {
+  if (!days) return []
+  if (Array.isArray(days)) {
+    const map: Record<number, number> = { 0: 7, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 }
+    return days.map((d) => map[d] ?? d).sort((a, b) => a - b)
+  }
+  return days.split(',').map(Number).sort((a, b) => a - b)
+}
+
+function formatOperatingDays(days: number[] | string | null): string {
+  const arr = getDaysArray(days)
+  if (arr.length === 0 || arr.length === 7) return 'Todos os dias'
+  return arr.map((d) => DAYS_LABELS[d] || '').join(', ')
 }
 
 function getAreaIcon(name: string): string {

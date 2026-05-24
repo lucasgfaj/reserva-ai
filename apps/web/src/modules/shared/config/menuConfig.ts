@@ -20,6 +20,7 @@ export const menuConfig: Record<UserRole, MenuItem[]> = {
     { path: '/condominium/common-areas', label: 'Áreas Comuns', icon: 'pool' },
     { path: '/condominium/reservations', label: 'Reservas', icon: 'event_available' },
     { path: '/condominium/availability', label: 'Disponibilidade', icon: 'calendar_month' },
+    { path: '/condominium/announcements', label: 'Comunicados', icon: 'campaign' },
     { path: '/condominium/reports', label: 'Relatórios', icon: 'assessment' },
   ],
   RESIDENT: [
@@ -27,6 +28,7 @@ export const menuConfig: Record<UserRole, MenuItem[]> = {
     { path: '/resident/common-areas', label: 'Áreas Comuns', icon: 'pool' },
     { path: '/resident/availability', label: 'Disponibilidade', icon: 'calendar_month' },
     { path: '/resident/reservations', label: 'Minhas Reservas', icon: 'event_available' },
+    { path: '/resident/announcements', label: 'Comunicados', icon: 'campaign' },
   ],
   SUPER_ADMIN: [
     { path: '/super/dashboard', label: 'Dashboard', icon: 'dashboard' },

@@ -14,6 +14,7 @@ import {
   ReservationNotFoundException,
   ReservationAlreadyCanceledException,
   ReservationAccessDeniedException,
+  ReservationNotPendingException,
 } from './exceptions';
 import {
   CreateReservationInput,
@@ -280,6 +281,96 @@ export class ReservationsService {
         canceledAt: new Date(),
       },
     });
+
+    return updated as ReservationOutput;
+  }
+
+  async approveReservation(
+    reservationId: string,
+    context: ServiceContext,
+  ): Promise<ReservationOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new ReservationAccessDeniedException();
+    }
+
+    const reservation = await this.prisma.reservation.findFirst({
+      where: { id: reservationId },
+      include: {
+        commonArea: { select: { condominiumId: true } },
+      },
+    });
+
+    if (!reservation) {
+      throw new ReservationNotFoundException(reservationId);
+    }
+
+    if (reservation.commonArea.condominiumId !== context.condominiumId) {
+      throw new TenantAccessDeniedException();
+    }
+
+    if (reservation.status !== 'PENDING') {
+      throw new ReservationNotPendingException(reservation.status);
+    }
+
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.reservation.update({
+        where: { id: reservationId },
+        data: { status: 'APPROVED' },
+      }),
+      this.prisma.reservationApproval.create({
+        data: {
+          reservationId,
+          approvedBy: context.userId,
+          approvedAt: new Date(),
+          status: 'APPROVED',
+        },
+      }),
+    ]);
+
+    return updated as ReservationOutput;
+  }
+
+  async rejectReservation(
+    reservationId: string,
+    context: ServiceContext,
+  ): Promise<ReservationOutput> {
+    if (context.role !== Role.ADMIN) {
+      throw new ReservationAccessDeniedException();
+    }
+
+    const reservation = await this.prisma.reservation.findFirst({
+      where: { id: reservationId },
+      include: {
+        commonArea: { select: { condominiumId: true } },
+      },
+    });
+
+    if (!reservation) {
+      throw new ReservationNotFoundException(reservationId);
+    }
+
+    if (reservation.commonArea.condominiumId !== context.condominiumId) {
+      throw new TenantAccessDeniedException();
+    }
+
+    if (reservation.status !== 'PENDING') {
+      throw new ReservationNotPendingException(reservation.status);
+    }
+
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.reservation.update({
+        where: { id: reservationId },
+        data: { status: 'REJECTED' },
+      }),
+      this.prisma.reservationApproval.create({
+        data: {
+          reservationId,
+          approvedBy: context.userId,
+          approvedAt: new Date(),
+          status: 'REJECTED',
+        },
+      }),
+    ]);
 
     return updated as ReservationOutput;
   }

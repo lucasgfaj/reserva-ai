@@ -1,8 +1,8 @@
 # 📐 Software Design Document (SDD) - Reserva Aí!
 
 **Projeto:** Reserva Aí! (Gestão de Condomínios e Áreas Comuns)
-**Versão:** 2.0.0
-**Status:** 🟢 Pronto para Implementação
+**Versão:** 2.1.0
+**Status:** 🟢 Implementado
 **Stack Principal:** NestJS, VueJS, Prisma ORM, PostgreSQL.
 
 ---
@@ -134,8 +134,11 @@ Representa uma área comum disponível para uso no condomínio, como salão de f
 | `capacity` | INT | Não | Capacidade máxima de pessoas permitidas. |
 | `openTime` | VARCHAR(5) | Sim | Horário de abertura (HH:MM). |
 | `closeTime` | VARCHAR(5) | Sim | Horário de fechamento (HH:MM). |
-| `operatingDays` | JSON | Não | Dias da semana operacionais (ex: [1,2,3,4,5,6,0]). |
+| `operatingDays` | JSON | Não | Dias da semana operacionais (ex: `[1,2,3,4,5,6,7]`, onde 1=Seg e 7=Dom). |
+| `closedDates` | JSON | Não | Datas específicas fechadas (ex: `["2026-12-25"]`). |
 | `requiresApproval` | BOOLEAN | Sim | Indica se a reserva exige aprovação administrativa. |
+| `icon` | VARCHAR(50) | Não | Ícone visual (Material Symbol) para representar a área. |
+| `isUnderMaintenance` | BOOLEAN | Sim | Indica se a área está em manutenção e indisponível. |
 | `condominiumId` | UUID | Sim | Referência ao condomínio ao qual a área pertence. |
 | `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
 | `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
@@ -255,7 +258,10 @@ erDiagram
         string openTime
         string closeTime
         string operatingDays
+        string closedDates
         boolean requiresApproval
+        string icon
+        boolean isUnderMaintenance
         string condominiumId FK
         datetime createdAt
         datetime updatedAt
@@ -368,10 +374,16 @@ Utilizado para cadastro de áreas comuns.
   name: string;
   description?: string;
   capacity?: number;
+  openTime: string;
+  closeTime: string;
+  operatingDays?: string; // "1,2,3,4,5,6,7" (1=Segunda, 7=Domingo)
   requiresApproval: boolean;
-  condominiumId: string;
+  icon?: string;          // Material Symbol name
+  isUnderMaintenance?: boolean;
 }
 ```
+
+A resposta inclui também `closedDates: string[] | null` e os demais campos da entidade.
 
 ---
 
@@ -412,11 +424,8 @@ A aplicação backend será organizada de forma modular, seguindo uma arquitetur
 - `users`
 - `residents`
 - `condominiums`
-- `blocks`
-- `units`
 - `common-areas`
 - `reservations`
-- `reservation-approvals`
 
 ---
 
@@ -503,55 +512,39 @@ A API será organizada nos seguintes grupos funcionais:
 
 ---
 
-### 📘 Exemplos de Endpoints Esperados
+### 📘 Endpoints da API
 
 #### **Auth**
 - `POST /auth/login`
-- `POST /auth/register` (Exclusiva para registrar Condomínio + Admin via `RegisterTenantDTO`)
+- `POST /auth/register` — Cria Condomínio + Admin raiz em transação única (`RegisterTenantDTO`)
+- `POST /auth/logout`
 
-#### **Users**
-- `GET /users`
-- `GET /users/:id`
-- `PATCH /users/:id`
-- `PATCH /users/:id/status`
+#### **Condominiums**
+- `GET /condominiums` — Retorna os dados do condomínio do admin logado
+- `PATCH /condominiums` — Atualiza dados do condomínio
 
 #### **Residents**
 - `POST /residents`
 - `GET /residents`
 - `GET /residents/:id`
 
-#### **Condominiums**
-- `POST /condominiums`
-- `GET /condominiums`
-- `GET /condominiums/:id`
-- `PATCH /condominiums/:id`
-
-#### **Blocks**
-- `POST /blocks`
-- `GET /blocks`
-- `GET /blocks/:id`
-
-#### **Units**
-- `POST /units`
-- `GET /units`
-- `GET /units/:id`
-
 #### **Common Areas**
-- `POST /common-areas`
+- `POST /common-areas` — Admin
 - `GET /common-areas`
 - `GET /common-areas/:id`
-- `GET /common-areas/:id/availability` (Filtra horários de funcionamento contra reservas existentes para descobrir slots livres num `?date=YYYY-MM-DD`)
-- `PATCH /common-areas/:id`
+- `GET /common-areas/:id/availability` — Slots livres em `?date=YYYY-MM-DD`
+- `GET /common-areas/:id/busy-days` — Dias ocupados no mês (`?year=&month=`)
+- `PATCH /common-areas/:id` — Admin
+- `DELETE /common-areas/:id` — Admin
+- `POST /common-areas/:id/closed-dates` — Admin: fecha data específica
+- `DELETE /common-areas/:id/closed-dates` — Admin: reabre data
 
 #### **Reservations**
 - `POST /reservations`
-- `GET /reservations`
-- `GET /reservations/:id`
+- `GET /reservations` — Com filtros opcionais: `?status=&from=&to=&page=&limit=`
 - `PATCH /reservations/:id/cancel`
-
-#### **Reservation Approvals**
-- `POST /reservation-approvals`
-- `GET /reservation-approvals/:id`
+- `PATCH /reservations/:id/approve` — Admin
+- `PATCH /reservations/:id/reject` — Admin
 
 ---
 
@@ -582,6 +575,25 @@ A API será organizada nos seguintes grupos funcionais:
 }
 ```
 
+#### `PATCH /common-areas/:id/closed-dates`
+
+**Request Body**
+```json
+{
+  "date": "2026-12-25"
+}
+```
+
+**Response 200**
+```json
+{
+  "id": "uuid",
+  "name": "Salão de Festas",
+  "closedDates": ["2026-12-25"],
+  "...": "..."
+}
+```
+
 ---
 
 ### 📤 Códigos de Resposta Esperados
@@ -607,8 +619,10 @@ As regras de negócio abaixo representam comportamentos que deverão ser garanti
 - **Cadastro Fechado para Moradores:** A rota pública `/auth/register` é exclusiva para Síndicos criarem novos condomínios de forma autônoma. Moradores são cadastrados por rotas autenticadas, exclusivamente sob intermédio de um Administrador.
 - O perfil `SUPER_ADMIN` (apesar de existir no banco) atua de forma "headless" neste MVP, sem telas exclusivas para não gerar fuga de escopo (útil apenas para intervenção via DB/terminal).
 - Verificar conflito de horário (exclusividade) antes da reserva da área comum.
-- Impedir reservas para áreas inativas.
+- Impedir reservas para áreas inativas ou em manutenção.
+- Impedir reservas em datas fechadas (`closedDates`).
 - Validar se o morador possui `canBook = true`.
+- Validar duração mínima de 2 horas para reservas.
 - Permitir Soft Cancel ao autor da reserva ou administradores, preenchendo as colunas de auditoria na tabela.
 - Criar reservas com status `PENDING` quando a área exigir aprovação.
 - Criar reservas com status `APPROVED` automaticamente quando a área não exigir aprovação.

@@ -143,6 +143,55 @@
                 </div>
               </div>
 
+              <!-- Closed Dates (edit only) -->
+              <div v-if="isEditMode" class="border-t border-slate-100 pt-6">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[18px] text-red-500">event_busy</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-slate-900">Datas Fechadas</p>
+                    <p class="text-xs text-slate-500">Dias específicos em que a área não funcionará</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 mb-3">
+                  <input
+                    v-model="newClosedDate"
+                    type="date"
+                    class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  />
+                  <button
+                    @click="addClosedDate"
+                    :disabled="!newClosedDate || closedSaving"
+                    class="px-4 py-2 bg-red-500 text-white rounded-xl hover:brightness-90 transition-all text-sm font-medium disabled:opacity-50"
+                  >
+                    {{ closedSaving ? '...' : 'Fechar' }}
+                  </button>
+                </div>
+
+                <div v-if="closedDates.length === 0" class="text-sm text-slate-400 py-2">Nenhuma data fechada</div>
+
+                <div v-else class="space-y-1 max-h-48 overflow-y-auto">
+                  <div
+                    v-for="d in closedDates"
+                    :key="d"
+                    class="flex items-center justify-between bg-red-50 border border-red-100 rounded-lg px-3 py-1.5"
+                  >
+                    <span class="text-sm text-red-700">{{ formatClosedDate(d) }}</span>
+                    <button
+                      @click="removeClosedDate(d)"
+                      :disabled="closedSaving"
+                      class="text-red-400 hover:text-red-600 transition-colors p-0.5"
+                    >
+                      <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                  </div>
+                </div>
+
+                <p v-if="closedError" class="text-xs text-red-600 mt-2">{{ closedError }}</p>
+              </div>
+
               <!-- Error -->
               <div v-if="submitError" class="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
                 {{ submitError }}
@@ -197,18 +246,20 @@ interface CommonArea {
   openTime: string
   closeTime: string
   operatingDays: number[] | string | null
+  closedDates: string[] | null
   requiresApproval: boolean
   icon: string | null
+  isUnderMaintenance: boolean
 }
 
 const DAYS = [
-  { value: 1, label: 'Dom' },
-  { value: 2, label: 'Seg' },
-  { value: 3, label: 'Ter' },
-  { value: 4, label: 'Qua' },
-  { value: 5, label: 'Qui' },
-  { value: 6, label: 'Sex' },
-  { value: 7, label: 'Sáb' },
+  { value: 1, label: 'Seg' },
+  { value: 2, label: 'Ter' },
+  { value: 3, label: 'Qua' },
+  { value: 4, label: 'Qui' },
+  { value: 5, label: 'Sex' },
+  { value: 6, label: 'Sáb' },
+  { value: 7, label: 'Dom' },
 ]
 
 const route = useRoute()
@@ -224,6 +275,11 @@ const isEditMode = computed(() => !!route.params.id)
 const loading = ref(false)
 const saving = ref(false)
 const submitError = ref<string | null>(null)
+
+const closedDates = ref<string[]>([])
+const newClosedDate = ref('')
+const closedSaving = ref(false)
+const closedError = ref<string | null>(null)
 
 const form = reactive({
   name: '',
@@ -249,7 +305,44 @@ function resetForm() {
   form.isUnderMaintenance = false
   selectedDays.clear()
   ;[1, 2, 3, 4, 5, 6, 7].forEach((d) => selectedDays.add(d))
+  closedDates.value = []
+  newClosedDate.value = ''
   submitError.value = null
+}
+
+function formatClosedDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T12:00:00Z')
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
+}
+
+async function addClosedDate() {
+  if (!newClosedDate.value || !areaId.value) return
+  closedSaving.value = true
+  closedError.value = null
+  try {
+    await http.post(`/common-areas/${areaId.value}/closed-dates`, { date: newClosedDate.value })
+    closedDates.value.push(newClosedDate.value)
+    closedDates.value.sort()
+    newClosedDate.value = ''
+  } catch (err: any) {
+    closedError.value = err?.response?.data?.message || 'Erro ao fechar data.'
+  } finally {
+    closedSaving.value = false
+  }
+}
+
+async function removeClosedDate(date: string) {
+  if (!areaId.value) return
+  closedSaving.value = true
+  closedError.value = null
+  try {
+    await http.delete(`/common-areas/${areaId.value}/closed-dates`, { data: { date } })
+    closedDates.value = closedDates.value.filter((d) => d !== date)
+  } catch (err: any) {
+    closedError.value = err?.response?.data?.message || 'Erro ao reabrir data.'
+  } finally {
+    closedSaving.value = false
+  }
 }
 
 function toggleDay(value: number) {
@@ -268,8 +361,7 @@ function parseOperatingDays(days: number[] | string | null): Set<number> {
   const set = new Set<number>()
   if (!days) return set
   if (Array.isArray(days)) {
-    const map: Record<number, number> = { 0: 7, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6 }
-    days.forEach((d) => set.add(map[d] ?? d))
+    days.forEach((d) => set.add(d))
   } else if (typeof days === 'string') {
     days.split(',').forEach((d) => set.add(Number(d.trim())))
   }
@@ -294,6 +386,10 @@ async function fetchArea() {
     const days = parseOperatingDays(area.operatingDays)
     selectedDays.clear()
     days.forEach((d) => selectedDays.add(d))
+
+    if (Array.isArray(area.closedDates)) {
+      closedDates.value = area.closedDates.map(String).sort()
+    }
   } catch {
     router.push('/condominium/common-areas')
   } finally {

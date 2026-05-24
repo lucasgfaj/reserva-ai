@@ -32,6 +32,7 @@ import { CommonAreasService } from './common-areas.service';
 import { CreateCommonAreaDto } from './dto/create-common-area.dto';
 import { UpdateCommonAreaDto } from './dto/update-common-area.dto';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
+import { AddClosedDateDto, RemoveClosedDateDto } from './dto/manage-closed-dates.dto';
 import {
   CommonAreaListOutput,
   CommonAreaDetailOutput,
@@ -233,7 +234,7 @@ export class CommonAreasController {
     summary: 'US04 - Atualizar área comum (Admin)',
     description: `
       **[US04]** Atualiza os dados de uma área comum existente.
-      
+
       **Acesso:** Apenas administradores (ROLE.ADMIN)
       **Regras de negócio:** RN01 (isolamento por condomínio)
     `,
@@ -263,6 +264,62 @@ export class CommonAreasController {
     @Request() req: AuthRequest,
   ): Promise<CommonAreaUpdatedOutput> {
     return this.commonAreasService.updateCommonArea(id, input, {
+      role: req.user.role,
+      condominiumId: req.user.condominiumId,
+      userId: req.user.sub,
+    });
+  }
+
+  @Post(':id/closed-dates')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(new RolesGuard([Role.ADMIN]))
+  @ApiOperation({
+    summary: 'Fechar data específica',
+    description: `
+      Marca uma data específica como fechada para a área comum.
+
+      **Acesso:** Apenas administradores (ROLE.ADMIN)
+    `,
+  })
+  @ApiParam({ name: 'id', description: 'UUID da área comum' })
+  @ApiResponse({ status: 200, description: 'Data fechada com sucesso.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Apenas administradores.' })
+  @ApiResponse({ status: 404, description: 'Área comum não encontrada.' })
+  async addClosedDate(
+    @Param('id') id: string,
+    @Body() dto: AddClosedDateDto,
+    @Request() req: AuthRequest,
+  ): Promise<CommonAreaUpdatedOutput> {
+    return this.commonAreasService.addClosedDate(id, dto.date, {
+      role: req.user.role,
+      condominiumId: req.user.condominiumId,
+      userId: req.user.sub,
+    });
+  }
+
+  @Delete(':id/closed-dates')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(new RolesGuard([Role.ADMIN]))
+  @ApiOperation({
+    summary: 'Reabrir data específica',
+    description: `
+      Remove uma data da lista de datas fechadas.
+
+      **Acesso:** Apenas administradores (ROLE.ADMIN)
+    `,
+  })
+  @ApiParam({ name: 'id', description: 'UUID da área comum' })
+  @ApiResponse({ status: 200, description: 'Data reaberta com sucesso.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  @ApiResponse({ status: 403, description: 'Apenas administradores.' })
+  @ApiResponse({ status: 404, description: 'Área comum não encontrada.' })
+  async removeClosedDate(
+    @Param('id') id: string,
+    @Body() dto: RemoveClosedDateDto,
+    @Request() req: AuthRequest,
+  ): Promise<CommonAreaUpdatedOutput> {
+    return this.commonAreasService.removeClosedDate(id, dto.date, {
       role: req.user.role,
       condominiumId: req.user.condominiumId,
       userId: req.user.sub,
