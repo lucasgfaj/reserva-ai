@@ -126,7 +126,7 @@
                   <!-- Actions -->
                   <div class="flex flex-col gap-2 justify-start items-end">
                     <button
-                      v-if="res.status === 'PENDING' || res.status === 'APPROVED'"
+                      v-if="(res.status === 'PENDING' || res.status === 'APPROVED') && !isPastReservation(res)"
                       @click="confirmCancel(res)"
                       class="inline-flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded-xl hover:bg-red-100 transition-all text-sm font-medium"
                     >
@@ -260,13 +260,12 @@ const filterOptions = [
 
 function getFilterParams(filter: string): Record<string, string> {
   const today = new Date()
-  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
   const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`
 
   switch (filter) {
-    case 'future': return { from: todayStr, status: 'PENDING,APPROVED' }
+    case 'future': return { from: new Date().toISOString(), status: 'PENDING,APPROVED' }
     case 'past': return { to: yesterdayStr }
     default: return { status: filter }
   }
@@ -300,6 +299,10 @@ function formatResDate(dateStr: string): string {
 function formatTime(dateStr: string): string {
   const d = new Date(dateStr)
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
+}
+
+function isPastReservation(res: Reservation): boolean {
+  return new Date(res.endTime) < new Date()
 }
 
 function getDateStr(dateStr: string): string {

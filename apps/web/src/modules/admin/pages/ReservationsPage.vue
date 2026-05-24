@@ -137,7 +137,7 @@
                               </button>
                             </template>
                             <button
-                              v-if="res.status === 'PENDING' || res.status === 'APPROVED'"
+                              v-if="(res.status === 'PENDING' || res.status === 'APPROVED') && !isPastReservation(res)"
                               @click.stop="confirmCancel(res)"
                               class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-600 border border-slate-200 rounded-xl hover:bg-slate-200 transition-all text-sm font-medium"
                             >
@@ -276,6 +276,10 @@ function statusLabel(status: string): string {
     CANCELED: 'Cancelada',
   }
   return map[status] || status
+}
+
+function isPastReservation(res: Reservation): boolean {
+  return new Date(res.endTime) < new Date()
 }
 
 function formatResDate(dateStr: string): string {
