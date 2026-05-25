@@ -223,6 +223,7 @@ import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { http } from '@/api/http'
 import { useSidebar } from '@/modules/shared/composables/useSidebar'
+import type { UserRole } from '@/modules/shared/config/menuConfig'
 
 interface CommonArea {
   id: string
@@ -231,7 +232,7 @@ interface CommonArea {
   capacity: number | null
   openTime: string
   closeTime: string
-  operatingDays: number[] | null
+  operatingDays: number[] | string | null
   requiresApproval: boolean
   icon: string | null
   isUnderMaintenance: boolean
@@ -277,7 +278,7 @@ const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const user = authService.getUser()
 const userName = ref(user?.name || '')
-const userRole = computed(() => user?.role || 'RESIDENT')
+const userRole = computed<UserRole>(() => (user?.role as UserRole) || 'RESIDENT')
 
 const areas = ref<CommonArea[]>([])
 const loadingAreas = ref(true)
@@ -320,7 +321,7 @@ function isTimePast(time: string, date: string): boolean {
   const today = new Date()
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   if (date !== todayStr) return false
-  const [h, m] = time.split(':').map(Number)
+  const [h = 0, m = 0] = time.split(':').map(Number)
   return h * 60 + m <= today.getHours() * 60 + today.getMinutes()
 }
 
@@ -433,9 +434,9 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })
 }
 
-function statusLabel(status: string): string {
+function statusLabel(status: string | undefined): string {
   const map: Record<string, string> = { PENDING: 'Pendente', APPROVED: 'Confirmada', CANCELED: 'Cancelada', REJECTED: 'Rejeitada' }
-  return map[status] || status
+  return status ? map[status] || status : ''
 }
 
 async function fetchBusyDays() {

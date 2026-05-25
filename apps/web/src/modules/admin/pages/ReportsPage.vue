@@ -95,13 +95,15 @@
             </div>
           </div>
 
-          <!-- Common areas usage table -->
+          <!-- Common areas usage -->
           <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             <div class="px-6 md:px-8 pt-6 pb-4 border-b border-slate-100">
               <h2 class="text-lg font-bold text-cyan-900">Uso por Área Comum</h2>
               <p class="text-sm text-slate-500">Quantidade de reservas por área</p>
             </div>
-            <div class="overflow-x-auto">
+
+            <!-- Desktop table -->
+            <div class="hidden md:block overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
                   <tr class="border-b border-slate-100">
@@ -134,39 +136,74 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
 
-              <!-- Pagination -->
-              <div v-if="totalPages > 1" class="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                <p class="text-xs text-slate-500">
-                  Mostrando {{ (currentPage - 1) * perPage + 1 }}-{{ Math.min(currentPage * perPage, areaStats.length) }} de {{ areaStats.length }}
-                </p>
-                <div class="flex items-center gap-2">
-                  <button
-                    @click="changePage(currentPage - 1)"
-                    :disabled="currentPage <= 1"
-                    class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs disabled:opacity-50 hover:bg-slate-50 transition-all"
-                  >
-                    Anterior
-                  </button>
-                  <button
-                    v-for="p in visiblePages"
-                    :key="p"
-                    @click="changePage(p)"
-                    :class="[
-                      'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
-                      p === currentPage ? 'bg-primary text-white' : 'border border-slate-200 hover:bg-slate-50'
-                    ]"
-                  >
-                    {{ p }}
-                  </button>
-                  <button
-                    @click="changePage(currentPage + 1)"
-                    :disabled="currentPage >= totalPages"
-                    class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs disabled:opacity-50 hover:bg-slate-50 transition-all"
-                  >
-                    Próxima
-                  </button>
+            <!-- Mobile cards -->
+            <div class="md:hidden divide-y divide-slate-100">
+              <div
+                v-for="area in paginatedAreas"
+                :key="area.id"
+                class="px-4 py-4"
+              >
+                <div class="flex items-center gap-3 mb-3">
+                  <span class="material-symbols-outlined text-slate-400">{{ area.icon || 'place' }}</span>
+                  <span class="font-medium text-cyan-900 text-sm">{{ area.name }}</span>
                 </div>
+                <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                  <div class="bg-emerald-50 rounded-xl p-2">
+                    <p class="text-emerald-600 font-bold text-sm">{{ area.approved }}</p>
+                    <p class="text-emerald-500">Confirmadas</p>
+                  </div>
+                  <div class="bg-amber-50 rounded-xl p-2">
+                    <p class="text-amber-600 font-bold text-sm">{{ area.pending }}</p>
+                    <p class="text-amber-500">Pendentes</p>
+                  </div>
+                  <div class="bg-red-50 rounded-xl p-2">
+                    <p class="text-red-500 font-bold text-sm">{{ area.canceled }}</p>
+                    <p class="text-red-400">Canceladas</p>
+                  </div>
+                  <div class="bg-primary/5 rounded-xl p-2">
+                    <p class="text-primary font-bold text-sm">{{ area.total }}</p>
+                    <p class="text-primary/60">Total</p>
+                  </div>
+                </div>
+              </div>
+              <div v-if="paginatedAreas.length === 0" class="text-center py-8 text-slate-400 text-sm px-4">
+                Nenhuma área comum cadastrada.
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="totalPages > 1" class="flex items-center justify-between px-4 md:px-6 py-4 border-t border-slate-100">
+              <p class="text-xs text-slate-500">
+                {{ (currentPage - 1) * perPage + 1 }}-{{ Math.min(currentPage * perPage, areaStats.length) }} de {{ areaStats.length }}
+              </p>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="changePage(currentPage - 1)"
+                  :disabled="currentPage <= 1"
+                  class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs disabled:opacity-50 hover:bg-slate-50 transition-all"
+                >
+                  Anterior
+                </button>
+                <button
+                  v-for="p in visiblePages"
+                  :key="p"
+                  @click="changePage(p)"
+                  :class="[
+                    'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                    p === currentPage ? 'bg-primary text-white' : 'border border-slate-200 hover:bg-slate-50'
+                  ]"
+                >
+                  {{ p }}
+                </button>
+                <button
+                  @click="changePage(currentPage + 1)"
+                  :disabled="currentPage >= totalPages"
+                  class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs disabled:opacity-50 hover:bg-slate-50 transition-all"
+                >
+                  Próxima
+                </button>
               </div>
             </div>
           </div>

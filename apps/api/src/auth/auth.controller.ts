@@ -86,6 +86,8 @@ export class AuthController {
   }
 
   @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Logout - Invalidar sessão',
     description: `
@@ -101,8 +103,8 @@ export class AuthController {
       \`\`\`
     `,
   })
-  @ApiCookieAuth()
   @ApiResponse({ status: 200, description: 'Logout realizado com sucesso. Cookie limpo.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
   logout(@Res({ passthrough: true }) response: Response) {
     clearAuthCookie(response);
     return { message: 'Logout realizado com sucesso' };

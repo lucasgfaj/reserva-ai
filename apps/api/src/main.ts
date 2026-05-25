@@ -5,8 +5,10 @@ import * as path from 'path';
 import * as fs from 'fs';
 import cookieParser from 'cookie-parser';
 
-// Load environment variables before anything else
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+const envPath = path.join(process.cwd(), '.env');
+if (fs.existsSync(envPath)) {
+  dotenv.config({ path: envPath });
+}
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -42,11 +44,12 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new DomainExceptionFilter(), new HttpExceptionFilter());
+
+  const corsOrigin = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+    : ['http://localhost:5173', 'http://localhost:5174'];
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') || [
-      'http://localhost:5173',
-      'http://localhost:5174',
-    ],
+    origin: corsOrigin,
     credentials: true,
   });
 
@@ -70,19 +73,25 @@ async function bootstrap() {
         '|----|----------|\n' +
         '| US01 | Criar conta e registrar condomínio |\n' +
         '| US02 | Login e gerenciar dados do condomínio |\n' +
-        '| US03 | Cadastrar moradores (Admin) |\n' +
+        '| US03 | Cadastrar e gerenciar moradores (Admin) |\n' +
         '| US03.1 | Login de morador |\n' +
         '| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n' +
         '| US05 | Visualizar áreas comuns |\n' +
         '| US06 | Consultar disponibilidade de áreas comuns |\n' +
-        '| US07 | Realizar reserva de área comum |\n\n' +
-        '*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*',
+        '| US07 | Realizar reserva de área comum |\n' +
+        '| US08 | Cancelar reserva |\n' +
+        '| US09/US10 | Listar reservas (Admin e Morador) |\n' +
+        '| US11 | Aprovar/Rejeitar reserva (Admin) |\n' +
+        '| - | Comunicados (Admin criar/remover, todos visualizar) |\n\n' +
+        '*Desenvolvido em NestJS + Prisma ORM + PostgreSQL*',
     )
     .setVersion('1.0')
     .addTag('auth', 'US01, US02, US03.1 - Autenticação e Registro')
     .addTag('residents', 'US03 - Gestão de Moradores (Admin only)')
-    .addTag('reservations', 'US07 - Reservas')
-.addTag('common-areas', 'US04, US05, US06 - Áreas Comuns')
+    .addTag('condominiums', 'US02 - Gestão do Condomínio')
+    .addTag('common-areas', 'US04, US05, US06 - Áreas Comuns')
+    .addTag('reservations', 'US07, US08, US09, US10, US11 - Reservas')
+    .addTag('announcements', 'Comunicados do Condomínio')
     .addBearerAuth(
       {
         type: 'http',
@@ -98,10 +107,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  // Exportar especificação OpenAPI para swagger.json
-  const swaggerJsonPath = path.join(process.cwd(), 'swagger.json');
-  fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
-  console.log(`📄 Swagger spec exported to: ${swaggerJsonPath}`);
+  try {
+    const swaggerJsonPath = path.join(process.cwd(), 'swagger.json');
+    fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
+    console.log(`📄 Swagger spec exported to: ${swaggerJsonPath}`);
+  } catch {
+    // ignores EROFS in serverless environments
+  }
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`Application is running on: ${await app.getUrl()}`);

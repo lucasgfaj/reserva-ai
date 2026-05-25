@@ -29,7 +29,7 @@
           </div>
           <button
             @click="openNewForm"
-            class="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:brightness-90 transition-all font-semibold text-sm"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl hover:brightness-90 transition-all font-semibold text-sm"
           >
             <span class="material-symbols-outlined text-[18px]">add</span>
             Novo Comunicado

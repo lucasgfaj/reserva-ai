@@ -113,7 +113,7 @@ Representa o morador vinculado a uma unidade residencial. É uma extensão do us
 | :--- | :--- | :--- | :--- |
 | `id` | UUID | Sim | Identificador único do morador. |
 | `userId` | UUID | Sim | Referência ao usuário que realiza login no sistema. |
-| `unitId` | UUID | Sim | Referência à unidade residencial do morador. |
+| `unitId` | UUID | Não | Referência à unidade residencial do morador (opcional — pode ser vinculado depois). |
 | `document` | VARCHAR(20) | Não | Documento identificador do morador (CPF/RG, se aplicável). |
 | `phone` | VARCHAR(20) | Não | Telefone de contato do morador. |
 | `canBook` | BOOLEAN | Sim | Indica se o morador possui permissão para realizar reservas. |
@@ -180,6 +180,23 @@ Representa o histórico de aprovação ou rejeição de reservas que exigem vali
 
 ---
 
+#### **ANNOUNCEMENT**
+**Descrição:**  
+Representa um comunicado ou aviso publicado pelo administrador do condomínio para todos os moradores visualizarem.
+
+| Coluna | Tipo | Obrigatório | Descrição |
+| :--- | :--- | :--- | :--- |
+| `id` | UUID | Sim | Identificador único do comunicado. |
+| `title` | VARCHAR(200) | Sim | Título do comunicado. |
+| `content` | TEXT | Sim | Conteúdo do comunicado. |
+| `condominiumId` | UUID | Sim | Referência ao condomínio ao qual o comunicado pertence. |
+| `authorId` | UUID | Sim | Referência ao usuário administrador que criou o comunicado. |
+| `isActive` | BOOLEAN | Sim | Indica se o comunicado está ativo (visível). |
+| `createdAt` | DATETIME | Sim | Data e hora de criação do registro. |
+| `updatedAt` | DATETIME | Sim | Data e hora da última atualização. |
+
+---
+
 ### 🗄️ 4.2. Modelagem de Dados
 
 ```mermaid
@@ -188,6 +205,7 @@ erDiagram
     CONDOMINIUM |o--o{ USER : possui
     CONDOMINIUM ||--o{ BLOCK : possui
     CONDOMINIUM ||--o{ COMMON_AREA : possui
+    CONDOMINIUM ||--o{ ANNOUNCEMENT : publica
 
     BLOCK ||--o{ UNIT : contém
 
@@ -196,6 +214,7 @@ erDiagram
     USER ||--|o RESIDENT : representa
     USER ||--o{ RESERVATION_APPROVAL : avalia
     USER ||--o{ RESERVATION : registra_cancelamento
+    USER ||--o{ ANNOUNCEMENT : cria
     RESIDENT ||--o{ RESERVATION : realiza
 
     COMMON_AREA ||--o{ RESERVATION : e_reservada
@@ -289,6 +308,17 @@ erDiagram
         string status
         string comment
     }
+
+    ANNOUNCEMENT {
+        string id PK
+        string title
+        string content
+        string condominiumId FK
+        string authorId FK
+        boolean isActive
+        datetime createdAt
+        datetime updatedAt
+    }
 ```
 
 ---
@@ -333,20 +363,22 @@ Utilizado pelo Administrador na rota restrita para "cadastrar" um morador em seu
   name: string;
   email: string;
   password?: string; // Opcional: pode ser gerada aleatoriamente
-  unitId: string;
+  unitId?: string;    // Opcional: vínculo com unidade
   document?: string;
   phone?: string;
-  canBook: boolean;
+  canBook?: boolean;  // Opcional: padrão true
 }
 ```
 
 ---
 
-### 🧱 CreateBlockDTO
-Utilizado para cadastro de blocos ou torres dentro de um condomínio.
+### 🧱 Block (Camada de Dados Apenas)
+Blocos e torres existem no modelo de dados (Prisma schema) mas **não possuem endpoints REST no MVP atual**. São referenciados indiretamente via `unitId` no cadastro de moradores.
 
 ```ts
+// Prisma model (sem DTO de API)
 {
+  id: string;
   name: string;
   condominiumId: string;
 }
@@ -354,11 +386,13 @@ Utilizado para cadastro de blocos ou torres dentro de um condomínio.
 
 ---
 
-### 🚪 CreateUnitDTO
-Utilizado para cadastro de unidades residenciais.
+### 🚪 Unit (Camada de Dados Apenas)
+Unidades residenciais existem no modelo de dados (Prisma schema) mas **não possuem endpoints REST no MVP atual**. São referenciadas via `unitId` (opcional) no cadastro de moradores.
 
 ```ts
+// Prisma model (sem DTO de API)
 {
+  id: string;
   number: string;
   blockId: string;
 }
@@ -388,29 +422,61 @@ A resposta inclui também `closedDates: string[] | null` e os demais campos da e
 ---
 
 ### 📅 CreateReservationDTO
-Utilizado para criação de reservas de áreas comuns.
+Utilizado para criação de reservas de áreas comuns. Recebe data e horário como strings separadas (o serviço mescla em `DateTime` completo).
 
 ```ts
 {
-  commonAreaId: string;
-  startTime: Date;
-  endTime: Date;
-  notes?: string;
+  commonAreaId: string;                   // UUID da área comum
+  date: string;                           // "YYYY-MM-DD"
+  startTime: string;                      // "HH:MM"
+  endTime: string;                        // "HH:MM"
+  notes?: string;                         // Opcional: observações
+  residentId?: string;                    // Opcional: UUID (apenas Admin, para criar em nome do morador)
 }
 ```
 
 ---
 
-### ✅ CreateReservationApprovalDTO
-Utilizado para registrar a aprovação ou rejeição de reservas pendentes.
+### ✅ Approve / Reject Reservation
+A aprovação ou rejeição de reservas é feita via endpoints dedicados, sem corpo de requisição.
+
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| `PATCH` | `/reservations/:id/approve` | Aprova reserva pendente |
+| `PATCH` | `/reservations/:id/reject` | Rejeita reserva pendente |
+
+Opcionalmente, pode ser enviado um comentário no corpo:
+```json
+{ "comment": "Reserva aprovada conforme solicitação." }
+```
+
+---
+
+### 📢 CreateAnnouncementDTO
+Utilizado pelo Administrador na criação de comunicados do condomínio.
 
 ```ts
 {
-  reservationId: string;
-  status: 'APPROVED' | 'REJECTED';
-  comment?: string;
+  title: string;       // Máximo 200 caracteres
+  content: string;     // Texto livre
 }
 ```
+
+---
+
+### ℹ️ DTOs Adicionais (não detalhados por espelharem os contratos acima)
+
+| Módulo | DTO | Descrição |
+| :--- | :--- | :--- |
+| `auth` | `ChangePasswordDto` | `{ currentPassword, newPassword }` |
+| `auth` | `UpdateProfileDto` | `{ name?, email? }` |
+| `condominiums` | `UpdateCondominiumDto` | `{ name?, address?, timezone? }` — mesmos campos do Create |
+| `common-areas` | `UpdateCommonAreaDto` | Mesmos campos do `CreateCommonAreaDto`, todos opcionais |
+| `common-areas` | `AddClosedDateDto` / `RemoveClosedDateDto` | `{ date: "YYYY-MM-DD" }` |
+| `common-areas` | `AvailabilityQueryDto` | `{ date, startTime?, endTime? }` |
+| `residents` | `UpdatePermissionsDto` | `{ canBook: boolean }` |
+| `reservations` | `CreateReservationDto` | *(detalhado acima)* |
+| `announcements` | `CreateAnnouncementDto` | *(detalhado acima)* |
 
 ---
 
@@ -426,6 +492,7 @@ A aplicação backend será organizada de forma modular, seguindo uma arquitetur
 - `condominiums`
 - `common-areas`
 - `reservations`
+- `announcements`
 
 ---
 
@@ -441,6 +508,7 @@ A aplicação backend será organizada de forma modular, seguindo uma arquitetur
 | `CommonAreasService` | Gerencia áreas comuns disponíveis para reserva. |
 | `ReservationsService` | Gerencia criação, cancelamento, consulta e validação de reservas. |
 | `ReservationApprovalsService` | Gerencia aprovações administrativas de reservas pendentes. |
+| `AnnouncementsService` | Gerencia comunicados do condomínio (criação, listagem, remoção). |
 
 ---
 
@@ -504,11 +572,9 @@ A API será organizada nos seguintes grupos funcionais:
 - **Users**
 - **Residents**
 - **Condominiums**
-- **Blocks**
-- **Units**
 - **Common Areas**
 - **Reservations**
-- **Reservation Approvals**
+- **Announcements**
 
 ---
 
@@ -518,6 +584,8 @@ A API será organizada nos seguintes grupos funcionais:
 - `POST /auth/login`
 - `POST /auth/register` — Cria Condomínio + Admin raiz em transação única (`RegisterTenantDTO`)
 - `POST /auth/logout`
+- `PATCH /auth/me` — Atualizar perfil (nome/e-mail)
+- `POST /auth/change-password` — Alterar senha
 
 #### **Condominiums**
 - `GET /condominiums` — Retorna os dados do condomínio do admin logado
@@ -527,6 +595,7 @@ A API será organizada nos seguintes grupos funcionais:
 - `POST /residents`
 - `GET /residents`
 - `GET /residents/:id`
+- `PATCH /residents/:id/permissions` — Admin: alterar permissão de reserva do morador (`canBook`)
 
 #### **Common Areas**
 - `POST /common-areas` — Admin
@@ -546,6 +615,11 @@ A API será organizada nos seguintes grupos funcionais:
 - `PATCH /reservations/:id/approve` — Admin
 - `PATCH /reservations/:id/reject` — Admin
 
+#### **Announcements**
+- `POST /announcements` — Admin: criar comunicado
+- `GET /announcements` — Listar comunicados (paginado)
+- `DELETE /announcements/:id` — Admin: remover comunicado
+
 ---
 
 ### 📥 Exemplo de Contrato de Entrada
@@ -556,8 +630,9 @@ A API será organizada nos seguintes grupos funcionais:
 ```json
 {
   "commonAreaId": "uuid",
-  "startTime": "2026-03-27T18:00:00.000Z",
-  "endTime": "2026-03-27T22:00:00.000Z",
+  "date": "2026-03-27",
+  "startTime": "18:00",
+  "endTime": "22:00",
   "notes": "Reserva para confraternização familiar."
 }
 ```

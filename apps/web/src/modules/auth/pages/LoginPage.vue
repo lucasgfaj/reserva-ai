@@ -70,7 +70,10 @@ const handleLogin = async (credentials: { email: string; password: string }) => 
     localStorage.setItem('auth_user', JSON.stringify(response.user))
     localStorage.setItem('auth_condo', JSON.stringify(response.condominium))
     toastSuccess(response.message)
-    router.push('/dashboard')
+    const redirectPath = response.user.role === 'ADMIN'
+      ? '/condominium/dashboard'
+      : '/resident/dashboard'
+    router.push(redirectPath)
   } catch (err: any) {
     const errorMsg = err.response?.data?.message || 'Erro ao fazer login'
     error.value = errorMsg

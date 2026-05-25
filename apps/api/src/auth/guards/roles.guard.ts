@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { Request } from 'express';
 
 interface AuthUser {
   sub: string;
@@ -13,19 +12,13 @@ interface AuthUser {
   condominiumId: string;
 }
 
-declare module 'express' {
-  interface Request {
-    user?: AuthUser;
-  }
-}
-
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly allowedRoles: string[]) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request>();
-    const user = request.user;
+    const request = context.switchToHttp().getRequest();
+    const user: AuthUser | undefined = (request as any).user;
 
     if (!user) {
       throw new ForbiddenException('Usuário não autenticado');

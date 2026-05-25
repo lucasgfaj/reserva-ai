@@ -19,7 +19,7 @@ describe('IconPicker', () => {
   it('should emit update:modelValue on click', async () => {
     const wrapper = mount(IconPicker, { props: { modelValue: '' } })
     const buttons = wrapper.findAll('button')
-    await buttons[0].trigger('click')
+    await buttons[0]!.trigger('click')
     expect(wrapper.emitted('update:modelValue')).toBeTruthy()
   })
 

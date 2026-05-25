@@ -16,14 +16,14 @@ describe('Pagination', () => {
 
   it('should disable prev button on first page', () => {
     const wrapper = mount(Pagination, { props: { current: 1, totalPages: 5 } })
-    const prevButton = wrapper.findAll('button')[0]
+    const prevButton = wrapper.findAll('button')[0]!
     expect(prevButton.attributes('disabled')).toBeDefined()
   })
 
   it('should disable next button on last page', () => {
     const wrapper = mount(Pagination, { props: { current: 5, totalPages: 5 } })
     const buttons = wrapper.findAll('button')
-    const nextButton = buttons[buttons.length - 1]
+    const nextButton = buttons[buttons.length - 1]!
     expect(nextButton.attributes('disabled')).toBeDefined()
   })
 
@@ -38,7 +38,7 @@ describe('Pagination', () => {
   it('should emit page event on next button click', async () => {
     const wrapper = mount(Pagination, { props: { current: 1, totalPages: 5 } })
     const buttons = wrapper.findAll('button')
-    const nextButton = buttons[buttons.length - 1]
+    const nextButton = buttons[buttons.length - 1]!
     await nextButton.trigger('click')
     expect(wrapper.emitted('page')?.[0]).toEqual([2])
   })
@@ -46,7 +46,7 @@ describe('Pagination', () => {
   it('should emit page event on prev button click', async () => {
     const wrapper = mount(Pagination, { props: { current: 3, totalPages: 5 } })
     const buttons = wrapper.findAll('button')
-    const prevButton = buttons[0]
+    const prevButton = buttons[0]!
     await prevButton.trigger('click')
     expect(wrapper.emitted('page')?.[0]).toEqual([2])
   })
