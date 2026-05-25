@@ -23,9 +23,6 @@ jobs:
       - name: 📦 Instalar Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: 🔗 Link projeto Vercel
-        run: vercel link --yes --token "${{ secrets.VERCEL_TOKEN }}"
-
       - name: 🚀 Deploy API no Vercel
         run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
 
@@ -46,9 +43,6 @@ jobs:
 
       - name: 📦 Instalar Vercel CLI
         run: npm install --global vercel@latest
-
-      - name: 🔗 Link projeto Vercel
-        run: vercel link --yes --token "${{ secrets.VERCEL_TOKEN }}"
 
       - name: 🚀 Deploy Web no Vercel
         run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
