@@ -41,6 +41,8 @@ jobs:
 
       # Como agora temos o Monorepo configurado, basta um comando na raiz!
       - name: 📦 Instalar dependências (NPM Workspaces)
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/reserva_ai_db_test?schema=public"
         run: npm ci
 
       # O Prisma precisa rodar as migrations na pasta da API
