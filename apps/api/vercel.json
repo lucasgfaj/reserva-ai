@@ -1,11 +1,12 @@
 {
   "version": 2,
   "buildCommand": "npx prisma generate && npm run build",
-  "functions": {
-    "api/**": {
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
