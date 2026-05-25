@@ -6,7 +6,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
 
 interface AuthUser {
   sub: string;
@@ -15,20 +14,13 @@ interface AuthUser {
   condominiumId: string;
 }
 
-declare module 'express' {
-  interface Request {
-    user?: AuthUser;
-  }
-}
-
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
-    
-    // Tenta pegar token do cookie primeiro, depois do header Authorization
+    const request = context.switchToHttp().getRequest();
+
     const token = this.extractToken(request);
 
     if (!token) {
@@ -37,7 +29,7 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token);
-      request.user = payload as AuthUser;
+      (request as any).user = payload as AuthUser;
     } catch {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
@@ -45,14 +37,12 @@ export class JwtAuthGuard implements CanActivate {
     return true;
   }
 
-  private extractToken(request: Request): string | undefined {
-    // 1. Tenta do cookie (preferencial)
+  private extractToken(request: any): string | undefined {
     const cookieToken = request.cookies?.access_token;
     if (cookieToken) {
       return cookieToken;
     }
 
-    // 2. Tenta do header Authorization (fallback para APIs externas)
     const authHeader = request.headers.authorization;
     if (authHeader) {
       const [type, token] = authHeader.split(' ');
