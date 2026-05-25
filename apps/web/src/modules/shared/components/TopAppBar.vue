@@ -18,7 +18,7 @@
       <div class="relative" ref="notificationRef">
         <button
           @click="toggleNotifications"
-          class="p-2 text-slate-400 hover:text-cyan-900 transition-colors relative hidden sm:block"
+          class="p-2 text-slate-400 hover:text-cyan-900 transition-colors relative"
         >
           <span class="material-symbols-outlined">notifications</span>
           <span

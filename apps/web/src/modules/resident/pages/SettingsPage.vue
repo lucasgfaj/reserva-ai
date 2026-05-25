@@ -33,7 +33,7 @@
 
           <!-- Tabs -->
           <div class="px-6 md:px-8 pt-6">
-            <div class="flex bg-slate-100 rounded-xl p-1 w-fit">
+            <div class="flex bg-slate-100 rounded-xl p-1 w-full md:w-fit overflow-x-auto">
               <button
                 v-for="tab in tabs"
                 :key="tab.id"
