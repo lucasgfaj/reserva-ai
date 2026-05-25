@@ -2,7 +2,7 @@ name: 🚀 Deploy para Vercel
 
 on:
   push:
-    branches: [develop]
+    branches: [main]
 
 jobs:
   deploy-api:
