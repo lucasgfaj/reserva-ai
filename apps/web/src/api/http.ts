@@ -3,7 +3,7 @@ import { router } from "@/router";
 import { useLoading } from "@/modules/shared/composables/useLoading";
 
 export const http = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api/v1",
+    baseURL: "http://localhost:3000/api/v1",
 });
 
 const { start, finish } = useLoading();
@@ -33,6 +33,3 @@ http.interceptors.response.use(
         return Promise.reject(error)
     }
 );
-
-
-

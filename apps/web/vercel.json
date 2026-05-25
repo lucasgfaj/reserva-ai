@@ -1,6 +1,0 @@
-{
-  "version": 2,
-  "buildCommand": "npm run build-only",
-  "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
