@@ -34,10 +34,10 @@ vi.mock('@/modules/shared/composables/useApiError', () => ({
   })),
 }))
 
-const mockResidents = [
-  { id: '1', name: 'João Silva', email: 'joao@test.com', unit: 'AP 101', phone: '11999999999', canBook: true },
-  { id: '2', name: 'Maria Santos', email: 'maria@test.com', unit: 'AP 102', phone: '11988888888', canBook: false },
-  { id: '3', name: 'Carlos Souza', email: 'carlos@test.com', unit: 'AP 103', phone: null, canBook: true },
+const mockResidents: import('@/modules/residents/services/residents.service').Resident[] = [
+  { id: '1', name: 'João Silva', email: 'joao@test.com', role: 'RESIDENT', isActive: true, createdAt: '2024-01-01', unit: 'AP 101', phone: '11999999999', canBook: true },
+  { id: '2', name: 'Maria Santos', email: 'maria@test.com', role: 'RESIDENT', isActive: true, createdAt: '2024-01-01', unit: 'AP 102', phone: '11988888888', canBook: false },
+  { id: '3', name: 'Carlos Souza', email: 'carlos@test.com', role: 'RESIDENT', isActive: true, createdAt: '2024-01-01', unit: 'AP 103', canBook: true },
 ]
 
 import { residentsService } from '@/modules/residents/services/residents.service'
@@ -69,6 +69,9 @@ describe('ResidentsListPage', () => {
     vi.mocked(residentsService.getAll).mockResolvedValue({
       residents: mockResidents,
       total: mockResidents.length,
+      page: 1,
+      limit: 10,
+      totalPages: 1,
     })
   })
 
@@ -123,7 +126,7 @@ describe('ResidentsListPage', () => {
       link => link.props('to') === '/condominium/residents/new'
     )
     expect(newLinks.length).toBe(1)
-    expect(newLinks[0].text()).toContain('Novo Morador')
+    expect(newLinks[0]!.text()).toContain('Novo Morador')
   })
 
   it('should have edit links for each resident', async () => {
@@ -170,7 +173,7 @@ describe('ResidentsListPage', () => {
     const inactivateButtons = wrapper.findAll('button[title="Inativar"]')
     expect(inactivateButtons.length).toBe(3)
 
-    await inactivateButtons[0].trigger('click')
+    await inactivateButtons[0]!.trigger('click')
     await wrapper.vm.$nextTick()
 
     expect(wrapper.text()).toContain('Confirmar Inativação')

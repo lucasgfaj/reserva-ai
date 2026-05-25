@@ -298,7 +298,7 @@ interface CommonArea {
   capacity: number | null
   openTime: string
   closeTime: string
-  operatingDays: number[] | null
+  operatingDays: number[] | string | null
   requiresApproval: boolean
   icon: string | null
   isUnderMaintenance: boolean
@@ -392,7 +392,7 @@ function isTimePast(time: string, date: string): boolean {
   const todayStr = fmtDate(new Date())
   if (date !== todayStr) return false
   const now = new Date()
-  const [h, m] = time.split(':').map(Number)
+  const [h = 0, m = 0] = time.split(':').map(Number)
   return h * 60 + m <= now.getHours() * 60 + now.getMinutes()
 }
 
@@ -400,8 +400,8 @@ function isTimePast(time: string, date: string): boolean {
 const timeOptions = computed<string[]>(() => {
   if (!result.value) return []
   const times: string[] = []
-  const [openH, openM] = result.value.openTime.split(':').map(Number)
-  const [closeH, closeM] = result.value.closeTime.split(':').map(Number)
+  const [openH = 0, openM = 0] = result.value.openTime.split(':').map(Number)
+  const [closeH = 0, closeM = 0] = result.value.closeTime.split(':').map(Number)
   const start = openH * 60 + openM
   const end = closeH * 60 + closeM
   for (let m = start; m <= end; m += 30) {
@@ -417,10 +417,10 @@ const timeOptions = computed<string[]>(() => {
 
 const endTimeOptions = computed<string[]>(() => {
   if (!selectedStart.value) return []
-  const [startH, startM] = selectedStart.value.split(':').map(Number)
+  const [startH = 0, startM = 0] = selectedStart.value.split(':').map(Number)
   const minEnd = startH * 60 + startM + 120
   return timeOptions.value.filter((t) => {
-    const [h, m] = t.split(':').map(Number)
+    const [h = 0, m = 0] = t.split(':').map(Number)
     return h * 60 + m >= minEnd
   })
 })
@@ -446,7 +446,7 @@ const conflictCount = computed(() => {
 })
 
 function timeToPercent(time: string, open: string, close: string): number {
-  const toMins = (t: string) => { const [h, m] = t.split(':').map(Number); return h * 60 + m }
+  const toMins = (t: string) => { const [h = 0, m = 0] = t.split(':').map(Number); return h * 60 + m }
   const total = toMins(close) - toMins(open)
   if (total <= 0) return 0
   return ((toMins(time) - toMins(open)) / total) * 100

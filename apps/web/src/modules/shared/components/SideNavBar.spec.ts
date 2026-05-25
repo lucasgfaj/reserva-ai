@@ -170,7 +170,7 @@ describe('SideNavBar', () => {
 
     const helpLink = wrapper.findAll('a').filter(a => a.text().includes('Ajuda'))
     expect(helpLink.length).toBeGreaterThan(0)
-    await helpLink[0].trigger('click')
+    await helpLink[0]!.trigger('click')
     expect(wrapper.emitted('link-click')).toBeTruthy()
     expect(wrapper.emitted('link-click')?.length).toBe(1)
   })
@@ -211,7 +211,7 @@ describe('SideNavBar', () => {
     // The collapse toggle is the last button (not signature-gradient)
     const btn = wrapper.findAll('button').filter(b => !b.classes().includes('signature-gradient'))
     expect(btn.length).toBe(1)
-    await btn[0].trigger('click')
+    await btn[0]!.trigger('click')
     expect(wrapper.emitted('toggle-collapse')).toBeTruthy()
     expect(wrapper.emitted('toggle-collapse')?.length).toBe(1)
   })

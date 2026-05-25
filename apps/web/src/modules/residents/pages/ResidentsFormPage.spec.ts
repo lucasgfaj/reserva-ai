@@ -137,6 +137,7 @@ describe('ResidentsFormPage', () => {
   it('should call create on submit in create mode', async () => {
     vi.mocked(residentsService.create).mockResolvedValue({
       message: 'Morador criado com sucesso',
+      temporaryPassword: 'Senha@123',
       user: { id: '2', name: 'Novo', email: 'novo@test.com', role: 'RESIDENT' },
     })
 

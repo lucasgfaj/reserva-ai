@@ -84,11 +84,14 @@
         "responses": {
           "200": {
             "description": "Logout realizado com sucesso. Cookie limpo."
+          },
+          "401": {
+            "description": "Não autenticado."
           }
         },
         "security": [
           {
-            "cookie": []
+            "bearer": []
           }
         ],
         "summary": "Logout - Invalidar sessão",
@@ -630,6 +633,7 @@
             "in": "query",
             "description": "Data para consulta (YYYY-MM-DD)",
             "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
               "example": "2026-06-15",
               "type": "string"
             }
@@ -640,6 +644,7 @@
             "in": "query",
             "description": "Horário de início (HH:MM)",
             "schema": {
+              "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
               "example": "10:00",
               "type": "string"
             }
@@ -650,6 +655,7 @@
             "in": "query",
             "description": "Horário de fim (HH:MM)",
             "schema": {
+              "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
               "example": "12:00",
               "type": "string"
             }
@@ -801,7 +807,7 @@
           },
           {
             "name": "status",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -809,7 +815,7 @@
           },
           {
             "name": "from",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -817,7 +823,7 @@
           },
           {
             "name": "to",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -1179,7 +1185,7 @@
   },
   "info": {
     "title": "🚀 Reserva Aí! - API de Gestão de Condomínios",
-    "description": "## 📝 Sobre o Projeto\nO **Reserva Aí!** é uma solução completa para a modernização da gestão de condomínios.\n\n### 🛠️ Guia de Uso\n1. **Autenticação:** Após login, use o token JWT no header Authorization: `Bearer <token>`\n2. **Isolamento (Multi-tenant):** Dados isolados por condomínio (RN01)\n3. **Roles:** ADMIN (administrador), RESIDENT (morador), SUPER_ADMIN\n\n### 🔐 Segurança e Permissões\n| Role | Acesso |\n|------|--------|\n| ADMIN | CRUD completo: condomínio, moradores e áreas |\n| RESIDENT | READ: áreas comuns; BOOK: reservas |\n| SUPER_ADMIN | Global (sem condomínio vinculado) |\n\n### 📋 User Stories Implementadas\n| US | Descrição |\n|----|----------|\n| US01 | Criar conta e registrar condomínio |\n| US02 | Login e gerenciar dados do condomínio |\n| US03 | Cadastrar moradores (Admin) |\n| US03.1 | Login de morador |\n| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n| US05 | Visualizar áreas comuns |\n| US06 | Consultar disponibilidade de áreas comuns |\n| US07 | Realizar reserva de área comum |\n\n*Desenvolvido em NestJS + Prisma ORM + PostgreSQL (Neon.tech)*",
+    "description": "## 📝 Sobre o Projeto\nO **Reserva Aí!** é uma solução completa para a modernização da gestão de condomínios.\n\n### 🛠️ Guia de Uso\n1. **Autenticação:** Após login, use o token JWT no header Authorization: `Bearer <token>`\n2. **Isolamento (Multi-tenant):** Dados isolados por condomínio (RN01)\n3. **Roles:** ADMIN (administrador), RESIDENT (morador), SUPER_ADMIN\n\n### 🔐 Segurança e Permissões\n| Role | Acesso |\n|------|--------|\n| ADMIN | CRUD completo: condomínio, moradores e áreas |\n| RESIDENT | READ: áreas comuns; BOOK: reservas |\n| SUPER_ADMIN | Global (sem condomínio vinculado) |\n\n### 📋 User Stories Implementadas\n| US | Descrição |\n|----|----------|\n| US01 | Criar conta e registrar condomínio |\n| US02 | Login e gerenciar dados do condomínio |\n| US03 | Cadastrar e gerenciar moradores (Admin) |\n| US03.1 | Login de morador |\n| US04 | Cadastrar e gerenciar áreas comuns (Admin) |\n| US05 | Visualizar áreas comuns |\n| US06 | Consultar disponibilidade de áreas comuns |\n| US07 | Realizar reserva de área comum |\n| US08 | Cancelar reserva |\n| US09/US10 | Listar reservas (Admin e Morador) |\n| US11 | Aprovar/Rejeitar reserva (Admin) |\n| - | Comunicados (Admin criar/remover, todos visualizar) |\n\n*Desenvolvido em NestJS + Prisma ORM + PostgreSQL*",
     "version": "1.0",
     "contact": {}
   },
@@ -1193,12 +1199,20 @@
       "description": "US03 - Gestão de Moradores (Admin only)"
     },
     {
-      "name": "reservations",
-      "description": "US07 - Reservas"
+      "name": "condominiums",
+      "description": "US02 - Gestão do Condomínio"
     },
     {
       "name": "common-areas",
       "description": "US04, US05, US06 - Áreas Comuns"
+    },
+    {
+      "name": "reservations",
+      "description": "US07, US08, US09, US10, US11 - Reservas"
+    },
+    {
+      "name": "announcements",
+      "description": "Comunicados do Condomínio"
     }
   ],
   "servers": [],
@@ -1219,29 +1233,36 @@
         "properties": {
           "condominiumName": {
             "type": "string",
+            "minLength": 3,
+            "maxLength": 150,
             "example": "Residencial Horizonte",
             "description": "Nome do condomínio (Mapeado para Condominium.name - VARCHAR 150)"
           },
           "condominiumAddress": {
             "type": "string",
+            "maxLength": 255,
             "example": "Rua das Flores, 123",
             "description": "Endereço completo (Mapeado para Condominium.address - VARCHAR 255)"
           },
           "adminName": {
             "type": "string",
+            "maxLength": 120,
             "example": "Lucas Admin",
             "description": "Nome completo do administrador (Mapeado para User.name - VARCHAR 120)"
           },
           "adminEmail": {
             "type": "string",
+            "format": "email",
             "example": "admin@reservaai.com.br",
             "description": "E-mail para login (Mapeado para User.email - VARCHAR 150 - Único)"
           },
           "adminPassword": {
             "type": "string",
+            "minLength": 8,
+            "maxLength": 40,
+            "pattern": "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9])",
             "example": "SenhaSegura123!@",
-            "description": "Senha que será hasheada via Bcrypt (mín 8 chars, letra, número e qualquer especial)",
-            "minLength": 8
+            "description": "Senha que será hasheada via Bcrypt (mín 8 chars, letra, número e qualquer especial)"
           }
         },
         "required": [
@@ -1257,14 +1278,15 @@
         "properties": {
           "email": {
             "type": "string",
+            "format": "email",
             "example": "admin@reservaai.com.br",
             "description": "E-mail do usuário cadastrado"
           },
           "password": {
             "type": "string",
+            "minLength": 8,
             "example": "Senha123!",
-            "description": "Senha do usuário",
-            "minLength": 8
+            "description": "Senha do usuário"
           }
         },
         "required": [
@@ -1282,6 +1304,7 @@
           },
           "email": {
             "type": "string",
+            "format": "email",
             "example": "joao@email.com",
             "description": "E-mail do usuário"
           }
@@ -1297,6 +1320,7 @@
           },
           "newPassword": {
             "type": "string",
+            "minLength": 6,
             "example": "NovaSenha456!",
             "description": "Nova senha"
           }
@@ -1324,32 +1348,40 @@
         "properties": {
           "name": {
             "type": "string",
+            "minLength": 3,
+            "maxLength": 120,
             "example": "João Morador",
             "description": "Nome completo do morador (3-120 caracteres)"
           },
           "email": {
             "type": "string",
+            "format": "email",
             "example": "joao@reservaai.com.br",
             "description": "E-mail único para login do morador"
           },
           "password": {
             "type": "string",
+            "minLength": 8,
+            "maxLength": 40,
+            "pattern": "^(?=.*[a-zA-Z])(?=.*[0-9])",
             "example": "Test1234",
-            "description": "Senha opcional. Se não fornecida, será gerada automaticamente (8 caracteres)",
-            "minLength": 8
+            "description": "Senha opcional. Se não fornecida, será gerada automaticamente (8 caracteres)"
           },
           "unitId": {
             "type": "string",
+            "format": "uuid",
             "example": "uuid-da-unidade",
             "description": "UUID da unidade residencial (opcional)"
           },
           "document": {
             "type": "string",
+            "maxLength": 20,
             "example": "12345678901",
             "description": "Documento do morador (CPF/RG)"
           },
           "phone": {
             "type": "string",
+            "maxLength": 20,
             "example": "11999999999",
             "description": "Telefone de contato do morador"
           },
@@ -1369,6 +1401,7 @@
         "properties": {
           "name": {
             "type": "string",
+            "maxLength": 120,
             "example": "Salão de Festas",
             "description": "Nome da área comum (2-120 caracteres)"
           },
@@ -1379,21 +1412,26 @@
           },
           "capacity": {
             "type": "number",
+            "minimum": 0,
+            "maximum": 10000,
             "example": 50,
             "description": "Capacidade máxima (0-10000)"
           },
           "openTime": {
             "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
             "example": "08:00",
             "description": "Horário de abertura (HH:MM)"
           },
           "closeTime": {
             "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
             "example": "22:00",
             "description": "Horário de fechamento (HH:MM)"
           },
           "operatingDays": {
             "type": "string",
+            "pattern": "^(\\d+,)*\\d+$",
             "example": "1,2,3,4,5,6,7",
             "description": "Dias de funcionamento (1=Domingo a 7=Sábado)"
           },
@@ -1424,6 +1462,7 @@
         "properties": {
           "name": {
             "type": "string",
+            "maxLength": 120,
             "example": "Salão de Festas Premium",
             "description": "Nome da área comum (2-120 caracteres)"
           },
@@ -1434,21 +1473,26 @@
           },
           "capacity": {
             "type": "number",
+            "minimum": 0,
+            "maximum": 10000,
             "example": 100,
             "description": "Capacidade máxima (0-10000)"
           },
           "openTime": {
             "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
             "example": "09:00",
             "description": "Horário de abertura (HH:MM)"
           },
           "closeTime": {
             "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
             "example": "23:00",
             "description": "Horário de fechamento (HH:MM)"
           },
           "operatingDays": {
             "type": "string",
+            "pattern": "^(\\d+,)*\\d+$",
             "example": "1,2,3,4,5,6,7",
             "description": "Dias de funcionamento (1=Domingo a 7=Sábado)"
           },
@@ -1474,6 +1518,7 @@
         "properties": {
           "date": {
             "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "example": "2026-12-25",
             "description": "Data a ser fechada (YYYY-MM-DD)"
           }
@@ -1487,6 +1532,7 @@
         "properties": {
           "date": {
             "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "example": "2026-12-25",
             "description": "Data a ser reaberta (YYYY-MM-DD)"
           }
@@ -1504,16 +1550,19 @@
           },
           "date": {
             "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
             "description": "Data da reserva (YYYY-MM-DD)",
             "example": "2026-07-15"
           },
           "startTime": {
             "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
             "description": "Horário de início (HH:MM)",
             "example": "10:00"
           },
           "endTime": {
             "type": "string",
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
             "description": "Horário de fim (HH:MM)",
             "example": "12:00"
           },
@@ -1535,13 +1584,34 @@
       },
       "UpdateCondominiumDto": {
         "type": "object",
-        "properties": {}
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 150,
+            "description": "Nome do condomínio",
+            "example": "Residencial Horizonte"
+          },
+          "address": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 255,
+            "description": "Endereço do condomínio",
+            "example": "Rua das Flores, 123"
+          },
+          "timezone": {
+            "type": "string",
+            "description": "Fuso horário do condomínio",
+            "example": "America/Sao_Paulo"
+          }
+        }
       },
       "CreateAnnouncementDto": {
         "type": "object",
         "properties": {
           "title": {
             "type": "string",
+            "maxLength": 200,
             "example": "Manutenção na Piscina",
             "description": "Título do comunicado"
           },

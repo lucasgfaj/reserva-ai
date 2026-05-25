@@ -1,6 +1,6 @@
 <template>
   <header class="fixed top-0 w-full z-50 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-xl">
-    <nav class="flex items-center justify-between px-10 py-5 w-full max-w-7xl mx-auto">
+    <nav class="flex items-center justify-between px-6 md:px-10 py-5 w-full max-w-7xl mx-auto">
       <div class="flex items-center gap-2">
         <span class="font-manrope font-extrabold text-sky-900 dark:text-sky-300 tracking-tight text-2xl">Reserva Aí!</span>
       </div>

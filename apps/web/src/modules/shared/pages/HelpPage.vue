@@ -76,13 +76,14 @@ import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { http } from '@/api/http'
 import { useSidebar } from '@/modules/shared/composables/useSidebar'
+import type { UserRole } from '@/modules/shared/config/menuConfig'
 
 const router = useRouter()
 const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const user = authService.getUser()
 const userName = ref(user?.name || '')
-const userRole = ref(user?.role || 'RESIDENT')
+const userRole = ref<UserRole>((user?.role as UserRole) || 'RESIDENT')
 
 interface HelpItem {
   title: string

@@ -39,7 +39,7 @@
 ## 🚀 RA5 - Pipeline CI/CD e Implantação Contínua
 * [X] **ID15:** As credenciais e **variáveis sensíveis** (como a `DATABASE_URL` da nuvem) estão seguras, ocultas do GitHub e injetadas via `ConfigModule`.
 * [X] **ID16:** Configurou esteira de **CI (Continuous Integration)** via GitHub Actions para validação automática de código (Jest/Linting) antes do merge.
-* [ ] **ID17:** Realizou o **deploy** da aplicação em domínio público (nuvem), conectada a um banco de dados relacional em produção (Neon.tech).
+* [X] **ID17:** Realizou o **deploy** da aplicação em domínio público (nuvem), conectada a um banco de dados relacional em produção (Neon.tech).
 
 ---
 _Este checklist deve ser mantido na pasta `/docs` do repositório para acompanhamento do progresso da equipe._
