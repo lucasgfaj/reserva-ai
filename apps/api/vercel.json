@@ -1,8 +1,14 @@
 {
   "version": 2,
-  "installCommand": "npm install",
-  "buildCommand": "npx prisma generate && npx --package @nestjs/cli nest build",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.ts" }
+  "buildCommand": "npx prisma generate && npx nest build",
+  "outputDirectory": "dist",
+  "functions": {
+    "src/main.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "routes": [
+    { "src": "/api/v1/(.*)", "dest": "src/main.js" },
+    { "src": "/api/v1", "dest": "src/main.js" }
   ]
 }
