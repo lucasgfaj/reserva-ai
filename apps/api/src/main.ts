@@ -4,7 +4,6 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
 import cookieParser from 'cookie-parser';
-import serverless from 'serverless-http';
 
 const envPath = path.join(process.cwd(), '.env');
 if (fs.existsSync(envPath)) {
@@ -17,9 +16,7 @@ import { DomainExceptionFilter } from './common/filters/domain-exception.filter'
 
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
-let cachedApp: Awaited<ReturnType<typeof NestFactory.create>>;
-
-async function buildApp() {
+async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.setGlobalPrefix('api/v1');
@@ -55,11 +52,6 @@ async function buildApp() {
     origin: corsOrigin,
     credentials: true,
   });
-  return app;
-}
-
-async function bootstrap() {
-  const app = await buildApp();
 
   const config = new DocumentBuilder()
     .setTitle('🚀 Reserva Aí! - API de Gestão de Condomínios')
@@ -115,7 +107,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  // Exportar especificação OpenAPI para swagger.json (falha silenciosa em FS read-only)
   try {
     const swaggerJsonPath = path.join(process.cwd(), 'swagger.json');
     fs.writeFileSync(swaggerJsonPath, JSON.stringify(document, null, 2));
@@ -128,18 +119,7 @@ async function bootstrap() {
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
 
-export const handler = serverless(async (req, res) => {
-  if (!cachedApp) {
-    cachedApp = await buildApp();
-    await cachedApp.init();
-  }
-  const expressInstance = cachedApp.getHttpAdapter().getInstance();
-  return expressInstance(req, res);
+bootstrap().catch((err) => {
+  console.error('Failed to bootstrap application:', err);
+  process.exit(1);
 });
-
-if (!process.env.VERCEL) {
-  bootstrap().catch((err) => {
-    console.error('Failed to bootstrap application:', err);
-    process.exit(1);
-  });
-}
