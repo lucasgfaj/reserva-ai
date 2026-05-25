@@ -221,7 +221,7 @@ function getOperatingDaysList(days: number[] | string | null): { label: string; 
     }
   }
   return [1, 2, 3, 4, 5, 6, 7].map((v) => ({
-    ...DAYS_MAP[v],
+    ...DAYS_MAP[v]!,
     active: activeDays.has(v),
   }))
 }

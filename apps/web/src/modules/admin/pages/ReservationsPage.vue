@@ -328,14 +328,14 @@ function statusClass(status: string): string {
   return map[status] || 'bg-slate-100 text-slate-500'
 }
 
-function statusLabel(status: string): string {
+function statusLabel(status: string | undefined): string {
   const map: Record<string, string> = {
     PENDING: 'Pendente',
     APPROVED: 'Confirmada',
     REJECTED: 'Rejeitada',
     CANCELED: 'Cancelada',
   }
-  return map[status] || status
+  return status ? map[status] || status : ''
 }
 
 function isPastReservation(res: Reservation): boolean {
