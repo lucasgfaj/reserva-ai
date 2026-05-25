@@ -1,0 +1,54 @@
+name: 🚀 Deploy para Vercel
+
+on:
+  push:
+    branches: [develop]
+
+jobs:
+  deploy-api:
+    name: Deploy API (apps/api)
+    runs-on: ubuntu-latest
+    environment: Production
+    defaults:
+      run:
+        working-directory: apps/api
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_API_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📦 Instalar Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: 🔗 Link projeto Vercel
+        run: vercel link --yes --token "${{ secrets.VERCEL_TOKEN }}"
+
+      - name: 🚀 Deploy API no Vercel
+        run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
+
+  deploy-web:
+    name: Deploy Web (apps/web)
+    runs-on: ubuntu-latest
+    environment: Production
+    defaults:
+      run:
+        working-directory: apps/web
+
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_WEB_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 📦 Instalar Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: 🔗 Link projeto Vercel
+        run: vercel link --yes --token "${{ secrets.VERCEL_TOKEN }}"
+
+      - name: 🚀 Deploy Web no Vercel
+        run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
