@@ -51,6 +51,7 @@ O objetivo é fornecer uma plataforma web moderna, com autenticação segura, co
 | **US11** | Administrador | Aprovar ou rejeitar reservas pendentes, registrando histórico em tabela de aprovação (`reservation_approvals`). | ⚡ Média |
 | **US12** | Sistema | Impedir reservas em horários conflitantes para a mesma área comum. | 🔥 Crítica |
 | **US13** | Administrador | Marcar datas específicas como fechadas para uma área comum (ex: feriados, manutenção programada). | ⚡ Baixa |
+| **–** | Administrador/Morador | Administrador cria/remove comunicados; todos os usuários visualizam comunicados do condomínio. | ⚡ Média |
 
 ## 🛡️ 5. Regras de Negócio
 
