@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "buildCommand": "npx prisma generate && npm run build",
+  "outputDirectory": "dist",
+  "functions": {
+    "src/vercel-handler.ts": {
+      "runtime": "@vercel/node@3",
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "src/vercel-handler.ts"
+    }
+  ]
+}
