@@ -1,8 +1,7 @@
 {
   "version": 2,
-  "installCommand": "npm install",
-  "buildCommand": "npx prisma generate && npx --package @nestjs/cli nest build",
+  "buildCommand": "prisma generate && npm run build",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.ts" }
+    { "source": "/(.*)", "destination": "/api/index" }
   ]
 }
