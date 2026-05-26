@@ -7,6 +7,7 @@
         "apps/*"
     ],
 "scripts": {
+    "build": "npm run build -w apps/web",
     "dev:prisma": "npm run prisma:generate -w apps/api && npm run prisma:deploy -w apps/api",
     "dev:prisma:seed": "npm run prisma:generate -w apps/api && npm run prisma:deploy -w apps/api && npm run prisma:seed -w apps/api",
     "dev:prisma:studio": "cd apps/api && npx prisma studio -p 5555",
