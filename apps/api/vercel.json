@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install",
-  "buildCommand": "npx prisma generate && npx --package @nestjs/cli nest build",
+  "buildCommand": "if [ -f apps/api/prisma/schema.prisma ]; then cd apps/api; fi && npx prisma generate && npx --package @nestjs/cli nest build",
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.ts" }
   ]
