@@ -72,7 +72,7 @@ const handleRegister = async (formData: RegisterTenantDTO) => {
   try {
     const response = await authService.registerTenant(formData)
     toastSuccess(response.message)
-    router.push('/dashboard')
+    router.push('/condominium/dashboard')
   } catch (error: any) {
     if (error.retryMessage) {
       errorMsg.value = error.retryMessage
