@@ -4,5 +4,10 @@
   "buildCommand": "npx prisma generate && npx --package @nestjs/cli nest build",
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.ts" }
-  ]
+  ],
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    }
+  }
 }
