@@ -42,10 +42,10 @@ jobs:
       - name: 🔧 Instalar dependencias
         run: npm ci
 
-      - name: 🔨 Build Web
-        run: npm run build
+      - name: 🔨 Build Web (Vercel)
+        run: npx vercel build --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
         working-directory: apps/web
 
       - name: 🚀 Deploy Web no Vercel
-        run: vercel deploy --prod --prebuilt --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        run: npx vercel deploy --prod --prebuilt --yes --token "${{ secrets.VERCEL_TOKEN }}"
         working-directory: apps/web
