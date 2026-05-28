@@ -10,7 +10,8 @@ const { start, finish } = useLoading();
 
 http.interceptors.request.use((config) => {
     start();
-    const token = localStorage.getItem("auth_token");
+    const raw = localStorage.getItem("auth_token");
+    const token = raw ? JSON.parse(raw) : null;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
