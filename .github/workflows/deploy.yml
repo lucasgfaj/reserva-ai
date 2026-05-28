@@ -20,13 +20,8 @@ jobs:
       - name: 📦 Instalar Vercel CLI
         run: npm install --global vercel@latest
 
-      - name: 🔨 Build API
-        run: npm run build
-        working-directory: apps/api
-
       - name: 🚀 Deploy API no Vercel
-        run: vercel deploy --prod --prebuilt --yes --token "${{ secrets.VERCEL_TOKEN }}"
-        working-directory: apps/api
+        run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
 
   deploy-web:
     name: Deploy Web (apps/web)
