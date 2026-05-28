@@ -42,4 +42,4 @@ jobs:
         run: npm install --global vercel@latest
 
       - name: 🚀 Deploy Web no Vercel
-        run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        run: vercel deploy --prod --yes --project "${{ secrets.VERCEL_WEB_PROJECT_ID }}" --build-env VITE_API_URL="https://api-two-ruddy-44.vercel.app/api/v1" --token "${{ secrets.VERCEL_TOKEN }}"

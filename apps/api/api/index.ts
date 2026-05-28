@@ -140,7 +140,17 @@ async function bootstrap() {
 
 export default async function handler(req: any, res: any) {
   if (!cachedApp) {
-    cachedApp = await bootstrap();
+    try {
+      cachedApp = await bootstrap();
+    } catch (err: any) {
+      console.error('[Vercel] Bootstrap failed:', err);
+      res.status(500).json({
+        statusCode: 500,
+        message: 'Internal server error',
+        error: process.env.VERCEL_ENV === 'development' ? err.message : undefined,
+      });
+      return;
+    }
   }
   cachedApp(req, res);
 }
