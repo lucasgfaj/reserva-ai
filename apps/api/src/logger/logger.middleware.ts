@@ -6,12 +6,19 @@ import * as path from 'path';
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   private logger = new Logger('HTTP');
-  private logDir = path.join(process.cwd(), 'logs');
-  private logFilePath = path.join(this.logDir, 'app.log');
+  private logDir: string;
+  private logFilePath: string;
+  private useFileLogging = true;
 
   constructor() {
-    if (!fs.existsSync(this.logDir)) {
-      fs.mkdirSync(this.logDir, { recursive: true });
+    this.logDir = path.join(process.env.VERCEL ? '/tmp' : process.cwd(), 'logs');
+    this.logFilePath = path.join(this.logDir, 'app.log');
+    try {
+      if (!fs.existsSync(this.logDir)) {
+        fs.mkdirSync(this.logDir, { recursive: true });
+      }
+    } catch {
+      this.useFileLogging = false;
     }
   }
 
@@ -30,7 +37,9 @@ export class LoggerMiddleware implements NestMiddleware {
 
       this.logger.log(logMessage);
 
-      this.writeToFile(logMessage);
+      if (this.useFileLogging) {
+        this.writeToFile(logMessage);
+      }
     });
 
     next();
@@ -38,11 +47,10 @@ export class LoggerMiddleware implements NestMiddleware {
 
   private writeToFile(message: string): void {
     const logLine = message + '\n';
-
-    fs.appendFile(this.logFilePath, logLine, (err) => {
-      if (err) {
-        console.error('[Logger] Erro ao escrever no log:', err);
-      }
-    });
+    try {
+      fs.appendFileSync(this.logFilePath, logLine);
+    } catch (err) {
+      console.error('[Logger] Erro ao escrever no log:', err);
+    }
   }
 }
