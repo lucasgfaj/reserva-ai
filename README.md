@@ -7,6 +7,7 @@
 
 - **Main (Produção)**  
   [![CI](https://github.com/lucasgfaj/reserva-ai/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/lucasgfaj/reserva-ai/actions/workflows/ci.yml)
+  [![Deploy](https://github.com/lucasgfaj/reserva-ai/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/lucasgfaj/reserva-ai/actions/workflows/deploy.yml)
 
 🔗 **Link em Produção:** [Reserva-Ai](https://reserva-ai-eta.vercel.app/)
 👨‍💻 **Autores:** [Lucas Fajardo]
