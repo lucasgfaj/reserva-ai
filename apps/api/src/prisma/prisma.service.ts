@@ -9,13 +9,27 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor() {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      connectionTimeoutMillis: 15000,
+      idleTimeoutMillis: 30000,
+      max: 5,
+    });
     const adapter = new PrismaPg(pool);
-    super({ adapter });
+    super({
+      adapter,
+      log: ['warn', 'error'],
+    });
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+      await this.$executeRawUnsafe('SET statement_timeout = 30000');
+    } catch (error) {
+      console.error('Prisma connection failed:', error);
+      throw error;
+    }
   }
 
   async onModuleDestroy() {

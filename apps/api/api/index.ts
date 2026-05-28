@@ -15,6 +15,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(cookieParser());
+  app.use((_req: any, res: any, next: any) => {
+    res.setTimeout(25000, () => {
+      res.status(408).json({
+        success: false,
+        statusCode: 408,
+        message: 'O servidor demorou muito para responder. Tente novamente.',
+      });
+    });
+    next();
+  });
   app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
