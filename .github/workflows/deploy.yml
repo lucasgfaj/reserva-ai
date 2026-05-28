@@ -27,13 +27,11 @@ jobs:
     name: Deploy Web (apps/web)
     runs-on: ubuntu-latest
     environment: Production
-    defaults:
-      run:
-        working-directory: apps/web
 
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_WEB_PROJECT_ID }}
+      VITE_API_URL: https://api-two-ruddy-44.vercel.app/api/v1
 
     steps:
       - uses: actions/checkout@v4
@@ -41,5 +39,13 @@ jobs:
       - name: 📦 Instalar Vercel CLI
         run: npm install --global vercel@latest
 
+      - name: 🔧 Instalar dependencias
+        run: npm ci
+
+      - name: 🔨 Build Web (Vercel)
+        run: npx vercel build --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        working-directory: apps/web
+
       - name: 🚀 Deploy Web no Vercel
-        run: vercel deploy --prod --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        run: npx vercel deploy --prod --prebuilt --yes --token "${{ secrets.VERCEL_TOKEN }}"
+        working-directory: apps/web

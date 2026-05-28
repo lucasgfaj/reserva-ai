@@ -2,7 +2,17 @@
   "version": 2,
   "installCommand": "npm install",
   "buildCommand": "npx prisma generate && npx --package @nestjs/cli nest build",
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    }
+  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.ts" }
-  ]
+  ],
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 30
+    }
+  }
 }

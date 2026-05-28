@@ -15,6 +15,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(cookieParser());
+  app.use((_req: any, res: any, next: any) => {
+    res.setTimeout(25000, () => {
+      res.status(408).json({
+        success: false,
+        statusCode: 408,
+        message: 'O servidor demorou muito para responder. Tente novamente.',
+      });
+    });
+    next();
+  });
   app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
@@ -140,7 +150,17 @@ async function bootstrap() {
 
 export default async function handler(req: any, res: any) {
   if (!cachedApp) {
-    cachedApp = await bootstrap();
+    try {
+      cachedApp = await bootstrap();
+    } catch (err: any) {
+      console.error('[Vercel] Bootstrap failed:', err);
+      res.status(500).json({
+        statusCode: 500,
+        message: 'Internal server error',
+        error: process.env.VERCEL_ENV === 'development' ? err.message : undefined,
+      });
+      return;
+    }
   }
   cachedApp(req, res);
 }

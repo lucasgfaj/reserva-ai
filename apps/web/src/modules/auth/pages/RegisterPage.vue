@@ -72,9 +72,17 @@ const handleRegister = async (formData: RegisterTenantDTO) => {
   try {
     const response = await authService.registerTenant(formData)
     toastSuccess(response.message)
-    router.push('/dashboard')
+    router.push('/condominium/dashboard')
   } catch (error: any) {
-    errorMsg.value = error.response?.data?.message || 'Erro ao criar conta. Tente novamente.'
+    if (error.retryMessage) {
+      errorMsg.value = error.retryMessage
+    } else if (error.code === 'ECONNABORTED') {
+      errorMsg.value = 'O servidor demorou muito para responder. Verifique sua conexão e tente novamente.'
+    } else if (!error.response) {
+      errorMsg.value = 'Não foi possível conectar ao servidor. Verifique sua conexão de rede.'
+    } else {
+      errorMsg.value = error.response?.data?.message || 'Erro ao criar conta. Tente novamente.'
+    }
     toastError(errorMsg.value)
   } finally {
     isLoading.value = false
