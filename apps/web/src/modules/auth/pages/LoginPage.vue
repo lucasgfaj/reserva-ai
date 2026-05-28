@@ -75,7 +75,11 @@ const handleLogin = async (credentials: { email: string; password: string }) => 
       : '/resident/dashboard'
     router.push(redirectPath)
   } catch (err: any) {
-    const errorMsg = err.response?.data?.message || 'Erro ao fazer login'
+    const errorMsg = err.retryMessage || (err.code === 'ECONNABORTED'
+      ? 'O servidor demorou muito para responder. Verifique sua conexão e tente novamente.'
+      : !err.response
+        ? 'Não foi possível conectar ao servidor. Verifique sua conexão de rede.'
+        : err.response?.data?.message || 'Erro ao fazer login')
     error.value = errorMsg
     toastError(errorMsg)
   } finally {
