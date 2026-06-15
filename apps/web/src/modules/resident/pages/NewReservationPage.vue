@@ -29,9 +29,34 @@
           <p class="text-slate-500 ml-[52px]">Selecione área, dia e horário para reservar</p>
         </div>
 
-        <!-- Loading -->
-        <div v-if="loadingAreas" class="flex items-center justify-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <!-- Loading skeleton -->
+        <div v-if="loadingAreas" class="space-y-6 animate-pulse">
+          <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-100 shadow-sm">
+            <div class="flex items-center gap-4 flex-wrap">
+              <div class="flex-1 min-w-[200px]">
+                <div class="h-4 bg-slate-200 rounded w-1/4 mb-1.5" />
+                <div class="h-10 bg-slate-200 rounded-xl max-w-xs" />
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
+            <div class="xl:col-span-3 bg-white rounded-2xl p-4 md:p-6 border border-slate-100 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <div class="h-8 w-8 bg-slate-200 rounded-lg" />
+                <div class="h-5 bg-slate-200 rounded w-40" />
+                <div class="h-8 w-8 bg-slate-200 rounded-lg" />
+              </div>
+              <div class="grid grid-cols-7 gap-1">
+                <div v-for="n in 35" :key="n" class="h-11 bg-slate-200 rounded-lg" />
+              </div>
+            </div>
+            <div class="xl:col-span-2 bg-white rounded-2xl p-4 md:p-6 border border-slate-100 shadow-sm">
+              <div class="flex flex-col items-center justify-center h-full py-8">
+                <div class="w-12 h-12 bg-slate-200 rounded-full mb-3" />
+                <div class="h-4 bg-slate-200 rounded w-1/2" />
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Success -->
@@ -56,7 +81,7 @@
                 <select
                   v-model="selectedAreaId"
                   @change="onAreaChange"
-                  class="w-full max-w-xs px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                  class="w-full max-w-xs px-3 py-2.5 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
                 >
                   <option value="" disabled>Selecione uma área</option>
                   <option v-for="a in areas" :key="a.id" :value="a.id">{{ a.name }}</option>
@@ -193,7 +218,7 @@
                     <select
                       v-model="selectedStart"
                       @change="onTimeChange"
-                      class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      class="w-full px-2.5 py-2 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
                     >
                       <option value="" disabled>Selecione</option>
                       <option v-for="t in timeOptions" :key="t" :value="t" :disabled="t >= result.closeTime">{{ t }}</option>
@@ -204,7 +229,7 @@
                     <select
                       v-model="selectedEnd"
                       @change="onTimeChange"
-                      class="w-full px-2.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                      class="w-full px-2.5 py-2 pr-8 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none"
                     >
                       <option value="" disabled>Selecione</option>
                       <option v-for="t in endTimeOptions" :key="t" :value="t">{{ t }}</option>

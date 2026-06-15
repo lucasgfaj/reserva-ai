@@ -29,9 +29,42 @@
           <span class="text-slate-900 font-medium whitespace-nowrap">Detalhes</span>
         </nav>
 
-        <!-- Loading State -->
-        <div v-if="loading" class="flex items-center justify-center py-12 md:py-20">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <!-- Loading skeleton -->
+        <div v-if="loading" class="w-full max-w-5xl mx-auto space-y-4 md:space-y-6 lg:space-y-8 animate-pulse">
+          <div class="flex flex-col sm:flex-row items-start justify-between gap-4">
+            <div class="flex items-center gap-4 md:gap-6">
+              <div class="w-14 h-14 md:w-16 lg:w-20 rounded-2xl bg-slate-200" />
+              <div class="space-y-2">
+                <div class="h-6 bg-slate-200 rounded w-48" />
+                <div class="h-4 bg-slate-200 rounded w-32" />
+              </div>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+              <div class="flex-1 sm:flex-none h-11 bg-slate-200 rounded-xl w-24" />
+              <div class="flex-1 sm:flex-none h-11 bg-slate-200 rounded-xl w-24" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div class="bg-surface-container-lowest rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 border border-slate-100">
+              <div class="h-5 bg-slate-200 rounded w-1/3 mb-6" />
+              <div class="space-y-5">
+                <div><div class="h-3 bg-slate-200 rounded w-1/4 mb-1" /><div class="h-5 bg-slate-200 rounded w-2/3" /></div>
+                <div><div class="h-3 bg-slate-200 rounded w-1/4 mb-1" /><div class="h-5 bg-slate-200 rounded w-3/4" /></div>
+                <div><div class="h-3 bg-slate-200 rounded w-1/4 mb-1" /><div class="h-5 bg-slate-200 rounded w-1/2" /></div>
+              </div>
+            </div>
+            <div class="bg-surface-container-lowest rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 border border-slate-100">
+              <div class="h-5 bg-slate-200 rounded w-1/4 mb-6" />
+              <div class="space-y-5">
+                <div><div class="h-3 bg-slate-200 rounded w-1/4 mb-1" /><div class="h-5 bg-slate-200 rounded w-2/3" /></div>
+                <div><div class="h-3 bg-slate-200 rounded w-1/4 mb-1" /><div class="h-5 bg-slate-200 rounded w-3/4" /></div>
+              </div>
+            </div>
+          </div>
+          <div class="bg-surface-container-lowest rounded-2xl md:rounded-3xl p-4 md:p-6 lg:p-8 border border-slate-100">
+            <div class="h-5 bg-slate-200 rounded w-1/3 mb-6" />
+            <div class="h-11 bg-slate-200 rounded-xl w-32" />
+          </div>
         </div>
 
         <!-- Content -->

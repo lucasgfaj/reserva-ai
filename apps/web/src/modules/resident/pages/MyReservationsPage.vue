@@ -35,12 +35,27 @@
           <p class="text-slate-500 ml-[52px]">Gerencie suas reservas nas áreas comuns</p>
         </div>
 
-        <!-- Loading -->
-        <div v-if="loading" class="flex items-center justify-center py-12">
+        <!-- Loading skeleton -->
+        <div v-if="loading" class="hidden md:block space-y-3">
+          <div v-for="n in 4" :key="n" class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden animate-pulse">
+            <div class="flex items-center gap-4 p-4 md:p-5">
+              <div class="w-11 h-11 bg-slate-200 rounded-xl shrink-0" />
+              <div class="flex-1 space-y-2">
+                <div class="h-5 bg-slate-200 rounded w-1/3" />
+                <div class="h-4 bg-slate-200 rounded w-1/2" />
+              </div>
+              <div class="h-6 bg-slate-200 rounded w-20" />
+              <div class="w-6 h-6 bg-slate-200 rounded" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile loading -->
+        <div v-if="loading" class="md:hidden flex items-center justify-center py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
 
-        <template v-else>
+        <template v-if="!loading">
           <!-- Filters -->
           <div class="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
             <button

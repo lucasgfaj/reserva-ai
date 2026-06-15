@@ -19,8 +19,59 @@
       <div class="flex-1 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 lg:space-y-12 w-full max-w-full">
         <WelcomeSection title="Dashboard Principal" :description="welcomeMessage" />
 
+        <!-- Loading skeleton -->
+        <div v-if="loadingReservations" class="space-y-6 md:space-y-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div v-for="n in 4" :key="n" class="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm animate-pulse">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-slate-200 rounded-xl" />
+                <div class="space-y-2 flex-1">
+                  <div class="h-3 bg-slate-200 rounded w-1/2" />
+                  <div class="h-6 bg-slate-200 rounded w-1/3" />
+                </div>
+              </div>
+              <div class="h-1.5 bg-slate-200 rounded-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <div class="col-span-1 lg:col-span-7 space-y-4">
+              <div class="h-6 bg-slate-200 rounded w-1/3 mb-2 animate-pulse" />
+              <div v-for="n in 3" :key="n" class="bg-white rounded-xl p-4 border border-slate-100 animate-pulse">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-slate-200 rounded-lg" />
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-slate-200 rounded w-1/4" />
+                    <div class="h-3 bg-slate-200 rounded w-1/2" />
+                  </div>
+                  <div class="h-5 bg-slate-200 rounded w-16" />
+                </div>
+              </div>
+            </div>
+            <div class="col-span-1 lg:col-span-5 space-y-6">
+              <div class="bg-white rounded-xl p-5 border border-slate-100 animate-pulse">
+                <div class="space-y-3">
+                  <div v-for="n in 3" :key="n" class="h-10 bg-slate-200 rounded-lg" />
+                </div>
+              </div>
+              <div class="bg-white rounded-xl p-5 border border-slate-100 animate-pulse">
+                <div class="h-5 bg-slate-200 rounded w-1/3 mb-4" />
+                <div class="space-y-3">
+                  <div v-for="n in 3" :key="n" class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-slate-200 rounded-lg" />
+                    <div class="flex-1 space-y-1">
+                      <div class="h-3 bg-slate-200 rounded w-1/3" />
+                      <div class="h-3 bg-slate-200 rounded w-1/2" />
+                    </div>
+                    <div class="h-3 bg-slate-200 rounded w-10" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div v-if="!loadingReservations" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatsCard title="Reservas Pendentes" :value="pendingCount" icon="pending_actions" :trend="pendingTrend" variant="primary" />
           <StatsCard title="Total de Moradores" :value="residentCount" icon="group" :subtitle="residentSubtitle" variant="primary" />
           <StatsCard title="Áreas Comuns" :value="areaCount" icon="pool" :subtitle="areaSubtitle" variant="primary" />
@@ -28,17 +79,14 @@
         </div>
 
         <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+        <div v-if="!loadingReservations" class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           <div class="col-span-1 lg:col-span-7 space-y-4 md:space-y-6">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-lg md:text-xl font-bold text-cyan-900 tracking-tight">Próximas Reservas</h3>
               <router-link to="/condominium/reservations" class="text-sm font-semibold text-primary hover:underline">Ver calendário completo</router-link>
             </div>
 
-            <div v-if="loadingReservations" class="flex items-center justify-center py-8">
-              <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            </div>
-            <div v-else-if="upcomingReservations.length === 0" class="text-center py-8 text-slate-400 text-sm">
+            <div v-if="upcomingReservations.length === 0" class="text-center py-8 text-slate-400 text-sm">
               Nenhuma reserva futura agendada.
             </div>
             <div v-else class="space-y-3 md:space-y-4">

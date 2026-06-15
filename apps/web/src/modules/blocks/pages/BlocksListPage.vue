@@ -18,7 +18,28 @@
         </div>
 
         <div class="bg-surface-container-lowest rounded-2xl md:rounded-3xl overflow-hidden shadow-sm">
-          <div class="overflow-x-auto">
+          <!-- Loading skeleton -->
+          <div v-if="loading" class="hidden md:block p-8">
+            <div class="space-y-4">
+              <div v-for="n in 4" :key="n" class="flex items-center gap-4 animate-pulse">
+                <div class="flex-1 space-y-2">
+                  <div class="h-4 bg-slate-200 rounded w-1/3" />
+                </div>
+                <div class="flex gap-2">
+                  <div class="w-8 h-8 bg-slate-200 rounded-lg" />
+                  <div class="w-8 h-8 bg-slate-200 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile spinner -->
+          <div v-if="loading" class="md:hidden p-8 text-center text-slate-400">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+            <p class="mt-2">Carregando...</p>
+          </div>
+
+          <div v-if="!loading" class="overflow-x-auto">
             <table class="w-full">
               <thead class="bg-surface-container-low">
                 <tr>
