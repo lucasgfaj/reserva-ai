@@ -38,15 +38,17 @@ describe('SideNavBar', () => {
     })
 
     const links = wrapper.findAll('nav a')
-    expect(links.length).toBe(8)
+    expect(links.length).toBe(10)
     expect(links.at(0)?.text()).toContain('Início')
     expect(links.at(1)?.text()).toContain('Condomínio')
     expect(links.at(2)?.text()).toContain('Moradores')
-    expect(links.at(3)?.text()).toContain('Áreas Comuns')
-    expect(links.at(4)?.text()).toContain('Reservas')
-    expect(links.at(5)?.text()).toContain('Disponibilidade')
-    expect(links.at(6)?.text()).toContain('Comunicados')
-    expect(links.at(7)?.text()).toContain('Relatórios')
+    expect(links.at(3)?.text()).toContain('Blocos')
+    expect(links.at(4)?.text()).toContain('Unidades')
+    expect(links.at(5)?.text()).toContain('Áreas Comuns')
+    expect(links.at(6)?.text()).toContain('Reservas')
+    expect(links.at(7)?.text()).toContain('Disponibilidade')
+    expect(links.at(8)?.text()).toContain('Comunicados')
+    expect(links.at(9)?.text()).toContain('Relatórios')
   })
 
   it('should render resident menu items', () => {

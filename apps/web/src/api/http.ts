@@ -30,7 +30,10 @@ http.interceptors.response.use(
     async (error) => {
         finish();
         const config = error.config
-        if (!config || config._retryCount === undefined) {
+        if (!config) {
+            return Promise.reject(error)
+        }
+        if (config._retryCount === undefined) {
             config._retryCount = 0
         }
         const shouldRetry =

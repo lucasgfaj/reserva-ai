@@ -11,6 +11,10 @@ import AvailabilityPage from '@/modules/resident/pages/AvailabilityPage.vue'
 import AnnouncementsPage from './pages/AnnouncementsPage.vue'
 import AccountSettingsPage from './pages/AccountSettingsPage.vue'
 import HelpPage from '@/modules/shared/pages/HelpPage.vue'
+import BlocksListPage from '@/modules/blocks/pages/BlocksListPage.vue'
+import BlocksFormPage from '@/modules/blocks/pages/BlocksFormPage.vue'
+import UnitsListPage from '@/modules/units/pages/UnitsListPage.vue'
+import UnitsFormPage from '@/modules/units/pages/UnitsFormPage.vue'
 
 export const adminRoutes = [
   {
@@ -37,6 +41,36 @@ export const adminRoutes = [
     path: '/condominium/residents/:id/edit',
     name: 'admin-residents-edit',
     component: ResidentsFormPage,
+  },
+  {
+    path: '/condominium/blocks',
+    name: 'admin-blocks',
+    component: BlocksListPage,
+  },
+  {
+    path: '/condominium/blocks/new',
+    name: 'admin-blocks-new',
+    component: BlocksFormPage,
+  },
+  {
+    path: '/condominium/blocks/:id/edit',
+    name: 'admin-blocks-edit',
+    component: BlocksFormPage,
+  },
+  {
+    path: '/condominium/units',
+    name: 'admin-units',
+    component: UnitsListPage,
+  },
+  {
+    path: '/condominium/units/new',
+    name: 'admin-units-new',
+    component: UnitsFormPage,
+  },
+  {
+    path: '/condominium/units/:id/edit',
+    name: 'admin-units-edit',
+    component: UnitsFormPage,
   },
   {
     path: '/condominium/reservations',

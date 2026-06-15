@@ -26,40 +26,112 @@ Toda a especificação do sistema está versionada na pasta `/docs`:
 
 ## 🛠 3. Stack Tecnológica
 
-- **Arquitetura:** Monorepo (Back, Front e Extensão no mesmo repositório).
-- **Backend (API):** NestJS, TypeScript, JWT, Google OAuth.
-- **Banco de Dados:** PostgreSQL (Nuvem) gerenciado via Prisma ORM.
+- **Arquitetura:** Monorepo (Back, Front no mesmo repositório).
+- **Backend (API):** NestJS, TypeScript, JWT.
+- **Banco de Dados:** PostgreSQL gerenciado via Prisma ORM.
 - **Frontend (Web):** Vue.js + TailwindCSS.
 - **Integração:** Consumo de API Externa (Brasil API para feriados nacionais).
 
 ## 🚀 4. Quick Start (Como Executar)
 
-**1. Clone o repositório:**
+### Pré-requisitos
 
-    git clone https://github.com/lucasgfaj/reserva-ai.git
-    cd reserva-ai
+- **Node.js** 20+
+- **PostgreSQL** (local com Docker ou Neon/Supabase na nuvem)
+- **Docker** (opcional, para PostgreSQL local)
 
-**2. Configuração Inicial e Variáveis de Ambiente:**
-Não esqueça de copiar o arquivo `.env.example` para `.env` dentro da pasta `apps/api` e configurar a `DATABASE_URL` do seu PostgreSQL. Em seguida, instale as dependências executando na raiz:
+### 4.1. Clone e instale dependências
 
-    npm install
+```bash
+git clone https://github.com/lucasgfaj/reserva-ai.git
+cd reserva-ai
+npm install
+```
 
-**3. Banco de Dados:**
-Para gerar o Prisma Client e atualizar o banco de dados:
+### 4.2. Configure o Banco de Dados
 
-    npm run dev:prisma
+**Opção A — PostgreSQL local com Docker (recomendado):**
 
-**4. Iniciar a Aplicação:**
-A partir da raiz do monorepo, inicie os serviços (abra terminais separados):
+```bash
+docker run --name reserva-pg -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=reserva_ai_db -p 5432:5432 -d postgres:16-alpine
+```
 
-    # Terminal 1 - Iniciar a API NestJS
-    npm run dev:api
+**Opção B — PostgreSQL na nuvem (Neon, Supabase, Railway):**
 
-    # Terminal 2 - Iniciar o Frontend
-    npm run dev:web
+Crie um banco gratuito em [neon.tech](https://neon.tech) ou [supabase.com](https://supabase.com) e copie a `DATABASE_URL`.
 
-    # Terminal 3 - Prisma Studio (Visão do Banco - Opcional)
-    npm run dev:prisma:studio
+### 4.3. Variáveis de Ambiente
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+Edite `apps/api/.env` se necessário. O padrão já funciona com o Docker local.
+
+### 4.4. Rodar migrations + seed
+
+```bash
+npm run dev:prisma:seed
+```
+
+Esse comando gera o Prisma Client, aplica as migrations e popula o banco com dados de demonstração.
+
+### 4.5. Iniciar a aplicação
+
+Abra **dois terminais**:
+
+```bash
+# Terminal 1 - Backend (porta 3000)
+npm run dev:api
+
+# Terminal 2 - Frontend (porta 5173)
+npm run dev:web
+```
+
+Acesse: http://localhost:5173
+Documentação Swagger: http://localhost:3000/api/v1/docs
+Prisma Studio (opcional): `npm run dev:prisma:studio`
+
+## 🔐 Credenciais de Teste (Seed)
+
+Após rodar o seed, use estas credenciais para testar:
+
+| Papel   | E-mail              | Senha         |
+|---------|---------------------|---------------|
+| Admin   | admin@reservai.com  | Admin@123     |
+| Morador | morador@reservai.com| Resident@123  |
+
+### O que o seed cria
+
+- **Condomínio:** Condomínio Vila Verde
+- **Bloco/Unidade:** Bloco A, Ap 101
+- **Admin:** admin@reservai.com (ADMIN)
+- **Morador:** morador@reservai.com (RESIDENT)
+- **8 áreas comuns:** Salão de Festas, Churrasqueira, Piscina, Quadra Poliesportiva, Academia, Espaço Gourmet, Brinquedoteca, Salão de Jogos
+  - Salão de Festas e Espaço Gourmet exigem aprovação (`requiresApproval: true`)
+  - Churrasqueira funciona apenas sábados e domingos
+
+### Recriar dados do zero
+
+```bash
+npm run dev:prisma:seed
+```
+
+## 🧪 Testes
+
+```bash
+# Backend (unitários)
+npm run dev:api:test
+
+# Backend (E2E)
+npm run dev:api:test:e2e
+
+# Backend (com cobertura)
+npm run dev:api:test:cover
+
+# Frontend
+npm run dev:web:test
+```
 
 ## 🎨 5. Prototipação (Stitch)
 

@@ -73,8 +73,8 @@ src/
 ## Modelo de Dados (Prisma)
 - **User** (id, name, email, passwordHash, provider[LOCAL,GOOGLE], role[SUPER_ADMIN,ADMIN,RESIDENT], condominiumId, isActive)
 - **Condominium** (id, name, address, timezone)
-- **Block** (id, name, condominiumId) - sem endpoints REST
-- **Unit** (id, number, blockId) - sem endpoints REST
+- **Block** (id, name, condominiumId) - GET/POST/PATCH/DELETE /blocks
+- **Unit** (id, number, blockId) - GET/POST/PATCH/DELETE /units, filtro por ?blockId=
 - **Resident** (id, userId[unique], unitId, document, phone, canBook)
 - **CommonArea** (id, name, description, capacity, openTime, closeTime, operatingDays[JSON], closedDates[JSON], requiresApproval, icon, isUnderMaintenance[default false], condominiumId)
 - **Reservation** (id, residentId, commonAreaId, startTime, endTime, status[PENDING,APPROVED,REJECTED,CANCELED], notes, canceledById, canceledAt)
@@ -133,10 +133,35 @@ src/
 - `PATCH /reservations/:id/approve` (Admin, via $transaction)
 - `PATCH /reservations/:id/reject` (Admin, via $transaction)
 
+### Blocks
+- `POST /blocks` - Admin cria bloco
+- `GET /blocks` (query: page, limit)
+- `GET /blocks/:id`
+- `PATCH /blocks/:id` - Admin
+- `DELETE /blocks/:id` - Admin (bloqueado se há unidades vinculadas)
+
+### Units
+- `POST /units` - Admin cria unidade (body: number, blockId)
+- `GET /units` (query: page, limit, blockId?)
+- `GET /units/:id`
+- `PATCH /units/:id` - Admin
+- `DELETE /units/:id` - Admin (bloqueado se há moradores vinculados)
+
 ### Announcements
 - `POST /announcements` (Admin)
 - `GET /announcements` (query: page, limit)
 - `DELETE /announcements/:id` (Admin, soft-delete isActive=false)
+
+## Credenciais de Teste (Seed)
+
+Após rodar `npm run dev:prisma:seed`:
+
+| Papel   | E-mail              | Senha         |
+|---------|---------------------|---------------|
+| Admin   | admin@reservai.com  | Admin@123     |
+| Morador | morador@reservai.com| Resident@123  |
+
+O seed cria Condomínio Vila Verde, Bloco A/Ap 101, 8 áreas comuns, admin e morador.
 
 ## Comandos
 ```bash
@@ -167,7 +192,7 @@ npm run dev:web:test     # Testes frontend
 ## Observações Técnicas
 - Anúncios sem endpoint de edição (apenas criar e deletar)
 - `Provider.GOOGLE` existe no schema mas não há implementação de OAuth Google
-- Rotas de Block e Unit existem no Prisma mas não têm endpoints REST
+- `GET /units?blockId=` filtra unidades por bloco
 - Swagger JSON exportado para `swagger.json` na inicialização
 - `POST /residents` gera senha temporária automaticamente se não fornecida
 - Aprovação/rejeição de reserva usa `$transaction` (atualiza status + cria reservation_approval atomicamente)
