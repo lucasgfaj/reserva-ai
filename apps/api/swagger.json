@@ -1181,6 +1181,381 @@
           "announcements"
         ]
       }
+    },
+    "/api/v1/blocks": {
+      "get": {
+        "description": "Lista todos os blocos do condomínio ordenados por nome.",
+        "operationId": "BlocksController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de blocos retornada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar blocos do condomínio",
+        "tags": [
+          "blocks"
+        ]
+      },
+      "post": {
+        "operationId": "BlocksController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBlockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bloco criado com sucesso."
+          },
+          "409": {
+            "description": "Já existe bloco com este nome."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar bloco (Admin)",
+        "tags": [
+          "blocks"
+        ]
+      }
+    },
+    "/api/v1/blocks/{id}": {
+      "get": {
+        "operationId": "BlocksController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do bloco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bloco encontrado."
+          },
+          "404": {
+            "description": "Bloco não encontrado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Buscar bloco pelo ID",
+        "tags": [
+          "blocks"
+        ]
+      },
+      "patch": {
+        "operationId": "BlocksController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do bloco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBlockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bloco atualizado com sucesso."
+          },
+          "404": {
+            "description": "Bloco não encontrado."
+          },
+          "409": {
+            "description": "Já existe bloco com este nome."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar bloco (Admin)",
+        "tags": [
+          "blocks"
+        ]
+      },
+      "delete": {
+        "operationId": "BlocksController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID do bloco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Bloco removido com sucesso."
+          },
+          "404": {
+            "description": "Bloco não encontrado."
+          },
+          "409": {
+            "description": "Bloco possui unidades vinculadas."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover bloco (Admin)",
+        "tags": [
+          "blocks"
+        ]
+      }
+    },
+    "/api/v1/units": {
+      "get": {
+        "description": "Lista todas as unidades do condomínio ordenadas por número. Pode filtrar por bloco.",
+        "operationId": "UnitsController_findAll",
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "blockId",
+            "required": false,
+            "in": "query",
+            "description": "Filtrar por UUID do bloco",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de unidades retornada com sucesso."
+          },
+          "401": {
+            "description": "Não autenticado."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Listar unidades do condomínio",
+        "tags": [
+          "units"
+        ]
+      },
+      "post": {
+        "operationId": "UnitsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUnitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Unidade criada com sucesso."
+          },
+          "409": {
+            "description": "Já existe unidade com este número."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Criar unidade (Admin)",
+        "tags": [
+          "units"
+        ]
+      }
+    },
+    "/api/v1/units/{id}": {
+      "get": {
+        "operationId": "UnitsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da unidade",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unidade encontrada."
+          },
+          "404": {
+            "description": "Unidade não encontrada."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Buscar unidade pelo ID",
+        "tags": [
+          "units"
+        ]
+      },
+      "patch": {
+        "operationId": "UnitsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da unidade",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUnitDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Unidade atualizada com sucesso."
+          },
+          "404": {
+            "description": "Unidade não encontrada."
+          },
+          "409": {
+            "description": "Já existe unidade com este número."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Atualizar unidade (Admin)",
+        "tags": [
+          "units"
+        ]
+      },
+      "delete": {
+        "operationId": "UnitsController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "UUID da unidade",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unidade removida com sucesso."
+          },
+          "404": {
+            "description": "Unidade não encontrada."
+          },
+          "409": {
+            "description": "Unidade possui moradores vinculados."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remover unidade (Admin)",
+        "tags": [
+          "units"
+        ]
+      }
     }
   },
   "info": {
@@ -1625,6 +2000,73 @@
           "title",
           "content"
         ]
+      },
+      "CreateBlockDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 50,
+            "example": "Bloco A",
+            "description": "Nome do bloco"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateBlockDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 50,
+            "example": "Bloco A - Atualizado",
+            "description": "Novo nome do bloco"
+          }
+        }
+      },
+      "CreateUnitDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20,
+            "example": "101",
+            "description": "Número da unidade"
+          },
+          "blockId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "uuid-do-bloco",
+            "description": "UUID do bloco"
+          }
+        },
+        "required": [
+          "number",
+          "blockId"
+        ]
+      },
+      "UpdateUnitDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20,
+            "example": "102",
+            "description": "Novo número da unidade"
+          },
+          "blockId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "uuid-do-bloco",
+            "description": "UUID do bloco"
+          }
+        }
       }
     }
   }

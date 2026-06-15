@@ -17,6 +17,8 @@ export const menuConfig: Record<UserRole, MenuItem[]> = {
     { path: '/condominium/dashboard', label: 'Início', icon: 'dashboard' },
     { path: '/condominium/settings', label: 'Condomínio', icon: 'apartment' },
     { path: '/condominium/residents', label: 'Moradores', icon: 'group' },
+    { path: '/condominium/blocks', label: 'Blocos', icon: 'layers' },
+    { path: '/condominium/units', label: 'Unidades', icon: 'door_front' },
     { path: '/condominium/common-areas', label: 'Áreas Comuns', icon: 'pool' },
     { path: '/condominium/reservations', label: 'Reservas', icon: 'event_available' },
     { path: '/condominium/availability', label: 'Disponibilidade', icon: 'calendar_month' },
