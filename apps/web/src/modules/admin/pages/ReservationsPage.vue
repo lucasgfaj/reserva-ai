@@ -27,11 +27,27 @@
           <p class="text-slate-500 ml-[52px]">Todas as reservas do condomínio</p>
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-12">
+        <!-- Loading skeleton -->
+        <div v-if="loading" class="hidden md:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden p-8">
+          <div class="space-y-4">
+            <div v-for="n in 4" :key="n" class="flex items-center gap-4 animate-pulse">
+              <div class="w-9 h-9 bg-slate-200 rounded-lg" />
+              <div class="h-4 bg-slate-200 rounded w-1/5" />
+              <div class="h-4 bg-slate-200 rounded w-1/6" />
+              <div class="h-4 bg-slate-200 rounded w-1/6" />
+              <div class="h-4 bg-slate-200 rounded w-1/6" />
+              <div class="h-6 bg-slate-200 rounded w-20" />
+              <div class="h-4 bg-slate-200 rounded w-8" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile loading spinner -->
+        <div v-if="loading" class="md:hidden flex items-center justify-center py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
 
-        <template v-else>
+        <template v-if="!loading">
           <!-- Filters -->
           <div class="flex flex-wrap items-center gap-3 mb-6">
             <button

@@ -31,11 +31,29 @@
             </div>
           </div>
 
-          <div v-if="loading" class="flex items-center justify-center py-16">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <!-- Loading skeleton -->
+          <div v-if="loading" class="p-6 md:p-8 max-w-xl animate-pulse">
+            <div class="space-y-5">
+              <div>
+                <div class="h-4 bg-slate-200 rounded w-1/4 mb-1.5" />
+                <div class="h-10 bg-slate-200 rounded-xl" />
+              </div>
+              <div>
+                <div class="h-4 bg-slate-200 rounded w-1/4 mb-1.5" />
+                <div class="h-10 bg-slate-200 rounded-xl" />
+              </div>
+              <div>
+                <div class="h-4 bg-slate-200 rounded w-1/4 mb-1.5" />
+                <div class="h-10 bg-slate-200 rounded-xl" />
+              </div>
+              <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
+                <div class="h-11 bg-slate-200 rounded-xl w-36" />
+                <div class="h-11 bg-slate-200 rounded-xl w-24" />
+              </div>
+            </div>
           </div>
 
-          <template v-else>
+          <template v-if="!loading">
             <div class="p-6 md:p-8 max-w-xl">
               <div class="space-y-5">
                 <div>

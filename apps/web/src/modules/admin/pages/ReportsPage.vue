@@ -27,11 +27,46 @@
           <p class="text-slate-500 ml-[52px]">Visão geral de reservas e ocupação do condomínio</p>
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-16">
+        <!-- Loading skeleton -->
+        <div v-if="loading" class="hidden md:block space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div v-for="n in 4" :key="n" class="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm animate-pulse">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-slate-200 rounded-xl" />
+                <div class="space-y-2 flex-1">
+                  <div class="h-3 bg-slate-200 rounded w-1/2" />
+                  <div class="h-6 bg-slate-200 rounded w-1/3" />
+                </div>
+              </div>
+              <div class="h-1.5 bg-slate-200 rounded-full" />
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-6 md:px-8 pt-6 pb-4 border-b border-slate-100">
+              <div class="h-5 bg-slate-200 rounded w-1/4 mb-2 animate-pulse" />
+              <div class="h-4 bg-slate-200 rounded w-1/3 animate-pulse" />
+            </div>
+            <div class="p-8">
+              <div class="space-y-4">
+                <div v-for="n in 4" :key="n" class="flex items-center gap-4 animate-pulse">
+                  <div class="h-4 bg-slate-200 rounded w-1/4" />
+                  <div class="h-4 bg-slate-200 rounded w-16" />
+                  <div class="h-4 bg-slate-200 rounded w-16" />
+                  <div class="h-4 bg-slate-200 rounded w-16" />
+                  <div class="h-4 bg-slate-200 rounded w-16" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile loading -->
+        <div v-if="loading" class="md:hidden flex items-center justify-center py-16">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
 
-        <template v-else>
+        <template v-if="!loading">
           <!-- Summary cards -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
             <div class="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm">

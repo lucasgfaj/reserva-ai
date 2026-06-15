@@ -36,15 +36,31 @@
           </button>
         </div>
 
-        <div v-if="loading" class="flex items-center justify-center py-12">
+        <!-- Loading skeleton -->
+        <div v-if="loading" class="hidden md:block space-y-4 max-w-3xl">
+          <div v-for="n in 3" :key="n" class="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm animate-pulse">
+            <div class="flex items-start gap-4">
+              <div class="w-9 h-9 bg-slate-200 rounded-full shrink-0" />
+              <div class="flex-1 space-y-3">
+                <div class="h-5 bg-slate-200 rounded w-1/3" />
+                <div class="h-4 bg-slate-200 rounded w-full" />
+                <div class="h-4 bg-slate-200 rounded w-2/3" />
+                <div class="h-3 bg-slate-200 rounded w-1/4" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile loading -->
+        <div v-if="loading" class="md:hidden flex items-center justify-center py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
 
-        <div v-else-if="errorMessage" class="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 border border-red-200 max-w-2xl">
+        <div v-if="!loading && errorMessage" class="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3 border border-red-200 max-w-2xl">
           {{ errorMessage }}
         </div>
 
-        <template v-else>
+        <template v-if="!loading && !errorMessage">
           <div v-if="showForm" class="max-w-2xl mb-8">
             <div class="bg-white rounded-2xl p-6 md:p-8 border border-slate-100 shadow-sm">
               <h2 class="text-lg font-bold text-cyan-900 mb-4">Novo Comunicado</h2>

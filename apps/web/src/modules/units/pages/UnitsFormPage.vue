@@ -11,7 +11,23 @@
           <p class="text-on-surface-variant mt-1 md:mt-2 text-sm md:text-base">{{ isEdit ? 'Atualize as informações da unidade' : 'Cadastre uma nova unidade no condomínio' }}</p>
         </div>
 
-        <form @submit.prevent="handleSubmit" class="bg-surface-container-lowest rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-6 shadow-sm">
+        <!-- Loading skeleton for edit mode -->
+        <div v-if="isEdit && loading" class="bg-surface-container-lowest rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-6 shadow-sm animate-pulse">
+          <div>
+            <div class="h-4 bg-slate-200 rounded w-1/4 mb-1.5" />
+            <div class="h-11 bg-slate-200 rounded-xl" />
+          </div>
+          <div>
+            <div class="h-4 bg-slate-200 rounded w-1/4 mb-1.5" />
+            <div class="h-11 bg-slate-200 rounded-xl" />
+          </div>
+          <div class="flex items-center gap-3 pt-2">
+            <div class="h-11 bg-slate-200 rounded-xl w-28" />
+            <div class="h-11 bg-slate-200 rounded-xl w-24" />
+          </div>
+        </div>
+
+        <form v-else @submit.prevent="handleSubmit" class="bg-surface-container-lowest rounded-2xl md:rounded-3xl p-4 md:p-6 space-y-6 shadow-sm">
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">Número da Unidade</label>
             <input v-model="form.number" type="text" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" placeholder="Ex: 101" required />
@@ -20,7 +36,7 @@
 
           <div>
             <label class="block text-sm font-medium text-slate-700 mb-1.5">Bloco</label>
-            <select v-model="form.blockId" class="w-full px-4 py-3 bg-surface-container-low border-none rounded-xl text-sm" :required="!isEdit">
+            <select v-model="form.blockId" class="w-full px-4 py-3 pr-8 bg-surface-container-low border-none rounded-xl text-sm appearance-none" :required="!isEdit">
               <option value="" disabled>Selecione um bloco</option>
               <option v-for="block in blocks" :key="block.id" :value="block.id">{{ block.name }}</option>
             </select>
@@ -65,6 +81,7 @@ const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 
 const isEdit = computed(() => !!route.params.id)
 const saving = ref(false)
+const loading = ref(false)
 const blocks = ref<{ id: string; name: string }[]>([])
 const form = ref({ number: '', blockId: '' })
 const errors = ref<Record<string, string>>({})
@@ -76,12 +93,15 @@ onMounted(async () => {
   } catch {}
 
   if (isEdit.value) {
+    loading.value = true
     try {
       const unit = await unitsService.getById(route.params.id as string)
       form.value.number = unit.number
       form.value.blockId = unit.blockId
     } catch (err) {
       handleError(err, 'Erro ao carregar unidade')
+    } finally {
+      loading.value = false
     }
   }
 })
