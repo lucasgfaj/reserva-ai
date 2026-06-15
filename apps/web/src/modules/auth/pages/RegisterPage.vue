@@ -74,6 +74,23 @@ const handleRegister = async (formData: RegisterTenantDTO) => {
     toastSuccess(response.message)
     router.push('/condominium/dashboard')
   } catch (error: any) {
+    const isTimeout = error.code === 'ECONNABORTED' || error.retryMessage
+    if (isTimeout) {
+      try {
+        const loginResponse = await authService.login({
+          email: formData.adminEmail,
+          password: formData.adminPassword,
+        })
+        toastSuccess('Conta criada com sucesso!')
+        const redirectPath = loginResponse.user.role === 'ADMIN'
+          ? '/condominium/dashboard'
+          : '/resident/dashboard'
+        router.push(redirectPath)
+        return
+      } catch {
+        // login falhou também — conta não foi criada
+      }
+    }
     if (error.retryMessage) {
       errorMsg.value = error.retryMessage
     } else if (error.code === 'ECONNABORTED') {
