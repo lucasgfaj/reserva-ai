@@ -20,7 +20,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cookieParser());
   app.use((_req: any, res: any, next: any) => {
-    res.setTimeout(25000, () => {
+    res.setTimeout(60000, () => {
       res.status(408).json({
         success: false,
         statusCode: 408,
