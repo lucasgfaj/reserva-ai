@@ -38,7 +38,6 @@ import AuthSocialButtons from '../components/AuthSocialButtons.vue'
 import AuthDivider from '../components/AuthDivider.vue'
 import AuthSupportCards from '../components/AuthSupportCards.vue'
 import LoginForm from '../components/LoginForm.vue'
-import { loginRequest } from '../auth.api'
 import { authService } from '../services/auth.service'
 import { useToast } from '@/modules/shared/composables/useToast'
 
@@ -65,10 +64,7 @@ const handleLogin = async (credentials: { email: string; password: string }) => 
   error.value = ''
   
   try {
-    const response = await loginRequest(credentials)
-    localStorage.setItem('auth_token', response.accessToken)
-    localStorage.setItem('auth_user', JSON.stringify(response.user))
-    localStorage.setItem('auth_condo', JSON.stringify(response.condominium))
+    const response = await authService.login(credentials)
     toastSuccess(response.message)
     const redirectPath = response.user.role === 'ADMIN'
       ? '/condominium/dashboard'
