@@ -23,18 +23,54 @@
             Olá, {{ userName }}!
           </h2>
           <p class="text-on-surface-variant mt-1">
-            {{ welcomeMessage }}
+            {{ loading ? 'Carregando...' : welcomeMessage }}
           </p>
         </div>
 
+        <!-- Loading skeleton -->
+        <div v-if="loading" class="space-y-6 md:space-y-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div v-for="n in 2" :key="n" class="bg-white rounded-2xl p-5 md:p-6 border border-slate-100 shadow-sm animate-pulse">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 bg-slate-200 rounded-xl" />
+                <div class="space-y-2 flex-1">
+                  <div class="h-3 bg-slate-200 rounded w-1/2" />
+                  <div class="h-6 bg-slate-200 rounded w-1/3" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+            <div class="col-span-1 lg:col-span-7 space-y-4">
+              <div class="h-6 bg-slate-200 rounded w-1/3 animate-pulse" />
+              <div v-for="n in 2" :key="n" class="bg-white rounded-xl p-4 border border-slate-100 animate-pulse">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-slate-200 rounded-lg" />
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-slate-200 rounded w-1/3" />
+                    <div class="h-3 bg-slate-200 rounded w-1/2" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-span-1 lg:col-span-5 space-y-6">
+              <div class="bg-white rounded-xl p-5 border border-slate-100 animate-pulse">
+                <div class="space-y-3">
+                  <div v-for="n in 2" :key="n" class="h-10 bg-slate-200 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Stats -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div v-if="!loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           <StatsCard title="Minhas Reservas" :value="reservationsCount" icon="event_available" trend="Próximas" variant="primary" />
           <StatsCard title="Áreas Disponíveis" :value="commonAreasCount" icon="pool" variant="primary" />
         </div>
 
         <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
+        <div v-if="!loading" class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           <!-- Left: My Reservations -->
           <div class="col-span-1 lg:col-span-7 space-y-4">
             <div class="flex items-center justify-between">
@@ -128,6 +164,7 @@ const { sidebarOpen, sidebarCollapsed, toggleCollapse } = useSidebar()
 const user = authService.getUser()
 const userName = ref(user?.name || 'Morador')
 
+const loading = ref(true)
 const commonAreasCount = ref(0)
 const reservations = ref<Reservation[]>([])
 
@@ -171,6 +208,12 @@ async function fetchReservations() {
   }
 }
 
+onMounted(async () => {
+  loading.value = true
+  await Promise.all([fetchCommonAreas(), fetchReservations()])
+  loading.value = false
+})
+
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr)
   return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
@@ -197,8 +240,5 @@ const handleQuickAction = (actionId: string) => {
   }
 }
 
-onMounted(() => {
-  fetchCommonAreas()
-  fetchReservations()
-})
+
 </script>

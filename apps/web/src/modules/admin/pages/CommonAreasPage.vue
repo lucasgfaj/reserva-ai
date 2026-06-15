@@ -42,12 +42,12 @@
               type="text"
             />
           </div>
-          <select v-model="filterApproval" class="w-full sm:w-auto px-3 md:px-4 py-2.5 md:py-3 bg-surface-container-low border-none rounded-xl text-sm md:text-base">
+          <select v-model="filterApproval" class="w-full sm:w-auto px-3 md:px-4 py-2.5 md:py-3 pr-8 md:pr-10 bg-surface-container-low border-none rounded-xl text-sm md:text-base appearance-none">
             <option value="all">Todas</option>
             <option value="required">Requer aprovação</option>
             <option value="free">Livre</option>
           </select>
-          <select v-model="filterMaintenance" class="w-full sm:w-auto px-3 md:px-4 py-2.5 md:py-3 bg-surface-container-low border-none rounded-xl text-sm md:text-base">
+          <select v-model="filterMaintenance" class="w-full sm:w-auto px-3 md:px-4 py-2.5 md:py-3 pr-8 md:pr-10 bg-surface-container-low border-none rounded-xl text-sm md:text-base appearance-none">
             <option value="all">Qualquer status</option>
             <option value="maintenance">Em manutenção</option>
             <option value="available">Disponível</option>

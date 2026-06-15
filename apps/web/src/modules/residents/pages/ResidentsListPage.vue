@@ -46,7 +46,7 @@
               type="text"
             />
           </div>
-          <select v-model="filterStatus" class="w-full sm:w-auto px-3 md:px-4 py-2.5 md:py-3 bg-surface-container-low border-none rounded-xl text-sm md:text-base">
+          <select v-model="filterStatus" class="w-full sm:w-auto px-3 md:px-4 py-2.5 md:py-3 pr-8 md:pr-10 bg-surface-container-low border-none rounded-xl text-sm md:text-base appearance-none">
             <option value="all">Todos</option>
             <option value="active">Ativos</option>
             <option value="inactive">Inativos</option>
@@ -55,8 +55,33 @@
 
         <!-- Residents Table - RESPONSIVE -->
         <div class="bg-surface-container-lowest rounded-2xl md:rounded-3xl overflow-hidden shadow-sm">
+          <!-- Loading skeleton -->
+          <div v-if="loading" class="hidden md:block p-8">
+            <div class="space-y-4">
+              <div v-for="n in 4" :key="n" class="flex items-center gap-4 animate-pulse">
+                <div class="w-10 h-10 bg-slate-200 rounded-full" />
+                <div class="flex-1 space-y-2">
+                  <div class="h-4 bg-slate-200 rounded w-1/4" />
+                  <div class="h-3 bg-slate-200 rounded w-1/3" />
+                </div>
+                <div class="h-4 bg-slate-200 rounded w-20" />
+                <div class="h-4 bg-slate-200 rounded w-16" />
+                <div class="flex gap-2">
+                  <div class="w-8 h-8 bg-slate-200 rounded-lg" />
+                  <div class="w-8 h-8 bg-slate-200 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile spinner -->
+          <div v-if="loading" class="md:hidden p-8 text-center text-slate-400">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+            <p class="mt-2">Carregando...</p>
+          </div>
+
           <!-- Desktop Table -->
-          <div class="hidden md:block overflow-x-auto">
+          <div v-if="!loading" class="hidden md:block overflow-x-auto">
             <table class="w-full">
               <thead class="bg-surface-container-low">
                 <tr>
@@ -119,7 +144,11 @@
 
           <!-- Mobile Cards -->
           <div class="md:hidden divide-y divide-slate-100">
-            <div v-if="filteredResidents.length === 0" class="p-8 text-center text-slate-400">
+            <div v-if="loading" class="p-8 text-center text-slate-400">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+              <p class="mt-2">Carregando...</p>
+            </div>
+            <div v-else-if="filteredResidents.length === 0" class="p-8 text-center text-slate-400">
               <span class="material-symbols-outlined text-5xl">group_remove</span>
               <p class="mt-2">Nenhum morador encontrado</p>
             </div>
