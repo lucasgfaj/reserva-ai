@@ -99,7 +99,7 @@ describe('residentsService', () => {
       await residentsService.create({
         name: 'Full User',
         email: 'full@test.com',
-        unit: 'Ap 101',
+        unitId: 'Ap 101',
         phone: '11999999999',
         canBook: true,
         password: 'Pass1234',

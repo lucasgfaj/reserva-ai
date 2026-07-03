@@ -102,29 +102,42 @@
                 <p v-if="validation.hasError('email')" class="text-xs text-error mt-1">{{ validation.getError('email') }}</p>
               </div>
 
-              <!-- Unit & Phone - Responsive grid -->
+              <!-- Block & Unit - Responsive grid -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Unidade</label>
-                  <input 
-                    v-model="formData.unit"
-                    type="text"
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Bloco</label>
+                  <select
+                    v-model="selectedBlockId"
                     class="w-full px-3 md:px-4 py-2.5 md:py-3 bg-white border border-slate-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-placeholder="Ap. 101 - Bloco A"
-                />
-                <p v-if="validation.hasError('unit')" class="text-xs text-error mt-1">{{ validation.getError('unit') }}</p>
-              </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
-                  <input 
-                    v-model="formData.phone"
-                    type="text"
-                    class="w-full px-3 md:px-4 py-2.5 md:py-3 bg-white border border-slate-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
-                    :class="validation.hasError('phone') ? 'border-error focus:ring-error/20 focus:border-error' : ''"
-                    placeholder="(11) 99999-9999"
-                  />
-                  <p v-if="validation.hasError('phone')" class="text-xs text-error mt-1">{{ validation.getError('phone') }}</p>
+                  >
+                    <option value="">Selecione o bloco</option>
+                    <option v-for="block in blocks" :key="block.id" :value="block.id">{{ block.name }}</option>
+                  </select>
                 </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">Unidade</label>
+                  <select
+                    v-model="formData.unitId"
+                    :disabled="!selectedBlockId"
+                    class="w-full px-3 md:px-4 py-2.5 md:py-3 bg-white border border-slate-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Selecione a unidade</option>
+                    <option v-for="unit in units" :key="unit.id" :value="unit.id">{{ unit.number }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Phone -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Telefone</label>
+                <input 
+                  v-model="formData.phone"
+                  type="text"
+                  class="w-full px-3 md:px-4 py-2.5 md:py-3 bg-white border border-slate-200 rounded-xl text-sm md:text-base focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                  :class="validation.hasError('phone') ? 'border-error focus:ring-error/20 focus:border-error' : ''"
+                  placeholder="(11) 99999-9999"
+                />
+                <p v-if="validation.hasError('phone')" class="text-xs text-error mt-1">{{ validation.getError('phone') }}</p>
               </div>
 
               <!-- Password (only for create) -->
@@ -191,12 +204,14 @@ placeholder="Ap. 101 - Bloco A"
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import SideNavBar from '@/modules/shared/components/SideNavBar.vue'
 import TopAppBar from '@/modules/shared/components/TopAppBar.vue'
 import { authService } from '@/modules/auth/services/auth.service'
 import { residentsService } from '../services/residents.service'
+import { blocksService, type Block } from '@/modules/blocks/services/blocks.service'
+import { unitsService, type Unit } from '@/modules/units/services/units.service'
 import { http } from '@/api/http'
 import { useToast } from '@/modules/shared/composables/useToast'
 import { useApiError } from '@/modules/shared/composables/useApiError'
@@ -223,7 +238,7 @@ const saving = ref(false)
 const formData = ref({
   name: '',
   email: '',
-  unit: '',
+  unitId: '',
   phone: '',
   password: '',
   canBook: true,
@@ -232,9 +247,21 @@ const formData = ref({
 const createRules: ValidationRules = {
   name: { required: true, minLength: 3 },
   email: { required: true, email: true },
-  unit: { minLength: 3 },
   phone: { minLength: 8 },
   password: { password: true },
+}
+
+const blocks = ref<Block[]>([])
+const units = ref<Unit[]>([])
+const selectedBlockId = ref('')
+
+const fetchBlocks = async () => {
+  try {
+    const data = await blocksService.getAll(1, 100)
+    blocks.value = data.blocks
+  } catch (err) {
+    console.error('Erro ao carregar blocos:', err)
+  }
 }
 
 const fetchResident = async () => {
@@ -246,10 +273,14 @@ const fetchResident = async () => {
     formData.value = {
       name: data.name,
       email: data.email,
-      unit: data.unit || '',
+      unitId: data.unitId || '',
       phone: data.phone || '',
       password: '',
       canBook: data.canBook,
+    }
+    if (data.unitId) {
+      const unit = await unitsService.getById(data.unitId)
+      selectedBlockId.value = unit.blockId
     }
   } catch (error) {
     console.error('Erro ao carregar morador:', error)
@@ -265,7 +296,7 @@ const handleSubmit = async () => {
     const data = {
       name: formData.value.name,
       email: formData.value.email,
-      unit: formData.value.unit,
+      unitId: formData.value.unitId,
       phone: formData.value.phone,
       password: formData.value.password,
     }
@@ -287,7 +318,7 @@ const handleSubmit = async () => {
       const result = await residentsService.create({
         name: formData.value.name,
         email: formData.value.email,
-        unit: formData.value.unit || undefined,
+        unitId: formData.value.unitId || undefined,
         phone: formData.value.phone || undefined,
         canBook: formData.value.canBook,
         password: formData.value.password || undefined,
@@ -329,7 +360,23 @@ const handleLogout = async () => {
 }
 
 
+watch(selectedBlockId, async (newBlockId) => {
+  formData.value.unitId = ''
+  if (newBlockId) {
+    try {
+      const data = await unitsService.getAll(1, 100, newBlockId)
+      units.value = data.units
+    } catch (err) {
+      console.error('Erro ao carregar unidades:', err)
+      units.value = []
+    }
+  } else {
+    units.value = []
+  }
+})
+
 onMounted(() => {
+  fetchBlocks()
   if (isEditMode.value) {
     fetchResident()
   }
