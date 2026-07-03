@@ -37,7 +37,7 @@ export const residentsService = {
   async create(resident: {
     name: string
     email: string
-    unit?: string
+    unitId?: string
     phone?: string
     canBook?: boolean
     password?: string
@@ -48,7 +48,7 @@ export const residentsService = {
       canBook: resident.canBook === false ? false : true,
     }
     
-    if (resident.unit?.trim()) payload.unitId = resident.unit.trim()
+    if (resident.unitId?.trim()) payload.unitId = resident.unitId.trim()
     if (resident.phone?.trim()) payload.phone = resident.phone.trim()
     if (resident.password?.trim()) payload.password = resident.password.trim()
     

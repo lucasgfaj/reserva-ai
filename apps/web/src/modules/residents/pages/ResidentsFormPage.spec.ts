@@ -49,7 +49,7 @@ const mockResident = {
   id: '1',
   name: 'João Silva',
   email: 'joao@test.com',
-  unit: 'AP 101',
+  unitId: 'unit-uuid-123',
   phone: '11999999999',
   canBook: true,
   role: 'RESIDENT',
@@ -64,6 +64,21 @@ vi.mock('@/modules/residents/services/residents.service', () => ({
     getById: vi.fn(),
     create: vi.fn(),
     updatePermissions: vi.fn(),
+  },
+}))
+
+import { unitsService } from '@/modules/units/services/units.service'
+
+vi.mock('@/modules/units/services/units.service', () => ({
+  unitsService: {
+    getById: vi.fn(),
+    getAll: vi.fn(),
+  },
+}))
+
+vi.mock('@/modules/blocks/services/blocks.service', () => ({
+  blocksService: {
+    getAll: vi.fn(),
   },
 }))
 
@@ -151,7 +166,7 @@ describe('ResidentsFormPage', () => {
     expect(residentsService.create).toHaveBeenCalledWith({
       name: '',
       email: '',
-      unit: undefined,
+      unitId: undefined,
       phone: undefined,
       canBook: true,
       password: undefined,
